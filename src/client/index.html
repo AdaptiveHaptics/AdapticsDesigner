@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
     <title>Web Haptic Designer</title>
+    <script src="./thirdparty/konva.min.js" defer></script>
     <script src="./script.mjs" type="module"></script>
 </head>
 <body>
@@ -17,8 +18,7 @@
         </div>
         <div class="gutter column leftcenter"></div>
         <div class="center">
-            <div class="canvas">
-                <canvas class="pattern"></canvas>
+            <div id="patternstage" class="pattern stage">
             </div>
         </div>
         <div class="gutter column centerright"></div>

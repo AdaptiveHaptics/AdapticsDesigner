@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "konva": "^8.3.14",
+    "split-grid": "^1.0.11"
+  }
+}

@@ -10,26 +10,30 @@
     <script src="./js/script.mjs" type="module"></script>
 </head>
 <body>
-    <div class="main">
-        <div class="left">
-            <div class="designs">
-
+    <div class="app">
+        <div class="titlebar">
+            <span class="filename">test.json</span>
+        </div>
+        <div class="mainsplitgrid">
+            <div class="left">
+                <div class="designs">
+    
+                </div>
             </div>
-        </div>
-        <div class="gutter column leftcenter"></div>
-        <div class="center">
-            <div id="patternstage" class="pattern stage">
+            <div class="gutter column leftcenter"></div>
+            <div class="center konvastagecontainer">
+                <div id="patternstage" class="konvastage"></div>
             </div>
-        </div>
-        <div class="gutter column centerright"></div>
-        <div class="right">
-            <div class="brusheditor"></div>
-        </div>
-        <div class="gutter row topbottom"></div>
-        <div class="bottom">
-            <div class="keyframeeditor"></div>
-            <div class="timeline">
-                <canvas class="timeline"></canvas>
+            <div class="gutter column centerright"></div>
+            <div class="right">
+                <div class="brusheditor"></div>
+            </div>
+            <div class="gutter row topbottom"></div>
+            <div class="bottom">
+                <div class="keyframeeditor"></div>
+                <div class="timeline konvastagecontainer">
+                    <div id="timelinestage" class="konvastage"></div>
+                </div>
             </div>
         </div>
     </div>

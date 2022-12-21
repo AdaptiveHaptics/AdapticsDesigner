@@ -1,4 +1,4 @@
-import { KonvaResizeStage } from "./konvashared.mjs";
+import { KonvaResizeScrollStage, KonvaResizeStage } from "./konvashared.mjs";
 
 const Konva = /** @type {import("konva").default} */ (window["Konva"]);
 
@@ -8,10 +8,7 @@ const Konva = /** @type {import("konva").default} */ (window["Konva"]);
 
 const KonvaTimelineKeyframeSymbol = Symbol("KonvaTimelineKeyframe");
 
-export class KonvaTimelineStage extends KonvaResizeStage {
-
-	sceneWidth = 500;
-	sceneHeight = 500;
+export class KonvaTimelineStage extends KonvaResizeScrollStage {
 
 	/**
 	 * 
@@ -20,12 +17,13 @@ export class KonvaTimelineStage extends KonvaResizeStage {
 	 * @param {HTMLElement} resize_container 
 	 */
 	constructor(current_design, direct_container_id, resize_container) {
-		super(direct_container_id, resize_container);
+		super(direct_container_id, resize_container, {
+			stageWidth: 1500, stageHeight: 500,
+			fullWidth: 2500, fullHeight: 800,
+			flipDefaultScrollDirection: true,
+		});
 
 		this.current_design = current_design;
-
-		this.k_control_points_layer = new Konva.Layer();
-		this.k_stage.add(this.k_control_points_layer);
 
 		this.render_design();
 	}
@@ -34,57 +32,43 @@ export class KonvaTimelineStage extends KonvaResizeStage {
 		const keyframes = this.current_design.filedata.keyframes;
 		
 		// render control points
-		const keyframe_1 = keyframes.map(keyframe => new KonvaPatternControlPoint(keyframe, this));
+		const keyframe_1 = keyframes.map(keyframe => new KonvaTimelineKeyframe(keyframe, this));
 
 		
 	}
 }
 
-class KonvaPatternControlPoint {
-	/** @type {{ in: import("konva/lib/shapes/Line.js").Line | null, out: import("konva/lib/shapes/Line.js").Line | null }} */
-	lines = { in: null, out: null };
+class KonvaTimelineKeyframe {
 	/**
 	 * 
 	 * @param {MAHKeyframe} keyframe 
-	 * @param {KonvaPatternStage} pattern_stage 
+	 * @param {KonvaTimelineStage} timeline_stage 
 	 */
-	constructor(keyframe, pattern_stage) {
-		this.k_cp_circle = new Konva.Circle({
+	constructor(keyframe, timeline_stage) {
+		this.flag = new Konva.Circle({
 			x: keyframe.coords.x,
 			y: keyframe.coords.y,
 			radius: 20,
 			stroke: getComputedStyle(document.body).getPropertyValue("--control-point-stroke"),
 			strokeWidth: 2,
 			draggable: true,
+
 		});
-		this.k_cp_circle.addEventListener("mouseenter", ev => {
-			document.body.style.cursor = "pointer";
+		this.flag.addEventListener("mouseenter", ev => {
+			document.body.style.cursor = "ew-resize";
 		});
-		this.k_cp_circle.addEventListener("mouseleave", ev => {
+		this.flag.addEventListener("mouseleave", ev => {
 			document.body.style.cursor = "default";
 		});
-		this.k_cp_circle.addEventListener("dragmove", ev => {
-			const x = this.k_cp_circle.x();
-			const y = this.k_cp_circle.y();
+		this.flag.addEventListener("dragmove", ev => {
+			const x = this.flag.x();
+			const y = this.flag.y();
 			keyframe.coords.x = x;
 			keyframe.coords.y = y;
-
-			if (this.lines.in) {
-				const points = this.lines.in.points();
-				points[2] = x;
-				points[3] = y;
-				this.lines.in.points(points);
-			}
-			if (this.lines.out) {
-				const points = this.lines.out.points();
-				points[0] = x;
-				points[1] = y;
-				this.lines.out.points(points);
-			}
 		});
 
-		pattern_stage.k_control_points_layer.add(this.k_cp_circle);
+		timeline_stage.scrolling_layer.add(this.flag);
 
-		keyframe[KonvaPatternControlPointSymbol] = this;
+		keyframe[KonvaTimelineKeyframeSymbol] = this;
 	}
 }

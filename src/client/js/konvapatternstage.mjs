@@ -9,10 +9,6 @@ const Konva = /** @type {import("konva").default} */ (window["Konva"]);
 const KonvaPatternControlPointSymbol = Symbol("KonvaPatternControlPoint");
 
 export class KonvaPatternStage extends KonvaResizeStage {
-
-	sceneWidth = 500;
-	sceneHeight = 500;
-
 	/**
 	 * 
 	 * @param {MAHPatternDesignFE} current_design 
@@ -20,7 +16,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 	 * @param {HTMLElement} resize_container 
 	 */
 	constructor(current_design, direct_container_id, resize_container) {
-		super(direct_container_id, resize_container);
+		super(direct_container_id, resize_container, { stageWidth: 500, stageHeight: 500 });
 
 		this.current_design = current_design;
 

@@ -1,12 +1,15 @@
 import Split from "../thirdparty/split-grid.mjs";
 import { KonvaPatternStage } from "./konvapatternstage.mjs";
+import { KonvaTimelineStage } from "./konvatimeline.mjs";
 const SplitGrid = /** @type {import("split-grid").default} */(/** @type {unknown} */(Split));
 const Konva = /** @type {import("konva").default} */ (window["Konva"]);
 
 /** @typedef {import("../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
 
-const centerDiv = /** @type {HTMLDivElement} */ (document.querySelector("div.main > div.center"));
+const mainsplitgridDiv = /** @type {HTMLDivElement} */ (document.querySelector("div.mainsplitgrid"));
+const centerDiv = /** @type {HTMLDivElement} */ (mainsplitgridDiv.querySelector("div.center"));
+const timelineDiv = /** @type {HTMLDivElement} */ (document.querySelector("div.timeline"));
 
 export class MAHPatternDesignFE {
 	/**
@@ -14,9 +17,13 @@ export class MAHPatternDesignFE {
 	 * @param {string} filename 
 	 * @param {MidAirHapticsAnimationFileFormat} filedata 
 	 */
-	constructor(filename, filedata) {
+	constructor(filename, filedata, undo_states = [], redo_states = [], undo_states_size = 50, redo_states_size = 50) {
 		this.filename = filename;
 		this.filedata = filedata;
+		this.undo_states = undo_states;
+		this.undo_states_size = undo_states_size;
+		this.redo_states = redo_states;
+		this.redo_states_size = redo_states_size;
 
 		this.filedata.keyframes = this.filedata.keyframes.map(kf => new MAHKeyframeFE(kf));
 	}
@@ -28,10 +35,16 @@ export class MAHPatternDesignFE {
 	redo_states = [];
 	redo_states_size = 50;
 
+	save_working_copy_to_localstorage_timer = null;
+
 	save_state() {
 		this.redo_states.length = 0;
 		this.undo_states.push(window.structuredClone(this.filedata));
 		if (this.undo_states.length > this.undo_states_size) this.undo_states.shift();
+
+		this.save_to_localstorage();
+		clearTimeout(this.save_working_copy_to_localstorage_timer);
+		setTimeout(() => this.save_to_localstorage(), 1800);
 	}
 
 	undo() {
@@ -55,9 +68,9 @@ export class MAHPatternDesignFE {
 	append_new_keyframe(x, y) {
 		const last_keyframe = this.filedata.keyframes[this.filedata.keyframes.length - 1];
 		const secondlast_keyframe = this.filedata.keyframes[this.filedata.keyframes.length - 2];
-		const keyframe = new MAHKeyframeFE({...last_keyframe, coords: { x, y, z: 0 }});
+		const keyframe = new MAHKeyframeFE({ ...last_keyframe, coords: { x, y, z: 0 } });
 		if (secondlast_keyframe) { // linterp
-			keyframe.time += last_keyframe.time-secondlast_keyframe.time;
+			keyframe.time += last_keyframe.time - secondlast_keyframe.time;
 		}
 		this.filedata.keyframes.push(keyframe);
 		return keyframe;
@@ -69,6 +82,38 @@ export class MAHPatternDesignFE {
 	 */
 	getLastKeyframe() {
 		return this.filedata.keyframes[this.filedata.keyframes.length - 1];
+	}
+
+
+
+
+
+
+	serialize() {
+		return JSON.stringify(this);
+	}
+	/**
+	 * 
+	 * @param {string} json_str 
+	 * @returns {MAHPatternDesignFE}
+	 */
+	static deserialize(json_str) {
+		const { filename, filedata, undo_states, redo_states, undo_states_size, redo_states_size } = JSON.parse(json_str);
+		return new MAHPatternDesignFE(filename, filedata, undo_states, redo_states, undo_states_size, redo_states_size);
+	}
+
+	static get LOCAL_STORAGE_KEY() { return "primary_design"; }
+
+	save_to_localstorage() {
+		window.localStorage.setItem(MAHPatternDesignFE.LOCAL_STORAGE_KEY, this.serialize());
+	}
+	static load_from_localstorage() {
+		const lssf = window.localStorage.getItem(MAHPatternDesignFE.LOCAL_STORAGE_KEY);
+		if (lssf) {
+			return this.deserialize(lssf);
+		} else {
+			return lssf;
+		}
 	}
 }
 
@@ -109,7 +154,7 @@ export class MAHKeyframeFE {
 }
 
 
-const primary_design = new MAHPatternDesignFE("test.json", {
+const primary_design = MAHPatternDesignFE.load_from_localstorage() || new MAHPatternDesignFE("test.json", {
 	revision: "0.0.1-alpha.1",
 	name: "test",
 
@@ -155,11 +200,11 @@ onMainGridResizeListeners.push(ev => {
 });
 const mainsplit = SplitGrid({
 	columnGutters: [
-		{ track: 1, element: document.querySelector("div.gutter.leftcenter") },
-		{ track: 3, element: document.querySelector("div.gutter.centerright") },
+		{ track: 1, element: mainsplitgridDiv.querySelector("div.mainsplitgrid > div.gutter.leftcenter") },
+		{ track: 3, element: mainsplitgridDiv.querySelector("div.mainsplitgrid > div.gutter.centerright") },
 	],
 	rowGutters: [
-		{ track: 1, element: document.querySelector("div.gutter.topbottom") },
+		{ track: 1, element: mainsplitgridDiv.querySelector("div.mainsplitgrid > div.gutter.topbottom") },
 	],
 	onDragEnd: (d, t) => { for (const l of onMainGridResizeListeners) l(d, t); }
 });
@@ -189,8 +234,11 @@ document.addEventListener("keydown", ev => {
 
 
 const konva_pattern_stage = new KonvaPatternStage(primary_design, "patternstage", centerDiv);
+const konva_timeline_stage = new KonvaTimelineStage(primary_design, "timelinestage", timelineDiv);
 
 // @ts-ignore
 window.konva_pattern_stage = konva_pattern_stage;
+// @ts-ignore
+window.konva_timeline_stage = konva_timeline_stage;
 // @ts-ignore
 window.primary_design = primary_design;

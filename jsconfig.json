@@ -1,5 +1,7 @@
 {
     "compilerOptions": {
+        "target": "ES6",
+        "moduleResolution": "Node",
         "checkJs": true,
         "lib": [ "ES2015", "DOM" ]
     }

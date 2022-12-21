@@ -20,7 +20,6 @@ const savedstateSpan = /** @type {HTMLSpanElement} */ (document.querySelector("s
  */
 const notnull = t => { if (t) { return t; } else { throw new TypeError("Unexpected null"); } };
 
-const MAHPatternDesignFEGuiStateSymbol = Symbol("MAHPatternDesignFEGuiState");
 export class MAHPatternDesignFE {
 	/**
 	 * 
@@ -75,9 +74,14 @@ export class MAHPatternDesignFE {
 	}
 	/**
 	 * 
-	 * @param {{ deleted_keyframe?: MAHKeyframeFE }} param0 
+	 * @param {{
+	 * 	rerender?: boolean,
+	 * 	new_keyframes?: MAHKeyframeFE[]
+	 * 	updated_keyframes?: MAHKeyframeFE[]
+	 * 	deleted_keyframes?: MAHKeyframeFE[]
+	 * }} param0
 	 */
-	commit_operation({ deleted_keyframe } = {}) {
+	commit_operation({ rerender, new_keyframes, updated_keyframes, deleted_keyframes }) {
 		if (this.commited) {
 			alert("commit_operation before save");
 			throw new Error("commit_operation before save");
@@ -85,9 +89,31 @@ export class MAHPatternDesignFE {
 		this.save_to_localstorage();
 		this.commited = true;
 
-		if (deleted_keyframe) {
-			const change_event = new CustomEvent("kf_delete", { detail: { keyframe: deleted_keyframe } });
+
+		// it might be better to run everything through es6 proxies than trust we provide all modified objects, but im just gonna with this for now
+		if (rerender) {
+			const change_event = new CustomEvent("rerender", { detail: {} });
 			this.state_change_events.dispatchEvent(change_event);
+			return;
+		}
+
+		if (new_keyframes) {
+			for (const keyframe of new_keyframes) {
+				const change_event = new CustomEvent("kf_newappend", { detail: { keyframe } });
+				this.state_change_events.dispatchEvent(change_event);
+			}
+		}
+		if (updated_keyframes) {
+			for (const keyframe of updated_keyframes) {
+				const change_event = new CustomEvent("kf_update", { detail: { keyframe } });
+				this.state_change_events.dispatchEvent(change_event);
+			}
+		}
+		if (deleted_keyframes) {
+			for (const keyframe of deleted_keyframes) {
+				const change_event = new CustomEvent("kf_delete", { detail: { keyframe } });
+				this.state_change_events.dispatchEvent(change_event);
+			}
 		}
 	}
 
@@ -96,7 +122,7 @@ export class MAHPatternDesignFE {
 		this.redo_states.push(window.structuredClone(this.filedata));
 		if (this.redo_states.length > this.redo_states_size) this.redo_states.shift();
 		this.filedata = this.undo_states.pop();
-		this.commit_operation();
+		this.commit_operation({ rerender: true });
 		return true;
 	}
 
@@ -105,7 +131,7 @@ export class MAHPatternDesignFE {
 		this.undo_states.push(window.structuredClone(this.filedata));
 		if (this.undo_states.length > this.undo_states_size) this.undo_states.shift();
 		this.filedata = this.redo_states.pop();
-		this.commit_operation();
+		this.commit_operation({ rerender: true });
 		return true;
 	}
 
@@ -114,7 +140,7 @@ export class MAHPatternDesignFE {
 	append_new_keyframe(x, y) {
 		const last_keyframe = this.get_last_keyframe();
 		const secondlast_keyframe = this.get_secondlast_keyframe();
-		const keyframe = new MAHKeyframeFE({ ...last_keyframe, ...MAHKeyframeFE.default, coords: { x, y, z: 0 }  });
+		const keyframe = new MAHKeyframeFE({ ...MAHKeyframeFE.default, ...last_keyframe, coords: { x, y, z: 0 }  });
 		if (last_keyframe) {
 			let add_to_time = 500;
 			if (secondlast_keyframe) { // linterp
@@ -149,15 +175,15 @@ export class MAHPatternDesignFE {
 	}
 	/**
 	 * 
-	 * @param {MAHKeyframeFE} keyframe 
+	 * @param {MAHKeyframeFE[]} keyframes 
 	 */
-	delete_keyframe(keyframe) {
-		this.save_state();
-		const index = this.get_keyframe_index(keyframe);
-		if (index == -1) throw new TypeError("keyframe not in array");
-		this.filedata.keyframes.splice(index, 1);
-		this.commit_operation({ deleted_keyframe: keyframe });
-		return keyframe;
+	delete_keyframes(keyframes) {
+		for (const keyframe of keyframes) {
+			const index = this.get_keyframe_index(keyframe);
+			if (index == -1) throw new TypeError("keyframe not in array");
+			this.filedata.keyframes.splice(index, 1);
+		}
+		return keyframes;
 	}
 
 
@@ -257,7 +283,7 @@ document.addEventListener("keydown", ev => {
 	if (ev.key == "z" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
 		console.log("undo");
 		if (primary_design.undo()) {
-			konva_pattern_stage.render_design();
+			//success
 		} else {
 			//do nothing
 		}
@@ -265,7 +291,7 @@ document.addEventListener("keydown", ev => {
 	if (ev.key == "Z" && ev.ctrlKey && ev.shiftKey && !ev.altKey) {
 		console.log("redo");
 		if (primary_design.redo()) {
-			konva_pattern_stage.render_design();
+			//success
 		} else {
 			//do nothing
 		}
@@ -312,10 +338,9 @@ const primary_design = MAHPatternDesignFE.load_from_localstorage() || new MAHPat
 		}
 	]
 });
-primary_design.commit_operation();
+primary_design.commit_operation({});
 const konva_pattern_stage = new KonvaPatternStage(primary_design, "patternstage", centerDiv);
 const konva_timeline_stage = new KonvaTimelineStage(primary_design, "timelinestage", timelineDiv);
-primary_design[MAHPatternDesignFEGuiStateSymbol] = { konva_pattern_stage, konva_timeline_stage };
 
 // @ts-ignore
 window.konva_pattern_stage = konva_pattern_stage;

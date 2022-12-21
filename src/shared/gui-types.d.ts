@@ -2,9 +2,10 @@
 import { MAHKeyframeFE } from "../client/js/script.mjs";
 
 interface StateEventMap {
-    "kf_new": CustomEvent<{ keyframe: MAHKeyframeFE }>;
+    "kf_newappend": CustomEvent<{ keyframe: MAHKeyframeFE }>;
     "kf_delete": CustomEvent<{ keyframe: MAHKeyframeFE }>;
     "kf_update": CustomEvent<{ keyframe: MAHKeyframeFE }>;
+    "rerender": CustomEvent<{}>;
 }
 
 interface StateChangeEventTarget extends EventTarget {

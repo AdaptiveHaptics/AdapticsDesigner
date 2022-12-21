@@ -54,6 +54,13 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 			this.render_design();
 		});
 
+		current_design.state_change_events.addEventListener("kf_newappend", ev => {
+			const timelinekeyframe = new KonvaTimelineKeyframe(ev.detail.keyframe, this);
+		});
+		current_design.state_change_events.addEventListener("rerender", ev => {
+			this.render_design();
+		});
+
 		this.render_design();
 	}
 
@@ -131,10 +138,21 @@ class KonvaTimelineKeyframe {
 			fill: getComputedStyle(document.body).getPropertyValue("--control-point-stroke"),
 			draggable: true,
 			dragBoundFunc: pos => {
+				const index = timeline_stage.current_design.get_keyframe_index(keyframe);
+				const prev_cp_time = timeline_stage.current_design.filedata.keyframes[index-1]?.time || 0;
+				const next_cp_time = timeline_stage.current_design.filedata.keyframes[index+1]?.time || Infinity;
+				//TODO: it would be nice if perfectly overlapping control points were more obvious to the user
 				return {
-					x: pos.x,
+					x: Math.max(Math.min(pos.x, timeline_stage.milliseconds_to_x_coord(next_cp_time-1)), timeline_stage.milliseconds_to_x_coord(prev_cp_time+1)),
 					y: this.ycoord
 				};
+			}
+		});
+		this.flag.on("click", ev => {
+			if (ev.evt.altKey) {
+				timeline_stage.current_design.save_state();
+				const deleted_keyframes = timeline_stage.current_design.delete_keyframes([keyframe]);
+				timeline_stage.current_design.commit_operation({ deleted_keyframes });
 			}
 		});
 		this.flag.addEventListener("mouseenter", ev => {
@@ -147,12 +165,26 @@ class KonvaTimelineKeyframe {
 			timeline_stage.current_design.save_state();
 		});
 		this.flag.addEventListener("dragend", ev => {
-			timeline_stage.current_design.commit_operation();
+			timeline_stage.current_design.commit_operation({ updated_keyframes: [keyframe] });
 		});
 		this.flag.addEventListener("dragmove", ev => {
 			const x = this.flag.x();
 			keyframe.time = timeline_stage.x_coord_to_milliseconds(x);
 		});
+
+		const listener_abort = new AbortController();
+		timeline_stage.current_design.state_change_events.addEventListener("kf_delete", ev => {
+			if (ev.detail.keyframe != keyframe) return;
+			
+			this.flag.destroy();
+			
+			listener_abort.abort();
+
+		}, { signal: listener_abort.signal });
+		timeline_stage.current_design.state_change_events.addEventListener("kf_update", ev => {
+			if (ev.detail.keyframe != keyframe) return;
+			this.flag.x(timeline_stage.milliseconds_to_x_coord(keyframe.time));
+		}, { signal: listener_abort.signal });
 
 		timeline_stage.scrolling_layer.add(this.flag);
 

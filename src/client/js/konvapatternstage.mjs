@@ -26,17 +26,20 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		this.k_stage.on("dblclick", ev => {
 			current_design.save_state();
 			const { x, y } = this.k_stage.getRelativePointerPosition();
-			this.current_design.append_new_keyframe(x, y);
-			current_design.commit_operation();
+			const new_keyframe = this.current_design.append_new_keyframe(x, y);
+			current_design.commit_operation({ new_keyframes: [new_keyframe] });
 		});
 
 
-		current_design.state_change_events.addEventListener("kf_new", ev => {
+		current_design.state_change_events.addEventListener("kf_newappend", ev => {
 			const prev_cp = this.current_design.get_secondlast_keyframe()?.[KonvaPatternControlPointSymbol];
 			const curr_cp = new KonvaPatternControlPoint(ev.detail.keyframe, this);
 			if (prev_cp) {
 				const kpcpl = new KonvaPatternControlPointLine(prev_cp, curr_cp, this);
 			}
+		});
+		current_design.state_change_events.addEventListener("rerender", ev => {
+			this.render_design();
 		});
 
 
@@ -91,7 +94,8 @@ class KonvaPatternControlPoint {
 	 */
 	constructor(keyframe, pattern_stage) {
 		this.keyframe = keyframe;
-
+		
+		//TODO: it would be nice if perfectly overlapping control points were made obvious to the user
 		this.k_cp_circle = new Konva.Circle({
 			x: keyframe.coords.x,
 			y: keyframe.coords.y,
@@ -102,7 +106,9 @@ class KonvaPatternControlPoint {
 		});
 		this.k_cp_circle.on("click", ev => {
 			if (ev.evt.altKey) {		
-				pattern_stage.current_design.delete_keyframe(keyframe);
+				pattern_stage.current_design.save_state();
+				const deleted_keyframes = pattern_stage.current_design.delete_keyframes([keyframe]);
+				pattern_stage.current_design.commit_operation({ deleted_keyframes });
 			}
 		});
 		this.k_cp_circle.addEventListener("mouseenter", ev => {
@@ -115,7 +121,7 @@ class KonvaPatternControlPoint {
 			pattern_stage.current_design.save_state();
 		});
 		this.k_cp_circle.addEventListener("dragend", ev => {
-			pattern_stage.current_design.commit_operation();
+			pattern_stage.current_design.commit_operation({ updated_keyframes: [keyframe] });
 		});
 		this.k_cp_circle.addEventListener("dragmove", ev => {
 			const x = this.k_cp_circle.x();
@@ -126,6 +132,7 @@ class KonvaPatternControlPoint {
 			this.update_control_point();
 		});
 
+		const listener_abort = new AbortController();
 		pattern_stage.current_design.state_change_events.addEventListener("kf_delete", ev => {
 			if (ev.detail.keyframe != keyframe) return;
 			const index = pattern_stage.current_design.get_keyframe_index(keyframe);
@@ -134,12 +141,16 @@ class KonvaPatternControlPoint {
 			this.lines.in?.destroy();
 			this.lines.out?.destroy();
 			if (prev_cp && next_cp) new KonvaPatternControlPointLine(prev_cp, next_cp, pattern_stage);
+			
 			this.k_cp_circle.destroy();
-		});
+
+			listener_abort.abort();
+
+		}, { signal: listener_abort.signal });
 		pattern_stage.current_design.state_change_events.addEventListener("kf_update", ev => {
 			if (ev.detail.keyframe != keyframe) return;
 			this.update_control_point();
-		});
+		}, { signal: listener_abort.signal });
 
 		pattern_stage.k_control_points_layer.add(this.k_cp_circle);
 

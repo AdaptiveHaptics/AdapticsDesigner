@@ -10,6 +10,13 @@ const Konva = /** @type {import("konva").default} */ (window["Konva"]);
 const mainsplitgridDiv = /** @type {HTMLDivElement} */ (document.querySelector("div.mainsplitgrid"));
 const centerDiv = /** @type {HTMLDivElement} */ (mainsplitgridDiv.querySelector("div.center"));
 const timelineDiv = /** @type {HTMLDivElement} */ (document.querySelector("div.timeline"));
+/**
+ * Assert Not Null
+ * @template T
+ * @param {T | null} t 
+ * @returns {T}
+ */
+const notnull = t => { if (t) { return t; } else { throw new TypeError("Unexpected null"); } };
 
 export class MAHPatternDesignFE {
 	/**
@@ -35,7 +42,7 @@ export class MAHPatternDesignFE {
 	redo_states = [];
 	redo_states_size = 50;
 
-	save_working_copy_to_localstorage_timer = null;
+	// save_working_copy_to_localstorage_timer = null; #this is not atomic
 
 	save_state() {
 		this.redo_states.length = 0;
@@ -43,8 +50,13 @@ export class MAHPatternDesignFE {
 		if (this.undo_states.length > this.undo_states_size) this.undo_states.shift();
 
 		this.save_to_localstorage();
-		clearTimeout(this.save_working_copy_to_localstorage_timer);
-		setTimeout(() => this.save_to_localstorage(), 1800);
+
+		//# this is not atomic
+		// if (this.save_working_copy_to_localstorage_timer) clearTimeout(this.save_working_copy_to_localstorage_timer);
+		// setTimeout(() => this.save_to_localstorage(), 1800);
+	}
+	commit_operation() {
+		this.save_to_localstorage();
 	}
 
 	undo() {
@@ -69,8 +81,12 @@ export class MAHPatternDesignFE {
 		const last_keyframe = this.filedata.keyframes[this.filedata.keyframes.length - 1];
 		const secondlast_keyframe = this.filedata.keyframes[this.filedata.keyframes.length - 2];
 		const keyframe = new MAHKeyframeFE({ ...last_keyframe, coords: { x, y, z: 0 } });
+		let add_to_time = 0;
 		if (secondlast_keyframe) { // linterp
-			keyframe.time += last_keyframe.time - secondlast_keyframe.time;
+			add_to_time = last_keyframe.time - secondlast_keyframe.time;
+		}
+		if (last_keyframe) {
+			keyframe.time += Math.max(add_to_time, 100);
 		}
 		this.filedata.keyframes.push(keyframe);
 		return keyframe;
@@ -80,8 +96,24 @@ export class MAHPatternDesignFE {
 	 * 
 	 * @returns {MAHKeyframe | undefined}
 	 */
-	getLastKeyframe() {
+	get_last_keyframe() {
 		return this.filedata.keyframes[this.filedata.keyframes.length - 1];
+	}
+	/**
+	 * 
+	 * @param {MAHKeyframe} keyframe 
+	 */
+	get_keyframe_index(keyframe) {
+		return this.filedata.keyframes.indexOf(keyframe);
+	}
+	/**
+	 * 
+	 * @param {MAHKeyframe} keyframe 
+	 */
+	delete_keyframe(keyframe) {
+		const index = this.get_keyframe_index(keyframe);
+		if (index == -1) throw new TypeError("keyframe not in array");
+		return this.filedata.keyframes.splice(index, 1);
 	}
 
 
@@ -112,7 +144,7 @@ export class MAHPatternDesignFE {
 		if (lssf) {
 			return this.deserialize(lssf);
 		} else {
-			return lssf;
+			return null;
 		}
 	}
 }
@@ -125,31 +157,31 @@ export class MAHKeyframeFE {
 	 * 
 	 * @param {MAHKeyframe} keyframe 
 	 */
-	constructor(keyframe = {
-		time: 0.000,
-		coords: { x: 0, y: 0, z: 0, },
-		intensity: {
+	constructor({
+		time = 0.000,
+		coords = { x: 0, y: 0, z: 0, },
+		intensity = {
 			name: "Constant",
 			params: {
 				value: 1.00
 			}
 		},
-		brush: {
+		brush = {
 			name: "Point",
 			params: {
 				size: 1.00
 			}
 		},
-		transition: {
+		transition = {
 			name: "Linear",
 			params: {}
 		}
 	}) {
-		this.time = keyframe.time;
-		this.brush = keyframe.brush;
-		this.intensity = keyframe.intensity;
-		this.coords = keyframe.coords;
-		this.transition = keyframe.transition;
+		this.time = time;
+		this.brush = brush;
+		this.intensity = intensity;
+		this.coords = coords;
+		this.transition = transition;
 	}
 }
 
@@ -200,19 +232,21 @@ onMainGridResizeListeners.push(ev => {
 });
 const mainsplit = SplitGrid({
 	columnGutters: [
-		{ track: 1, element: mainsplitgridDiv.querySelector("div.mainsplitgrid > div.gutter.leftcenter") },
-		{ track: 3, element: mainsplitgridDiv.querySelector("div.mainsplitgrid > div.gutter.centerright") },
+		{ track: 1, element: notnull(mainsplitgridDiv.querySelector("div.mainsplitgrid > div.gutter.leftcenter")) },
+		{ track: 3, element: notnull(mainsplitgridDiv.querySelector("div.mainsplitgrid > div.gutter.centerright")) },
 	],
 	rowGutters: [
-		{ track: 1, element: mainsplitgridDiv.querySelector("div.mainsplitgrid > div.gutter.topbottom") },
+		{ track: 1, element: notnull(mainsplitgridDiv.querySelector("div.mainsplitgrid > div.gutter.topbottom")) },
 	],
 	onDragEnd: (d, t) => { for (const l of onMainGridResizeListeners) l(d, t); }
 });
 
 document.addEventListener("keydown", ev => {
-	if (ev.key == "/" || ev.key == "?") alert(`
+	if (ev.key == "/" || ev.key == "?") alert(`Help:
 	ctrl+z to undo
 	ctrl+shift+z to redo
+	double click on the pattern canvas to create a new control point
+	alt+click on a control point to delete it
 	`);
 	if (ev.key == "z" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
 		console.log("undo");

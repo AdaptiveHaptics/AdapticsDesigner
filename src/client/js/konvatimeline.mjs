@@ -10,6 +10,8 @@ const KonvaTimelineKeyframeSymbol = Symbol("KonvaTimelineKeyframe");
 
 export class KonvaTimelineStage extends KonvaResizeScrollStage {
 
+	milliseconds_per_pixel = 5;
+
 	/**
 	 * 
 	 * @param {MAHPatternDesignFE} current_design 
@@ -30,6 +32,11 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 	
 	render_design() {
 		const keyframes = this.current_design.filedata.keyframes;
+		
+		// for (let i = 0; i < this.fullWidth; i += this.milliseconds_per_pixel) {
+		// 	const element = array[i];
+			
+		// }
 		
 		// render control points
 		const keyframe_1 = keyframes.map(keyframe => new KonvaTimelineKeyframe(keyframe, this));
@@ -58,7 +65,7 @@ class KonvaTimelineKeyframe {
 			document.body.style.cursor = "ew-resize";
 		});
 		this.flag.addEventListener("mouseleave", ev => {
-			document.body.style.cursor = "default";
+			document.body.style.cursor = "";
 		});
 		this.flag.addEventListener("dragmove", ev => {
 			const x = this.flag.x();

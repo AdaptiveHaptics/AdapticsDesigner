@@ -4,6 +4,7 @@
     --background-secondary: hsl(210, 13%, 30%);
     --background-tertiary: hsl(210, 13%, 20%);
     --background-tertiary-alt: hsl(210, 13%, 19%);
+    --background-titlebar: hsl(210, 13%, 14%);
     --background-accent: hsl(210, 13%, 50%);
     --background-gutter: hsl(210, 13%, 60%);
     
@@ -32,30 +33,30 @@ div.app {
     grid-template-rows: auto 1fr;
 }
 
+div.titlebar {
+    background-color: var(--background-titlebar);
+    padding: 1.2ex;
+}
+
 div.mainsplitgrid {
     display: grid;
     grid-template-columns: 20% 1px 1fr 1px 20%;
-    grid-template-rows: 75% 1px 25%;
+    grid-template-rows: 65% 1px 35%;
     overflow: hidden;
 }
 
-div.top, div.bottom {
+div.bottom {
     grid-column: 1 / -1;
-}
+    background-color: var(--background-primary);
 
-div.top {
-    background-color: var(--background-tertiary-alt);
-    padding: 5px;
+    display: grid;
+    grid-template-columns: 25% 75%;
 }
 
 div.left,
 div.right,
 div.bottom {
     background-color: var(--background-secondary);
-}
-
-div.bottom {
-    background-color: var(--background-primary);
 }
 
 div.center {

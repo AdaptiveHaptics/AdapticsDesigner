@@ -19,11 +19,14 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		super(direct_container_id, resize_container, { stageWidth: 500, stageHeight: 500 });
 
 		this.current_design = current_design;
+		
+		this.k_control_points_layer = new Konva.Layer();
+		this.k_stage.add(this.k_control_points_layer);
 
 		this.k_stage.on("dblclick", ev => {
 			current_design.save_state();
 			const { x, y } = this.k_stage.getRelativePointerPosition();
-			const curr_cp = this.current_design.getLastKeyframe()?.[KonvaPatternControlPointSymbol];
+			const curr_cp = this.current_design.get_last_keyframe()?.[KonvaPatternControlPointSymbol];
 			const next_cp = new KonvaPatternControlPoint(this.current_design.append_new_keyframe(x, y), this);
 			if (curr_cp) {
 				const kpcpl = new KonvaPatternControlPointLine(curr_cp, next_cp, this);
@@ -35,7 +38,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 	}
 	
 	render_design() {
-		this.k_control_points_layer?.destroy(); // i assume no memory leak since external references to KonvaPatternControlPointLine's should be overwritten by following code
+		this.k_control_points_layer.destroy(); // i assume no memory leak since external references to KonvaPatternControlPointLine's should be overwritten by following code
 		this.k_control_points_layer = new Konva.Layer();
 		this.k_stage.add(this.k_control_points_layer);
 
@@ -91,14 +94,31 @@ class KonvaPatternControlPoint {
 			strokeWidth: 2,
 			draggable: true,
 		});
+		this.k_cp_circle.on("click", ev => {
+			if (ev.evt.altKey) {
+				pattern_stage.current_design.save_state();
+				const index = pattern_stage.current_design.get_keyframe_index(keyframe);
+				const prev_cp = pattern_stage.current_design.filedata.keyframes[index-1]?.[KonvaPatternControlPointSymbol];
+				const next_cp = pattern_stage.current_design.filedata.keyframes[index+1]?.[KonvaPatternControlPointSymbol];
+				this.lines.in?.destroy();
+				this.lines.out?.destroy();
+				if (prev_cp && next_cp) new KonvaPatternControlPointLine(prev_cp, next_cp, pattern_stage);
+				this.k_cp_circle.destroy();
+				pattern_stage.current_design.delete_keyframe(keyframe);
+				pattern_stage.current_design.commit_operation();
+			}
+		});
 		this.k_cp_circle.addEventListener("mouseenter", ev => {
 			document.body.style.cursor = "pointer";
 		});
 		this.k_cp_circle.addEventListener("mouseleave", ev => {
-			document.body.style.cursor = "default";
+			document.body.style.cursor = "";
 		});
 		this.k_cp_circle.addEventListener("dragstart", ev => {
 			pattern_stage.current_design.save_state();
+		});
+		this.k_cp_circle.addEventListener("dragend", ev => {
+			pattern_stage.current_design.commit_operation();
 		});
 		this.k_cp_circle.addEventListener("dragmove", ev => {
 			const x = this.k_cp_circle.x();

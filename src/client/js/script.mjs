@@ -21,6 +21,37 @@ export class MAHPatternDesignFE {
 		this.filedata.keyframes = this.filedata.keyframes.map(kf => new MAHKeyframeFE(kf));
 	}
 
+
+
+	undo_states = [];
+	undo_states_size = 50;
+	redo_states = [];
+	redo_states_size = 50;
+
+	save_state() {
+		this.redo_states.length = 0;
+		this.undo_states.push(window.structuredClone(this.filedata));
+		if (this.undo_states.length > this.undo_states_size) this.undo_states.shift();
+	}
+
+	undo() {
+		if (this.undo_states.length == 0) return false;
+		this.redo_states.push(window.structuredClone(this.filedata));
+		if (this.redo_states.length > this.redo_states_size) this.redo_states.shift();
+		this.filedata = this.undo_states.pop();
+		return true;
+	}
+
+	redo() {
+		if (this.redo_states.length == 0) return false;
+		this.undo_states.push(window.structuredClone(this.filedata));
+		if (this.undo_states.length > this.undo_states_size) this.undo_states.shift();
+		this.filedata = this.redo_states.pop();
+		return true;
+	}
+
+
+
 	append_new_keyframe(x, y) {
 		const last_keyframe = this.filedata.keyframes[this.filedata.keyframes.length - 1];
 		const secondlast_keyframe = this.filedata.keyframes[this.filedata.keyframes.length - 2];
@@ -93,8 +124,8 @@ const primary_design = new MAHPatternDesignFE("test.json", {
 		{
 			time: 0.000,
 			coords: {
-				x: 0,
-				y: 0,
+				x: 250,
+				y: 250,
 				z: 0,
 			},
 			intensity: {
@@ -134,7 +165,26 @@ const mainsplit = SplitGrid({
 });
 
 document.addEventListener("keydown", ev => {
-	if (ev.key == "/" || ev.key == "?") alert("This is the help message for now");
+	if (ev.key == "/" || ev.key == "?") alert(`
+	ctrl+z to undo
+	ctrl+shift+z to redo
+	`);
+	if (ev.key == "z" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
+		console.log("undo");
+		if (primary_design.undo()) {
+			konva_pattern_stage.render_design();
+		} else {
+			//do nothing
+		}
+	}
+	if (ev.key == "Z" && ev.ctrlKey && ev.shiftKey && !ev.altKey) {
+		console.log("redo");
+		if (primary_design.redo()) {
+			konva_pattern_stage.render_design();
+		} else {
+			//do nothing
+		}
+	}
 });
 
 

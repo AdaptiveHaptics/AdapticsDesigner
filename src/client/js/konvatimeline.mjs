@@ -6,9 +6,9 @@ const Konva = /** @type {import("konva").default} */ (window["Konva"]);
 /** @typedef {import("../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
 
-const KonvaPatternControlPointSymbol = Symbol("KonvaPatternControlPoint");
+const KonvaTimelineKeyframeSymbol = Symbol("KonvaTimelineKeyframe");
 
-export class KonvaPatternStage extends KonvaResizeStage {
+export class KonvaTimelineStage extends KonvaResizeStage {
 
 	sceneWidth = 500;
 	sceneHeight = 500;
@@ -24,57 +24,19 @@ export class KonvaPatternStage extends KonvaResizeStage {
 
 		this.current_design = current_design;
 
-		this.k_stage.on("dblclick", ev => {
-			current_design.save_state();
-			const { x, y } = this.k_stage.getRelativePointerPosition();
-			const curr_cp = this.current_design.getLastKeyframe()?.[KonvaPatternControlPointSymbol];
-			const next_cp = new KonvaPatternControlPoint(this.current_design.append_new_keyframe(x, y), this);
-			if (curr_cp) {
-				const kpcpl = new KonvaPatternControlPointLine(curr_cp, next_cp, this);
-			}
-		});
-
+		this.k_control_points_layer = new Konva.Layer();
+		this.k_stage.add(this.k_control_points_layer);
 
 		this.render_design();
 	}
 	
 	render_design() {
-		this.k_control_points_layer?.destroy(); // i assume no memory leak since external references to KonvaPatternControlPointLine's should be overwritten by following code
-		this.k_control_points_layer = new Konva.Layer();
-		this.k_stage.add(this.k_control_points_layer);
-
 		const keyframes = this.current_design.filedata.keyframes;
 		
 		// render control points
-		const control_points = keyframes.map(keyframe => new KonvaPatternControlPoint(keyframe, this));
+		const keyframe_1 = keyframes.map(keyframe => new KonvaPatternControlPoint(keyframe, this));
 
-		//render path interp
-		for (let i = 0; i < control_points.length && i + 1 < control_points.length; i++) {
-			const curr_cp = control_points[i];
-			const next_cp = control_points[i + 1];
-			const kpcpl = new KonvaPatternControlPointLine(curr_cp, next_cp, this);
-		}
-
-	}
-}
-
-class KonvaPatternControlPointLine {
-	/**
-	 * 
-	 * @param {KonvaPatternControlPoint} curr_cp 
-	 * @param {KonvaPatternControlPoint} next_cp 
-	 * @param {KonvaPatternStage} pattern_stage 
-	 */
-	constructor(curr_cp, next_cp, pattern_stage) {
-		const line = new Konva.Line({
-			points: [curr_cp.k_cp_circle.x(), curr_cp.k_cp_circle.y(), next_cp.k_cp_circle.x(), next_cp.k_cp_circle.y()],
-			stroke: getComputedStyle(document.body).getPropertyValue("--control-point-line-stroke"),
-			strokeWidth: 2
-		});
-		curr_cp.lines.out = line;
-		next_cp.lines.in = line;
-
-		pattern_stage.k_control_points_layer.add(line);
+		
 	}
 }
 
@@ -100,9 +62,6 @@ class KonvaPatternControlPoint {
 		});
 		this.k_cp_circle.addEventListener("mouseleave", ev => {
 			document.body.style.cursor = "default";
-		});
-		this.k_cp_circle.addEventListener("dragstart", ev => {
-			pattern_stage.current_design.save_state();
 		});
 		this.k_cp_circle.addEventListener("dragmove", ev => {
 			const x = this.k_cp_circle.x();

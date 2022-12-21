@@ -40,12 +40,16 @@ export class KonvaPatternStage extends KonvaResizeStage {
 			const keyframes = this.current_design.get_sorted_keyframes();
 			const index = keyframes.indexOf(ev.detail.keyframe);
 			const curr_cp = new KonvaPatternControlPoint(ev.detail.keyframe, this);
+			/** @type {KonvaPatternControlPoint} */
 			const prev_cp = keyframes[index-1]?.[KonvaPatternControlPointSymbol];
+			/** @type {KonvaPatternControlPoint} */
 			const next_cp = keyframes[index+1]?.[KonvaPatternControlPointSymbol];
 			if (prev_cp) {
+				prev_cp.lines.out?.line.destroy();
 				const kpcpl = new KonvaPatternControlPointLine(prev_cp, curr_cp, this);
 			}
 			if (next_cp) {
+				next_cp.lines.out?.line.destroy();
 				const kpcpl = new KonvaPatternControlPointLine(curr_cp, next_cp, this);
 			}
 		});

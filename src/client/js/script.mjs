@@ -67,7 +67,7 @@ export class MAHPatternDesignFE {
 		return this._commited;
 	}
 	set commited(v) {
-		savedstateSpan.textContent = v ? "saved to local storage" : "pending change";
+		savedstateSpan.textContent = v ? "saved to localstorage" : "pending change";
 		this._commited = v;
 	}
 

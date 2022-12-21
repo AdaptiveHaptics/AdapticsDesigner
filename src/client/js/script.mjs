@@ -67,7 +67,7 @@ export class MAHPatternDesignFE {
 		return this._commited;
 	}
 	set commited(v) {
-		savedstateSpan.textContent = v?"saved to local storage":"pending change";
+		savedstateSpan.textContent = v ? "saved to local storage" : "pending change";
 		this._commited = v;
 	}
 
@@ -162,21 +162,22 @@ export class MAHPatternDesignFE {
 	append_new_keyframe(set) {
 		const last_keyframe = this.get_last_keyframe();
 		const secondlast_keyframe = this.get_secondlast_keyframe();
-		const keyframe = new MAHKeyframeFE({ ...MAHKeyframeFE.default, ...last_keyframe, ...set  });
+		const keyframe = new MAHKeyframeFE(window.structuredClone({ ...MAHKeyframeFE.default, ...last_keyframe, ...set }));
 		if (last_keyframe) {
-			if (!set.time) {
+			if (set.time == undefined) {
 				let add_to_time = 500;
 				if (secondlast_keyframe) { // linterp
 					add_to_time = last_keyframe.time - secondlast_keyframe.time;
 				}
 				keyframe.time += Math.max(add_to_time, 1);
 			}
-			if (!set.coords) {
+			if (set.coords == undefined) {
 				let newcoords = keyframe.coords;
+				Object.keys(newcoords).forEach(k => newcoords[k] += 5);
 				if (secondlast_keyframe) { // linterp
-					Object.keys(newcoords).forEach(k => newcoords[k] = 2*last_keyframe.coords[k] - secondlast_keyframe.coords[k], 500);
+					Object.keys(newcoords).forEach(k => newcoords[k] = 2 * last_keyframe.coords[k] - secondlast_keyframe.coords[k], 500);
 				}
-				Object.keys(newcoords).forEach(k => newcoords[k]=Math.min(Math.max(newcoords[k],0), 500));
+				Object.keys(newcoords).forEach(k => newcoords[k] = Math.min(Math.max(newcoords[k], 0), 500));
 				keyframe.coords = newcoords;
 			}
 		}

@@ -16,8 +16,9 @@ const keyframe_flag_size = 20;
 export class KonvaTimelineStage extends KonvaResizeScrollStage {
 
 	milliseconds_per_pixel = 5;
-	milliseconds_per_minor_gridline = 100;
-	minor_gridlines_per_major = 5;
+	major_gridline_preset_index = 11;
+	get milliseconds_per_major_gridline() { return 10**Math.floor(this.major_gridline_preset_index/4)*[1,2,2.5,5][this.major_gridline_preset_index%4]; }
+	minor_gridlines_per_major = 4;
 	x_axis_left_padding_pixels = 20;
 
 	/**
@@ -39,22 +40,23 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 			if (!ev.evt.ctrlKey) return;
 			ev.evt.preventDefault(); // prevent parent scrolling
 			const dy = ev.evt.deltaY;
-			this.milliseconds_per_pixel = Math.max(0.5, this.milliseconds_per_pixel + dy / 200);
+			this.milliseconds_per_pixel = Math.max(100/500, this.milliseconds_per_pixel + dy / 500);
 
-			let pixels_per_major = this.minor_gridlines_per_major * this.milliseconds_per_minor_gridline / this.milliseconds_per_pixel;
+			let pixels_per_major = this.milliseconds_per_major_gridline / this.milliseconds_per_pixel;
 			while (pixels_per_major > 200) {
-				this.milliseconds_per_minor_gridline -= 25;
-				pixels_per_major = this.minor_gridlines_per_major * this.milliseconds_per_minor_gridline / this.milliseconds_per_pixel;
+				this.major_gridline_preset_index = Math.max(this.major_gridline_preset_index - 1, 0);
+				pixels_per_major = this.milliseconds_per_major_gridline / this.milliseconds_per_pixel;
+				if (this.major_gridline_preset_index == 0) break;
 			}
 			while (pixels_per_major < 100) {
-				this.milliseconds_per_minor_gridline += 25;
-				pixels_per_major = this.minor_gridlines_per_major * this.milliseconds_per_minor_gridline / this.milliseconds_per_pixel;
+				this.major_gridline_preset_index += 1;
+				pixels_per_major = this.milliseconds_per_major_gridline / this.milliseconds_per_pixel;
 			}
 
 			this.render_design();
 		});
 
-		current_design.state_change_events.addEventListener("kf_newappend", ev => {
+		current_design.state_change_events.addEventListener("kf_new", ev => {
 			const timelinekeyframe = new KonvaTimelineKeyframe(ev.detail.keyframe, this);
 		});
 		current_design.state_change_events.addEventListener("rerender", ev => {
@@ -80,7 +82,8 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 		for (
 			let i = 0, t = 0, x = this.milliseconds_to_x_coord(t);
 			x < this.fullWidth;
-			t += this.milliseconds_per_minor_gridline, x = this.milliseconds_to_x_coord(t), i++) {
+			i++, t = i*this.milliseconds_per_major_gridline/this.minor_gridlines_per_major, x = this.milliseconds_to_x_coord(t)
+		) {
 			if (i % this.minor_gridlines_per_major == 0) { //major gridline
 				const gridline = new Konva.Line({
 					points: [x, major_gridline_start, x, this.fullHeight],
@@ -136,18 +139,7 @@ class KonvaTimelineKeyframe {
 			angle: 60,
 			rotation: -120,
 			fill: getComputedStyle(document.body).getPropertyValue("--control-point-stroke"),
-			draggable: true,
-			dragBoundFunc: pos => {
-				const index = timeline_stage.current_design.get_keyframe_index(keyframe);
-				const prev_cp_time = timeline_stage.current_design.filedata.keyframes[index-1]?.time || 0;
-				const next_cp_time = timeline_stage.current_design.filedata.keyframes[index+1]?.time || Infinity;
-				//TODO: it would be nice if perfectly overlapping control points were more obvious to the user
-				//TODO: allow reordering control points 
-				return {
-					x: Math.max(Math.min(pos.x, timeline_stage.milliseconds_to_x_coord(next_cp_time-1)), timeline_stage.milliseconds_to_x_coord(prev_cp_time+1)),
-					y: this.ycoord
-				};
-			}
+			draggable: true
 		});
 		this.flag.on("click", ev => {
 			if (ev.evt.altKey) {
@@ -169,8 +161,16 @@ class KonvaTimelineKeyframe {
 			timeline_stage.current_design.commit_operation({ updated_keyframes: [keyframe] });
 		});
 		this.flag.addEventListener("dragmove", ev => {
+			const index = timeline_stage.current_design.get_keyframe_index(keyframe);
+			const prev_cp_time = timeline_stage.current_design.get_sorted_keyframes()[index-1]?.time || 0;
+			const next_cp_time = timeline_stage.current_design.get_sorted_keyframes()[index+1]?.time || Infinity;
+			//TODO: it would be nice if perfectly overlapping control points were more obvious to the user
+			//TODO: allow reordering control points 
 			const x = this.flag.x();
-			keyframe.time = timeline_stage.x_coord_to_milliseconds(x);
+			const t = Math.min(Math.max(timeline_stage.x_coord_to_milliseconds(x), prev_cp_time+1), next_cp_time-1);
+			this.flag.x(timeline_stage.milliseconds_to_x_coord(t));
+			this.flag.y(this.ycoord);
+			keyframe.time = t;
 		});
 
 		const listener_abort = new AbortController();

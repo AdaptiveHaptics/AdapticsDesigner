@@ -7,6 +7,7 @@ const Konva = /** @type {import("konva").default} */ (window["Konva"]);
 /** @typedef {import("../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
 /** @typedef {import("../../shared/gui-types").StateChangeEventTarget} StateChangeEventTarget */
+/** @typedef {import("../../shared/gui-types").StateEventMap} StateEventMap */
 
 const mainsplitgridDiv = /** @type {HTMLDivElement} */ (document.querySelector("div.mainsplitgrid"));
 const centerDiv = /** @type {HTMLDivElement} */ (mainsplitgridDiv.querySelector("div.center"));
@@ -19,6 +20,20 @@ const savedstateSpan = /** @type {HTMLSpanElement} */ (document.querySelector("s
  * @returns {T}
  */
 const notnull = t => { if (t) { return t; } else { throw new TypeError("Unexpected null"); } };
+
+/**
+ * @template {keyof StateEventMap} K
+ */
+export class StateChangeEvent extends CustomEvent {
+	/**
+	 * 
+	 * @param {K} event 
+	 * @param {CustomEventInit<StateEventMap[K]>} eventInitDict
+	 */
+	constructor(event, eventInitDict) {
+		super(event, eventInitDict);
+	}
+}
 
 export class MAHPatternDesignFE {
 	/**
@@ -92,26 +107,26 @@ export class MAHPatternDesignFE {
 
 		// it might be better to run everything through es6 proxies than trust we provide all modified objects, but im just gonna with this for now
 		if (rerender) {
-			const change_event = new CustomEvent("rerender", { detail: {} });
+			const change_event = new StateChangeEvent("rerender", { detail: {} });
 			this.state_change_events.dispatchEvent(change_event);
 			return;
 		}
 
 		if (new_keyframes) {
 			for (const keyframe of new_keyframes) {
-				const change_event = new CustomEvent("kf_newappend", { detail: { keyframe } });
+				const change_event = new StateChangeEvent("kf_new", { detail: { keyframe } });
 				this.state_change_events.dispatchEvent(change_event);
 			}
 		}
 		if (updated_keyframes) {
 			for (const keyframe of updated_keyframes) {
-				const change_event = new CustomEvent("kf_update", { detail: { keyframe } });
+				const change_event = new StateChangeEvent("kf_update", { detail: { keyframe } });
 				this.state_change_events.dispatchEvent(change_event);
 			}
 		}
 		if (deleted_keyframes) {
 			for (const keyframe of deleted_keyframes) {
-				const change_event = new CustomEvent("kf_delete", { detail: { keyframe } });
+				const change_event = new StateChangeEvent("kf_delete", { detail: { keyframe } });
 				this.state_change_events.dispatchEvent(change_event);
 			}
 		}
@@ -152,27 +167,37 @@ export class MAHPatternDesignFE {
 		return keyframe;
 	}
 
+
+	/**
+	 * 
+	 * @returns {MAHKeyframeFE[]}
+	 */
+	get_sorted_keyframes() {
+		this.filedata.keyframes.sort((a, b) => a.time - b.time);
+		return this.filedata.keyframes;
+	}
 	/**
 	 * 
 	 * @returns {MAHKeyframeFE | undefined}
 	 */
 	get_last_keyframe() {
-		return this.filedata.keyframes[this.filedata.keyframes.length - 1];
+		return this.get_sorted_keyframes()[this.filedata.keyframes.length - 1];
 	}
 	/**
 	 * 
 	 * @returns {MAHKeyframeFE | undefined}
 	 */
 	get_secondlast_keyframe() {
-		return this.filedata.keyframes[this.filedata.keyframes.length - 2];
+		return this.get_sorted_keyframes()[this.filedata.keyframes.length - 2];
 	}
 	/**
 	 * 
 	 * @param {MAHKeyframeFE} keyframe 
 	 */
 	get_keyframe_index(keyframe) {
-		return this.filedata.keyframes.indexOf(keyframe);
+		return this.get_sorted_keyframes().indexOf(keyframe);
 	}
+
 	/**
 	 * 
 	 * @param {MAHKeyframeFE[]} keyframes 

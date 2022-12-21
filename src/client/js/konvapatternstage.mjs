@@ -31,11 +31,17 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		});
 
 
-		current_design.state_change_events.addEventListener("kf_newappend", ev => {
-			const prev_cp = this.current_design.get_secondlast_keyframe()?.[KonvaPatternControlPointSymbol];
+		current_design.state_change_events.addEventListener("kf_new", ev => {
+			const keyframes = this.current_design.get_sorted_keyframes();
+			const index = keyframes.indexOf(ev.detail.keyframe);
 			const curr_cp = new KonvaPatternControlPoint(ev.detail.keyframe, this);
+			const prev_cp = keyframes[index-1]?.[KonvaPatternControlPointSymbol];
+			const next_cp = keyframes[index+1]?.[KonvaPatternControlPointSymbol];
 			if (prev_cp) {
 				const kpcpl = new KonvaPatternControlPointLine(prev_cp, curr_cp, this);
+			}
+			if (next_cp) {
+				const kpcpl = new KonvaPatternControlPointLine(curr_cp, next_cp, this);
 			}
 		});
 		current_design.state_change_events.addEventListener("rerender", ev => {
@@ -49,7 +55,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 	render_design() {
 		this.k_control_points_layer.destroyChildren(); // i assume no memory leak since external references to KonvaPatternControlPointLines should be overwritten by following code
 
-		const keyframes = this.current_design.filedata.keyframes;
+		const keyframes = this.current_design.get_sorted_keyframes();
 		
 		// render control points
 		const control_points = keyframes.map(keyframe => new KonvaPatternControlPoint(keyframe, this));

@@ -1,22 +1,22 @@
 /*** GUI TYPES ***/
-import { MAHKeyframeFE } from "../client/js/script.mjs";
+import { MAHKeyframeFE, StateChangeEvent } from "../client/js/script.mjs";
 
 interface StateEventMap {
-    "kf_newappend": CustomEvent<{ keyframe: MAHKeyframeFE }>;
-    "kf_delete": CustomEvent<{ keyframe: MAHKeyframeFE }>;
-    "kf_update": CustomEvent<{ keyframe: MAHKeyframeFE }>;
-    "rerender": CustomEvent<{}>;
+    "kf_new": { keyframe: MAHKeyframeFE };
+    "kf_delete": { keyframe: MAHKeyframeFE };
+    "kf_update": { keyframe: MAHKeyframeFE };
+    "rerender": {};
 }
 
 interface StateChangeEventTarget extends EventTarget {
     addEventListener<K extends keyof StateEventMap>(
         type: K,
-        listener: (ev: StateEventMap[K]) => void,
+        listener: (ev: CustomEvent<StateEventMap[K]>) => void,
         options?: boolean | AddEventListenerOptions
     ): void;
-    addEventListener(
-        type: string,
-        callback: EventListenerOrEventListenerObject | null,
-        options?: EventListenerOptions | boolean
-    ): void;
+    // addEventListener(
+    //     type: string,
+    //     callback: EventListenerOrEventListenerObject | null,
+    //     options?: EventListenerOptions | boolean
+    // ): void;
 }

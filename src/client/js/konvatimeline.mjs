@@ -71,14 +71,21 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 
 		const keyframes = this.current_design.filedata.keyframes;
 
-		this.scrolling_layer.add(new Konva.Rect({
+		const timestamp_rect = this.scrolling_layer.add(new Konva.Rect({
 			x: 0, y: 0, width: this.fullWidth, height: minor_gridline_start - keyframe_flag_size,
 			fill: getComputedStyle(document.body).getPropertyValue("--background-tertiary")
 		}));
-		this.scrolling_layer.add(new Konva.Rect({
+		const keyframe_rect = this.scrolling_layer.add(new Konva.Rect({
 			x: 0, y: minor_gridline_start - keyframe_flag_size - 3, width: this.fullWidth, height: keyframe_flag_size + 3,
 			fill: getComputedStyle(document.body).getPropertyValue("--timeline-minor-gridline-stroke")
 		}));
+		keyframe_rect.on("dblclick", ev => {
+			this.current_design.save_state();
+			const { x, y } = keyframe_rect.getRelativePointerPosition();
+			const t = this.x_coord_to_milliseconds(x);
+			const new_keyframe = this.current_design.append_new_keyframe({ time: t });
+			this.current_design.commit_operation({ new_keyframes: [new_keyframe] });
+		});
 		for (
 			let i = 0, t = 0, x = this.milliseconds_to_x_coord(t);
 			x < this.fullWidth;

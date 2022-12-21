@@ -152,18 +152,36 @@ export class MAHPatternDesignFE {
 
 
 
-	append_new_keyframe(x, y) {
+	/**
+	 * 
+	 * @param {Object} set
+	 * @param {{ x: number, y: number, z: number }} [set.coords]
+	 * @param {number} [set.time]
+	 * @returns 
+	 */
+	append_new_keyframe(set) {
 		const last_keyframe = this.get_last_keyframe();
 		const secondlast_keyframe = this.get_secondlast_keyframe();
-		const keyframe = new MAHKeyframeFE({ ...MAHKeyframeFE.default, ...last_keyframe, coords: { x, y, z: 0 }  });
+		const keyframe = new MAHKeyframeFE({ ...MAHKeyframeFE.default, ...last_keyframe, ...set  });
 		if (last_keyframe) {
-			let add_to_time = 500;
-			if (secondlast_keyframe) { // linterp
-				add_to_time = last_keyframe.time - secondlast_keyframe.time;
+			if (!set.time) {
+				let add_to_time = 500;
+				if (secondlast_keyframe) { // linterp
+					add_to_time = last_keyframe.time - secondlast_keyframe.time;
+				}
+				keyframe.time += Math.max(add_to_time, 1);
 			}
-			keyframe.time += Math.max(add_to_time, 1);
+			if (!set.coords) {
+				let newcoords = keyframe.coords;
+				if (secondlast_keyframe) { // linterp
+					Object.keys(newcoords).forEach(k => newcoords[k] = 2*last_keyframe.coords[k] - secondlast_keyframe.coords[k], 500);
+				}
+				Object.keys(newcoords).forEach(k => newcoords[k]=Math.min(Math.max(newcoords[k],0), 500));
+				keyframe.coords = newcoords;
+			}
 		}
 		this.filedata.keyframes.push(keyframe);
+		this.filedata.keyframes.sort();
 		return keyframe;
 	}
 

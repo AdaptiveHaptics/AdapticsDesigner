@@ -26,7 +26,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		this.k_stage.on("dblclick", ev => {
 			current_design.save_state();
 			const { x, y } = this.k_stage.getRelativePointerPosition();
-			const new_keyframe = this.current_design.append_new_keyframe(x, y);
+			const new_keyframe = this.current_design.append_new_keyframe({ coords: {x, y, z: 0} });
 			current_design.commit_operation({ new_keyframes: [new_keyframe] });
 		});
 
@@ -149,6 +149,10 @@ class KonvaPatternControlPoint {
 			this.lines.in?.line.destroy();
 			this.lines.out?.line.destroy();
 			if (prev_cp && next_cp) new KonvaPatternControlPointLine(prev_cp, next_cp, pattern_stage);
+			else {
+				if (prev_cp) prev_cp.lines.out = null;
+				if (next_cp) next_cp.lines.in = null;
+			}
 			
 			this.k_cp_circle.destroy();
 

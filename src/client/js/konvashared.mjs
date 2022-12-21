@@ -111,6 +111,7 @@ export class KonvaResizeScrollStage extends KonvaResizeStage {
 		});
 
 		this.k_stage.on("wheel", ev => {
+			if (ev.evt.ctrlKey || ev.evt.altKey) return;
 			// prevent parent scrolling
 			ev.evt.preventDefault();
 			const [dx, dy] = this.flipDefaultScrollDirection != ev.evt.shiftKey ? [ev.evt.deltaY, ev.evt.deltaX] : [ev.evt.deltaX, ev.evt.deltaY];

@@ -17,7 +17,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 
 	milliseconds_per_pixel = 5;
 	milliseconds_per_minor_gridline = 100;
-	minor_grid_lines_per_major = 5;
+	minor_gridlines_per_major = 5;
 	x_axis_left_padding_pixels = 20;
 
 	/**
@@ -35,24 +35,46 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 
 		this.current_design = current_design;
 
+		this.k_stage.on("wheel", ev => {
+			if (!ev.evt.ctrlKey) return;
+			ev.evt.preventDefault(); // prevent parent scrolling
+			const dy = ev.evt.deltaY;
+			this.milliseconds_per_pixel = Math.max(0.5, this.milliseconds_per_pixel + dy / 200);
+
+			let pixels_per_major = this.minor_gridlines_per_major * this.milliseconds_per_minor_gridline / this.milliseconds_per_pixel;
+			while (pixels_per_major > 200) {
+				this.milliseconds_per_minor_gridline -= 25;
+				pixels_per_major = this.minor_gridlines_per_major * this.milliseconds_per_minor_gridline / this.milliseconds_per_pixel;
+			}
+			while (pixels_per_major < 100) {
+				this.milliseconds_per_minor_gridline += 25;
+				pixels_per_major = this.minor_gridlines_per_major * this.milliseconds_per_minor_gridline / this.milliseconds_per_pixel;
+			}
+
+			this.render_design();
+		});
+
 		this.render_design();
 	}
-	
+
 	render_design() {
 		this.scrolling_layer.destroyChildren(); // i assume no memory leak since external references to KonvaTimelineKeyframes should be overwritten by following code
 
 		const keyframes = this.current_design.filedata.keyframes;
-		
+
 		this.scrolling_layer.add(new Konva.Rect({
-			x:0, y:0, width: this.fullWidth, height: minor_gridline_start-keyframe_flag_size,
+			x: 0, y: 0, width: this.fullWidth, height: minor_gridline_start - keyframe_flag_size,
 			fill: getComputedStyle(document.body).getPropertyValue("--background-tertiary")
 		}));
 		this.scrolling_layer.add(new Konva.Rect({
-			x: 0, y: minor_gridline_start-keyframe_flag_size-3, width: this.fullWidth, height: keyframe_flag_size+3,
+			x: 0, y: minor_gridline_start - keyframe_flag_size - 3, width: this.fullWidth, height: keyframe_flag_size + 3,
 			fill: getComputedStyle(document.body).getPropertyValue("--timeline-minor-gridline-stroke")
 		}));
-		for (let i=0,t=0,x=this.milliseconds_to_x_coord(t); x < this.fullWidth; t += this.milliseconds_per_minor_gridline, x = this.milliseconds_to_x_coord(t), i++) {
-			if (i % this.minor_grid_lines_per_major == 0) { //major gridline
+		for (
+			let i = 0, t = 0, x = this.milliseconds_to_x_coord(t);
+			x < this.fullWidth;
+			t += this.milliseconds_per_minor_gridline, x = this.milliseconds_to_x_coord(t), i++) {
+			if (i % this.minor_gridlines_per_major == 0) { //major gridline
 				const gridline = new Konva.Line({
 					points: [x, major_gridline_start, x, this.fullHeight],
 					stroke: getComputedStyle(document.body).getPropertyValue("--timeline-major-gridline-stroke"),
@@ -60,8 +82,8 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 				});
 				this.scrolling_layer.add(gridline);
 				const timestamp_text = new Konva.Text({
-					x: x+2,
-					y: major_gridline_start+5,
+					x: x + 2,
+					y: major_gridline_start + 5,
 					fill: getComputedStyle(document.body).getPropertyValue("--timeline-major-gridline-text"),
 					text: milliseconds_to_hhmmssms_format(t),
 					fontSize: 15,
@@ -77,11 +99,11 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 				this.scrolling_layer.add(gridline);
 			}
 		}
-		
+
 		// render control points
 		const timelinekeyframes = keyframes.map(keyframe => new KonvaTimelineKeyframe(keyframe, this));
 
-		
+
 	}
 
 	milliseconds_to_x_coord(time) {

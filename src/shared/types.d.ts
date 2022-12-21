@@ -1,7 +1,7 @@
 export interface MidAirHapticsAnimationFileFormat {
     revision: string;
     name: string;
-    
+
     keyframes: MAHKeyframe[],
 
     /** TODO */
@@ -9,22 +9,22 @@ export interface MidAirHapticsAnimationFileFormat {
 
     /** If the haptic animation should be played in a plane above the device or should track the user's palm */
     projection: "plane" | "palm";
-    
+
     /***** Animation Flags From CSS *****/
-    
+
     // #not sure if useful
     // /** Specifies the delay before start of animation sequence */
     // delay: number,
-    
+
     /** Direction to play animation (Similar to CSS animation-direction) */
     direction: "normal" | "reverse" | "alternate" | "alternate-reverse",
-    
+
     /** Specifies the length of time in which an animation completes one cycle in milliseconds */
-    duration: number, 
-    
+    duration: number,
+
     /** Specifies the number of times an animation should repeat. */
     iteration_count: number,
-    
+
     // #not sure if useful
     // /** sets how an animation progresses through the duration of each cycle */
     // timing-function: MAHTimingFunction,
@@ -65,19 +65,20 @@ const TransitionSteps = make_variant<"Steps", {}>("Steps");
 type MAHTransition = ReturnType<typeof TransitionLinear> | ReturnType<typeof TransitionSteps>;
 
 
+
 /**** DEEP IMMUTABLE ****/
 type ImmutablePrimitive = undefined | null | boolean | string | number | Function;
 
 type Immutable<T> =
-  T extends ImmutablePrimitive ? T :
+    T extends ImmutablePrimitive ? T :
     T extends Array<infer U> ? ReadonlyArray<U> :
-      T extends Map<infer K, infer V> ? ReadonlyMap<K, V> : Readonly<T>
+    T extends Map<infer K, infer V> ? ReadonlyMap<K, V> : Readonly<T>
 
 export type DeepImmutable<T> =
-  T extends ImmutablePrimitive ? T :
-  T extends Array<infer U> ? ImmutableArray<U> :
-  T extends Map<infer K, infer V> ? ImmutableMap<K, V> :
-  T extends Set<infer M> ? ImmutableSet<M> : ImmutableObject<T>;
+    T extends ImmutablePrimitive ? T :
+    T extends Array<infer U> ? ImmutableArray<U> :
+    T extends Map<infer K, infer V> ? ImmutableMap<K, V> :
+    T extends Set<infer M> ? ImmutableSet<M> : ImmutableObject<T>;
 
 export type ImmutableArray<T> = ReadonlyArray<Immutable<T>>;
 export type ImmutableMap<K, V> = ReadonlyMap<Immutable<K>, Immutable<V>>;

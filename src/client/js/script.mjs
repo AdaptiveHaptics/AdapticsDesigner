@@ -6,6 +6,7 @@ const Konva = /** @type {import("konva").default} */ (window["Konva"]);
 
 /** @typedef {import("../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
+/** @typedef {import("../../shared/gui-types").StateChangeEventTarget} StateChangeEventTarget */
 
 const mainsplitgridDiv = /** @type {HTMLDivElement} */ (document.querySelector("div.mainsplitgrid"));
 const centerDiv = /** @type {HTMLDivElement} */ (mainsplitgridDiv.querySelector("div.center"));
@@ -19,6 +20,7 @@ const savedstateSpan = /** @type {HTMLSpanElement} */ (document.querySelector("s
  */
 const notnull = t => { if (t) { return t; } else { throw new TypeError("Unexpected null"); } };
 
+const MAHPatternDesignFEGuiStateSymbol = Symbol("MAHPatternDesignFEGuiState");
 export class MAHPatternDesignFE {
 	/**
 	 * 
@@ -34,6 +36,8 @@ export class MAHPatternDesignFE {
 		this.redo_states_size = redo_states_size;
 
 		this.filedata.keyframes = this.filedata.keyframes.map(kf => new MAHKeyframeFE(kf));
+
+		this.state_change_events = /** @type {StateChangeEventTarget} */ (new EventTarget());
 	}
 
 
@@ -44,7 +48,7 @@ export class MAHPatternDesignFE {
 	redo_states_size = 50;
 
 	// save_working_copy_to_localstorage_timer = null; #this is not atomic
-	_commited = true;
+	_commited = false;
 	get commited() {
 		return this._commited;
 	}
@@ -69,9 +73,22 @@ export class MAHPatternDesignFE {
 		// if (this.save_working_copy_to_localstorage_timer) clearTimeout(this.save_working_copy_to_localstorage_timer);
 		// setTimeout(() => this.save_to_localstorage(), 1800);
 	}
-	commit_operation() {
+	/**
+	 * 
+	 * @param {{ deleted_keyframe?: MAHKeyframeFE }} param0 
+	 */
+	commit_operation({ deleted_keyframe } = {}) {
+		if (this.commited) {
+			alert("commit_operation before save");
+			throw new Error("commit_operation before save");
+		}
 		this.save_to_localstorage();
 		this.commited = true;
+
+		if (deleted_keyframe) {
+			const change_event = new CustomEvent("kf_delete", { detail: { keyframe: deleted_keyframe } });
+			this.state_change_events.dispatchEvent(change_event);
+		}
 	}
 
 	undo() {
@@ -95,15 +112,15 @@ export class MAHPatternDesignFE {
 
 
 	append_new_keyframe(x, y) {
-		const last_keyframe = this.filedata.keyframes[this.filedata.keyframes.length - 1];
-		const secondlast_keyframe = this.filedata.keyframes[this.filedata.keyframes.length - 2];
-		const keyframe = new MAHKeyframeFE({ ...last_keyframe, coords: { x, y, z: 0 } });
-		let add_to_time = 0;
-		if (secondlast_keyframe) { // linterp
-			add_to_time = last_keyframe.time - secondlast_keyframe.time;
-		}
+		const last_keyframe = this.get_last_keyframe();
+		const secondlast_keyframe = this.get_secondlast_keyframe();
+		const keyframe = new MAHKeyframeFE({ ...last_keyframe, ...MAHKeyframeFE.default, coords: { x, y, z: 0 }  });
 		if (last_keyframe) {
-			keyframe.time += Math.max(add_to_time, 500);
+			let add_to_time = 500;
+			if (secondlast_keyframe) { // linterp
+				add_to_time = last_keyframe.time - secondlast_keyframe.time;
+			}
+			keyframe.time += Math.max(add_to_time, 1);
 		}
 		this.filedata.keyframes.push(keyframe);
 		return keyframe;
@@ -111,26 +128,36 @@ export class MAHPatternDesignFE {
 
 	/**
 	 * 
-	 * @returns {MAHKeyframe | undefined}
+	 * @returns {MAHKeyframeFE | undefined}
 	 */
 	get_last_keyframe() {
 		return this.filedata.keyframes[this.filedata.keyframes.length - 1];
 	}
 	/**
 	 * 
-	 * @param {MAHKeyframe} keyframe 
+	 * @returns {MAHKeyframeFE | undefined}
+	 */
+	get_secondlast_keyframe() {
+		return this.filedata.keyframes[this.filedata.keyframes.length - 2];
+	}
+	/**
+	 * 
+	 * @param {MAHKeyframeFE} keyframe 
 	 */
 	get_keyframe_index(keyframe) {
 		return this.filedata.keyframes.indexOf(keyframe);
 	}
 	/**
 	 * 
-	 * @param {MAHKeyframe} keyframe 
+	 * @param {MAHKeyframeFE} keyframe 
 	 */
 	delete_keyframe(keyframe) {
+		this.save_state();
 		const index = this.get_keyframe_index(keyframe);
 		if (index == -1) throw new TypeError("keyframe not in array");
-		return this.filedata.keyframes.splice(index, 1);
+		this.filedata.keyframes.splice(index, 1);
+		this.commit_operation({ deleted_keyframe: keyframe });
+		return keyframe;
 	}
 
 
@@ -174,74 +201,36 @@ export class MAHKeyframeFE {
 	 * 
 	 * @param {MAHKeyframe} keyframe 
 	 */
-	constructor({
-		time = 0.000,
-		coords = { x: 0, y: 0, z: 0, },
-		intensity = {
-			name: "Constant",
-			params: {
-				value: 1.00
-			}
-		},
-		brush = {
-			name: "Point",
-			params: {
-				size: 1.00
-			}
-		},
-		transition = {
-			name: "Linear",
-			params: {}
-		}
-	}) {
-		this.time = time;
-		this.brush = brush;
-		this.intensity = intensity;
-		this.coords = coords;
-		this.transition = transition;
+	constructor(keyframe) {
+		this.time = keyframe.time;
+		this.brush = keyframe.brush;
+		this.intensity = keyframe.intensity;
+		this.coords = keyframe.coords;
+		this.transition = keyframe.transition;
 	}
 }
-
-
-const primary_design = MAHPatternDesignFE.load_from_localstorage() || new MAHPatternDesignFE("test.json", {
-	revision: "0.0.1-alpha.1",
-	name: "test",
-
-	direction: "normal",
-	duration: 5 * 1000,
-	iteration_count: 1,
-
-	projection: "plane",
-	update_rate: 1,
-
-	keyframes: [
-		{
-			time: 0.000,
-			coords: {
-				x: 250,
-				y: 250,
-				z: 0,
-			},
-			intensity: {
-				name: "Constant",
-				params: {
-					value: 1.00
-				}
-			},
-			brush: {
-				name: "Point",
-				params: {
-					size: 1.00
-				}
-			},
-			transition: {
-				name: "Linear",
-				params: {}
-			}
+/** @type {MAHKeyframe} */
+MAHKeyframeFE.default = {
+	time: 0.000,
+	coords: { x: 0, y: 0, z: 0, },
+	intensity: {
+		name: "Constant",
+		params: {
+			value: 1.00
 		}
-	]
-});
-primary_design.commit_operation();
+	},
+	brush: {
+		name: "Point",
+		params: {
+			size: 1.00
+		}
+	},
+	transition: {
+		name: "Linear",
+		params: {}
+	}
+};
+
 
 const mainsplit = SplitGrid({
 	columnGutters: [
@@ -284,8 +273,49 @@ document.addEventListener("keydown", ev => {
 });
 
 
+
+const primary_design = MAHPatternDesignFE.load_from_localstorage() || new MAHPatternDesignFE("test.json", {
+	revision: "0.0.1-alpha.1",
+	name: "test",
+
+	direction: "normal",
+	duration: 5 * 1000,
+	iteration_count: 1,
+
+	projection: "plane",
+	update_rate: 1,
+
+	keyframes: [
+		{
+			time: 0.000,
+			coords: {
+				x: 250,
+				y: 250,
+				z: 0,
+			},
+			intensity: {
+				name: "Constant",
+				params: {
+					value: 1.00
+				}
+			},
+			brush: {
+				name: "Point",
+				params: {
+					size: 1.00
+				}
+			},
+			transition: {
+				name: "Linear",
+				params: {}
+			}
+		}
+	]
+});
+primary_design.commit_operation();
 const konva_pattern_stage = new KonvaPatternStage(primary_design, "patternstage", centerDiv);
 const konva_timeline_stage = new KonvaTimelineStage(primary_design, "timelinestage", timelineDiv);
+primary_design[MAHPatternDesignFEGuiStateSymbol] = { konva_pattern_stage, konva_timeline_stage };
 
 // @ts-ignore
 window.konva_pattern_stage = konva_pattern_stage;

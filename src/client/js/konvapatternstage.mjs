@@ -72,20 +72,23 @@ class KonvaPatternControlPointLine {
 	 * @param {KonvaPatternStage} pattern_stage 
 	 */
 	constructor(curr_cp, next_cp, pattern_stage) {
-		const line = new Konva.Line({
+		this.line = new Konva.Line({
 			points: [curr_cp.k_cp_circle.x(), curr_cp.k_cp_circle.y(), next_cp.k_cp_circle.x(), next_cp.k_cp_circle.y()],
 			stroke: getComputedStyle(document.body).getPropertyValue("--control-point-line-stroke"),
 			strokeWidth: 2
 		});
-		curr_cp.lines.out = line;
-		next_cp.lines.in = line;
+		curr_cp.lines.out = this;
+		next_cp.lines.in = this;
 
-		pattern_stage.k_control_points_layer.add(line);
+		this.curr_cp = curr_cp;
+		this.next_cp = next_cp;
+
+		pattern_stage.k_control_points_layer.add(this.line);
 	}
 }
 
 class KonvaPatternControlPoint {
-	/** @type {{ in: import("konva/lib/shapes/Line.js").Line | null, out: import("konva/lib/shapes/Line.js").Line | null }} */
+	/** @type {{ in: KonvaPatternControlPointLine | null, out: KonvaPatternControlPointLine | null }} */
 	lines = { in: null, out: null };
 	/**
 	 * 
@@ -135,11 +138,10 @@ class KonvaPatternControlPoint {
 		const listener_abort = new AbortController();
 		pattern_stage.current_design.state_change_events.addEventListener("kf_delete", ev => {
 			if (ev.detail.keyframe != keyframe) return;
-			const index = pattern_stage.current_design.get_keyframe_index(keyframe);
-			const prev_cp = pattern_stage.current_design.filedata.keyframes[index-1]?.[KonvaPatternControlPointSymbol];
-			const next_cp = pattern_stage.current_design.filedata.keyframes[index+1]?.[KonvaPatternControlPointSymbol];
-			this.lines.in?.destroy();
-			this.lines.out?.destroy();
+			const prev_cp = this.lines.in?.curr_cp;
+			const next_cp = this.lines.out?.next_cp;
+			this.lines.in?.line.destroy();
+			this.lines.out?.line.destroy();
 			if (prev_cp && next_cp) new KonvaPatternControlPointLine(prev_cp, next_cp, pattern_stage);
 			
 			this.k_cp_circle.destroy();
@@ -165,16 +167,16 @@ class KonvaPatternControlPoint {
 		this.k_cp_circle.y(y);
 
 		if (this.lines.in) {
-			const points = this.lines.in.points();
+			const points = this.lines.in.line.points();
 			points[2] = x;
 			points[3] = y;
-			this.lines.in.points(points);
+			this.lines.in.line.points(points);
 		}
 		if (this.lines.out) {
-			const points = this.lines.out.points();
+			const points = this.lines.out.line.points();
 			points[0] = x;
 			points[1] = y;
-			this.lines.out.points(points);
+			this.lines.out.line.points(points);
 		}
 	}
 }

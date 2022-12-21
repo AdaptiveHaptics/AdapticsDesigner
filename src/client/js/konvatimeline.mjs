@@ -142,6 +142,7 @@ class KonvaTimelineKeyframe {
 				const prev_cp_time = timeline_stage.current_design.filedata.keyframes[index-1]?.time || 0;
 				const next_cp_time = timeline_stage.current_design.filedata.keyframes[index+1]?.time || Infinity;
 				//TODO: it would be nice if perfectly overlapping control points were more obvious to the user
+				//TODO: allow reordering control points 
 				return {
 					x: Math.max(Math.min(pos.x, timeline_stage.milliseconds_to_x_coord(next_cp_time-1)), timeline_stage.milliseconds_to_x_coord(prev_cp_time+1)),
 					y: this.ycoord

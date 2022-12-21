@@ -10,15 +10,19 @@
     --background-accent: hsl(var(--bg-hue), var(--bg-sat), 50%);
     --background-gutter: hsl(var(--bg-hue), var(--bg-sat), 60%);
     
-    --background-hitbox: green;
-    --background-hitbox: none;
+    --hitbox: green;
+    --hitbox: none;
 
     --text-normal: rgb(250, 250, 255);
     --text-low-priority: rgb(210, 210, 213);
     --error: #cd5c5c;
 
     --control-point-stroke: #f5fffa;
+    --control-point-stroke-selected: hwb(204 55% 5%);
     --control-point-line-stroke: #74ecb0;
+
+    --keyframe-flag-fill: var(--control-point-stroke);
+    --keyframe-flag-fill-selected: var(--control-point-stroke-selected);
 
     --timeline-major-gridline-stroke: hsl(var(--bg-hue), var(--bg-sat), 12%);
     --timeline-major-gridline-text: hsl(var(--bg-hue), var(--bg-sat), 2%);
@@ -107,7 +111,7 @@ div.gutter {
 }
 
 div.gutter::after {
-    background-color: var(--background-hitbox);
+    background-color: var(--hitbox);
     display: block;
     content: "";
     width: 100%;

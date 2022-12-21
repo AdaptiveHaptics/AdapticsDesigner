@@ -134,18 +134,26 @@ export class MAHPatternDesignFE {
 
 	undo() {
 		if (this.undo_states.length == 0) return false;
+
 		this.redo_states.push(window.structuredClone(this.filedata));
 		if (this.redo_states.length > this.redo_states_size) this.redo_states.shift();
+
+		this.selected_keyframes.clear();
 		this.filedata = this.undo_states.pop();
+		this.commited = false;
 		this.commit_operation({ rerender: true });
 		return true;
 	}
 
 	redo() {
 		if (this.redo_states.length == 0) return false;
+
 		this.undo_states.push(window.structuredClone(this.filedata));
 		if (this.undo_states.length > this.undo_states_size) this.undo_states.shift();
+
+		this.selected_keyframes.clear();
 		this.filedata = this.redo_states.pop();
+		this.commited = false;
 		this.commit_operation({ rerender: true });
 		return true;
 	}
@@ -186,6 +194,46 @@ export class MAHPatternDesignFE {
 		return keyframe;
 	}
 
+	
+	selected_keyframes = new Set();
+
+	/**
+	 * 
+	 * @param {MAHKeyframeFE[]} selected_keyframes 
+	 */
+	select_keyframes(selected_keyframes) {
+		for (const keyframe of selected_keyframes) {
+			this.selected_keyframes.add(keyframe);
+			const change_event = new StateChangeEvent("kf_select", { detail: { keyframe } });
+			this.state_change_events.dispatchEvent(change_event);
+		}
+	}
+	/**
+	 * 
+	 * @param {MAHKeyframeFE[]} deselected_keyframes 
+	 */
+	deselect_keyframes(deselected_keyframes) {
+		for (const keyframe of deselected_keyframes) {
+			this.selected_keyframes.delete(keyframe);
+			const change_event = new StateChangeEvent("kf_deselect", { detail: { keyframe } });
+			this.state_change_events.dispatchEvent(change_event);
+		}
+	}
+	select_all_keyframes() {
+		this.select_keyframes(this.filedata.keyframes);
+	}
+	deselect_all_keyframes() {
+		this.deselect_keyframes([...this.selected_keyframes]);
+	}
+	/**
+	 * 
+	 * @param {MAHKeyframeFE} keyframe 
+	 * @returns {boolean}
+	 */
+	is_keyframe_selected(keyframe) {
+		return this.selected_keyframes.has(keyframe);
+	}
+
 
 	/**
 	 * 
@@ -222,6 +270,7 @@ export class MAHPatternDesignFE {
 	 * @param {MAHKeyframeFE[]} keyframes 
 	 */
 	delete_keyframes(keyframes) {
+		this.deselect_all_keyframes();
 		for (const keyframe of keyframes) {
 			const index = this.get_keyframe_index(keyframe);
 			if (index == -1) throw new TypeError("keyframe not in array");

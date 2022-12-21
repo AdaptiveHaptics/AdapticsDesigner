@@ -6,6 +6,8 @@ interface StateEventMap {
     "kf_delete": { keyframe: MAHKeyframeFE };
     "kf_update": { keyframe: MAHKeyframeFE };
     "rerender": {};
+    "kf_select": { keyframe: MAHKeyframeFE };
+    "kf_deselect": { keyframe: MAHKeyframeFE };
 }
 
 interface StateChangeEventTarget extends EventTarget {

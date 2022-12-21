@@ -145,7 +145,7 @@ class KonvaTimelineKeyframe {
 			radius: keyframe_flag_size,
 			angle: 60,
 			rotation: -120,
-			fill: getComputedStyle(document.body).getPropertyValue("--control-point-stroke"),
+			fill: getComputedStyle(document.body).getPropertyValue("--keyframe-flag-fill"),
 			draggable: true
 		});
 		this.flag.on("click", ev => {
@@ -192,6 +192,15 @@ class KonvaTimelineKeyframe {
 		timeline_stage.current_design.state_change_events.addEventListener("kf_update", ev => {
 			if (ev.detail.keyframe != keyframe) return;
 			this.flag.x(timeline_stage.milliseconds_to_x_coord(keyframe.time));
+		}, { signal: listener_abort.signal });
+
+		timeline_stage.current_design.state_change_events.addEventListener("kf_select", ev => {
+			if (ev.detail.keyframe != keyframe) return;
+			this.flag.fill(getComputedStyle(document.body).getPropertyValue("--keyframe-flag-fill-selected"));
+		}, { signal: listener_abort.signal });
+		timeline_stage.current_design.state_change_events.addEventListener("kf_deselect", ev => {
+			if (ev.detail.keyframe != keyframe) return;
+			this.flag.fill(getComputedStyle(document.body).getPropertyValue("--keyframe-flag-fill"));
 		}, { signal: listener_abort.signal });
 
 		timeline_stage.scrolling_layer.add(this.flag);

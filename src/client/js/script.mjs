@@ -10,6 +10,7 @@ const Konva = /** @type {import("konva").default} */ (window["Konva"]);
 const mainsplitgridDiv = /** @type {HTMLDivElement} */ (document.querySelector("div.mainsplitgrid"));
 const centerDiv = /** @type {HTMLDivElement} */ (mainsplitgridDiv.querySelector("div.center"));
 const timelineDiv = /** @type {HTMLDivElement} */ (document.querySelector("div.timeline"));
+const savedstateSpan = /** @type {HTMLSpanElement} */ (document.querySelector("span.savedstate"));
 /**
  * Assert Not Null
  * @template T
@@ -43,8 +44,21 @@ export class MAHPatternDesignFE {
 	redo_states_size = 50;
 
 	// save_working_copy_to_localstorage_timer = null; #this is not atomic
+	_commited = true;
+	get commited() {
+		return this._commited;
+	}
+	set commited(v) {
+		savedstateSpan.textContent = v?"saved to local storage":"pending change";
+		this._commited = v;
+	}
 
 	save_state() {
+		if (!this.commited) {
+			alert("save_state before commit");
+			throw new Error("save_state before commit");
+		}
+		this.commited = false;
 		this.redo_states.length = 0;
 		this.undo_states.push(window.structuredClone(this.filedata));
 		if (this.undo_states.length > this.undo_states_size) this.undo_states.shift();
@@ -57,6 +71,7 @@ export class MAHPatternDesignFE {
 	}
 	commit_operation() {
 		this.save_to_localstorage();
+		this.commited = true;
 	}
 
 	undo() {
@@ -64,6 +79,7 @@ export class MAHPatternDesignFE {
 		this.redo_states.push(window.structuredClone(this.filedata));
 		if (this.redo_states.length > this.redo_states_size) this.redo_states.shift();
 		this.filedata = this.undo_states.pop();
+		this.commit_operation();
 		return true;
 	}
 
@@ -72,6 +88,7 @@ export class MAHPatternDesignFE {
 		this.undo_states.push(window.structuredClone(this.filedata));
 		if (this.undo_states.length > this.undo_states_size) this.undo_states.shift();
 		this.filedata = this.redo_states.pop();
+		this.commit_operation();
 		return true;
 	}
 
@@ -86,7 +103,7 @@ export class MAHPatternDesignFE {
 			add_to_time = last_keyframe.time - secondlast_keyframe.time;
 		}
 		if (last_keyframe) {
-			keyframe.time += Math.max(add_to_time, 100);
+			keyframe.time += Math.max(add_to_time, 500);
 		}
 		this.filedata.keyframes.push(keyframe);
 		return keyframe;
@@ -224,12 +241,8 @@ const primary_design = MAHPatternDesignFE.load_from_localstorage() || new MAHPat
 		}
 	]
 });
+primary_design.commit_operation();
 
-const onMainGridResizeListeners = [];
-onMainGridResizeListeners.push(ev => {
-	// todo: maybe migrate to resize observer?
-	centerDiv.dispatchEvent(new Event("resize"));
-});
 const mainsplit = SplitGrid({
 	columnGutters: [
 		{ track: 1, element: notnull(mainsplitgridDiv.querySelector("div.mainsplitgrid > div.gutter.leftcenter")) },
@@ -238,7 +251,11 @@ const mainsplit = SplitGrid({
 	rowGutters: [
 		{ track: 1, element: notnull(mainsplitgridDiv.querySelector("div.mainsplitgrid > div.gutter.topbottom")) },
 	],
-	onDragEnd: (d, t) => { for (const l of onMainGridResizeListeners) l(d, t); }
+});
+const bottomsplit = SplitGrid({
+	columnGutters: [
+		{ track: 1, element: notnull(document.querySelector("div.bottom > div.gutter.column")) },
+	],
 });
 
 document.addEventListener("keydown", ev => {

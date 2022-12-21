@@ -31,6 +31,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 			if (curr_cp) {
 				const kpcpl = new KonvaPatternControlPointLine(curr_cp, next_cp, this);
 			}
+			current_design.commit_operation();
 		});
 
 
@@ -38,9 +39,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 	}
 	
 	render_design() {
-		this.k_control_points_layer.destroy(); // i assume no memory leak since external references to KonvaPatternControlPointLine's should be overwritten by following code
-		this.k_control_points_layer = new Konva.Layer();
-		this.k_stage.add(this.k_control_points_layer);
+		this.k_control_points_layer.destroyChildren(); // i assume no memory leak since external references to KonvaPatternControlPointLines should be overwritten by following code
 
 		const keyframes = this.current_design.filedata.keyframes;
 		

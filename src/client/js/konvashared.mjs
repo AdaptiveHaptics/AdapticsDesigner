@@ -22,7 +22,10 @@ export class KonvaResizeStage {
 
 		// adapt the stage on any window resize
 		window.addEventListener("resize", ev => this.fitStageIntoParentContainer());
-		resize_container.addEventListener("resize", ev => this.fitStageIntoParentContainer());
+		const resize_observer = new ResizeObserver(entries => {
+			this.fitStageIntoParentContainer();
+		});
+		resize_observer.observe(resize_container);
 		this.fitStageIntoParentContainer();
 	}
 
@@ -37,6 +40,8 @@ export class KonvaResizeStage {
 }
 
 export class KonvaResizeScrollStage extends KonvaResizeStage {
+	scrollbar_padding = 5;
+	
 	/**
 	 * 
 	 * @param {string} direct_container_id 
@@ -55,54 +60,52 @@ export class KonvaResizeScrollStage extends KonvaResizeStage {
 		this.scroll_bar_layer = new Konva.Layer();
 		this.k_stage.add(this.scroll_bar_layer);
 
-		const PADDING = 5;
-
-		const vertical_scroll_bar = new Konva.Rect({
+		this.vertical_scroll_bar = new Konva.Rect({
 			width: 10,
 			height: 100,
 			fill: "grey",
 			opacity: 0.8,
-			x: this.k_stage.width() - PADDING - 10,
-			y: PADDING,
+			x: this.k_stage.width() - this.scrollbar_padding - 10,
+			y: this.scrollbar_padding,
 			draggable: true,
 			dragBoundFunc: pos => {
-				pos.x = this.k_stage.width() - PADDING - 10;
+				pos.x = this.k_stage.width() - this.scrollbar_padding - 10;
 				pos.y = Math.max(
-					Math.min(pos.y, this.k_stage.height() - vertical_scroll_bar.height() - PADDING),
-					PADDING
+					Math.min(pos.y, this.k_stage.height() - this.vertical_scroll_bar.height() - this.scrollbar_padding),
+					this.scrollbar_padding
 				);
 				return pos;
 			},
 		});
-		this.scroll_bar_layer.add(vertical_scroll_bar);
-		vertical_scroll_bar.on("dragmove", () => {
-			const availableHeight = this.k_stage.height() - PADDING * 2 - vertical_scroll_bar.height();
-			var delta = (vertical_scroll_bar.y() - PADDING) / availableHeight; //delta in %
+		this.scroll_bar_layer.add(this.vertical_scroll_bar);
+		this.vertical_scroll_bar.on("dragmove", () => {
+			const availableHeight = this.k_stage.height() - this.scrollbar_padding * 2 - this.vertical_scroll_bar.height();
+			var delta = (this.vertical_scroll_bar.y() - this.scrollbar_padding) / availableHeight; //delta in %
 
 			this.scrolling_layer.y(-(this.fullHeight - this.k_stage.height()) * delta);
 		});
 
-		const horizontal_scroll_bar = new Konva.Rect({
+		this.horizontal_scroll_bar = new Konva.Rect({
 			width: 100,
 			height: 10,
 			fill: "grey",
 			opacity: 0.8,
-			x: PADDING,
-			y: this.k_stage.height() - PADDING - 10,
+			x: this.scrollbar_padding,
+			y: this.k_stage.height() - this.scrollbar_padding - 10,
 			draggable: true,
 			dragBoundFunc: pos => {
 				pos.x = Math.max(
-					Math.min(pos.x, this.k_stage.width() - horizontal_scroll_bar.width() - PADDING),
-					PADDING
+					Math.min(pos.x, this.k_stage.width() - this.horizontal_scroll_bar.width() - this.scrollbar_padding),
+					this.scrollbar_padding
 				);
-				pos.y = this.k_stage.height() - PADDING - 10;
+				pos.y = this.k_stage.height() - this.scrollbar_padding - 10;
 				return pos;
 			},
 		});
-		this.scroll_bar_layer.add(horizontal_scroll_bar);
-		horizontal_scroll_bar.on("dragmove", pos => {
-			const availableWidth = this.k_stage.width() - PADDING * 2 - horizontal_scroll_bar.width();
-			var delta = (horizontal_scroll_bar.x() - PADDING) / availableWidth; //delta in %
+		this.scroll_bar_layer.add(this.horizontal_scroll_bar);
+		this.horizontal_scroll_bar.on("dragmove", pos => {
+			const availableWidth = this.k_stage.width() - this.scrollbar_padding * 2 - this.horizontal_scroll_bar.width();
+			var delta = (this.horizontal_scroll_bar.x() - this.scrollbar_padding) / availableWidth; //delta in %
 
 			this.scrolling_layer.x(-(this.fullWidth - this.k_stage.width()) * delta);
 		});
@@ -123,23 +126,29 @@ export class KonvaResizeScrollStage extends KonvaResizeStage {
 			const y = Math.max(minY, Math.min(this.scrolling_layer.y() - dy, maxY));
 			this.scrolling_layer.position({ x, y });
 
-			const availableHeight = this.k_stage.height() - PADDING * 2 - vertical_scroll_bar.height();
-			const vy = (this.scrolling_layer.y() / (-this.fullHeight + this.k_stage.height())) * availableHeight + PADDING;
-			vertical_scroll_bar.y(vy);
-
-			const availableWidth = this.k_stage.width() - PADDING * 2 - horizontal_scroll_bar.width();
-
-			const hx = (this.scrolling_layer.x() / (-this.fullWidth + this.k_stage.width())) * availableWidth + PADDING;
-			horizontal_scroll_bar.x(hx);
+			this.fix_scrollbar_coords();
 		});
 	}
 
-	fitStageIntoParentContainer() {
-		// const scale = Math.min(this.resize_container.offsetWidth / this.stageWidth, this.resize_container.offsetHeight / this.stageHeight);
-		// console.log(container.offsetWidth / sceneWidth, container.offsetHeight / sceneHeight, scale);
+	fix_scrollbar_coords() {
+		if (!this.vertical_scroll_bar && !this.horizontal_scroll_bar) return;
 
+		this.vertical_scroll_bar.x(this.k_stage.width() - this.scrollbar_padding - 10);
+		this.horizontal_scroll_bar.y(this.k_stage.height() - this.scrollbar_padding - 10);
+
+		const availableHeight = this.k_stage.height() - this.scrollbar_padding * 2 - this.vertical_scroll_bar.height();
+		const vy = (this.scrolling_layer.y() / (-this.fullHeight + this.k_stage.height())) * availableHeight + this.scrollbar_padding;
+		this.vertical_scroll_bar.y(vy);
+
+		const availableWidth = this.k_stage.width() - this.scrollbar_padding * 2 - this.horizontal_scroll_bar.width();
+		const hx = (this.scrolling_layer.x() / (-this.fullWidth + this.k_stage.width())) * availableWidth + this.scrollbar_padding;
+		this.horizontal_scroll_bar.x(hx);
+	}
+
+	fitStageIntoParentContainer() {
 		this.k_stage.width(this.resize_container.offsetWidth);
 		this.k_stage.height(this.resize_container.offsetHeight);
-		// this.k_stage.scale({ x: scale, y: scale });
+
+		this.fix_scrollbar_coords();
 	}
 }

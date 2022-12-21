@@ -1,12 +1,14 @@
 :root {
     --saturation-factor: 1;
-    --background-primary: hsl(209, 13%, 40%);
-    --background-secondary: hsl(210, 13%, 30%);
-    --background-tertiary: hsl(210, 13%, 20%);
-    --background-tertiary-alt: hsl(210, 13%, 19%);
-    --background-titlebar: hsl(210, 13%, 14%);
-    --background-accent: hsl(210, 13%, 50%);
-    --background-gutter: hsl(210, 13%, 60%);
+    --bg-hue: 210;
+    --bg-sat: 13%;
+    --background-primary: hsl(var(--bg-hue), var(--bg-sat), 40%);
+    --background-secondary: hsl(var(--bg-hue), var(--bg-sat), 30%);
+    --background-tertiary: hsl(var(--bg-hue), var(--bg-sat), 20%);
+    --background-tertiary-alt: hsl(var(--bg-hue), var(--bg-sat), 19%);
+    --background-titlebar: hsl(var(--bg-hue), var(--bg-sat), 14%);
+    --background-accent: hsl(var(--bg-hue), var(--bg-sat), 50%);
+    --background-gutter: hsl(var(--bg-hue), var(--bg-sat), 60%);
     
     --background-hitbox: green;
     --background-hitbox: none;
@@ -16,6 +18,10 @@
 
     --control-point-stroke: #f5fffa;
     --control-point-line-stroke: #74ecb0;
+
+    --timeline-major-gridline-stroke: hsl(var(--bg-hue), var(--bg-sat), 12%);
+    --timeline-major-gridline-text: hsl(var(--bg-hue), var(--bg-sat), 2%);
+    --timeline-minor-gridline-stroke: hsl(var(--bg-hue), var(--bg-sat), 16%);
 }
 
 html,
@@ -36,6 +42,10 @@ div.app {
 div.titlebar {
     background-color: var(--background-titlebar);
     padding: 1.2ex;
+    display: flex;
+    gap: 2ex;
+    justify-content: start;
+    align-items: center;
 }
 
 div.mainsplitgrid {
@@ -50,7 +60,7 @@ div.bottom {
     background-color: var(--background-primary);
 
     display: grid;
-    grid-template-columns: 25% 75%;
+    grid-template-columns: 25% 1px 75%;
 }
 
 div.left,

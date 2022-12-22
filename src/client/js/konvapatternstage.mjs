@@ -58,7 +58,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 				x2 = notnull(this.k_control_points_layer.getRelativePointerPosition()).x;
 				y2 = notnull(this.k_control_points_layer.getRelativePointerPosition()).y;
 
-				console.log(x1, y1, x2, y2);
+				// console.log(x1, y1, x2, y2);
 
 				this.selection_rect.setAttrs({
 					x: Math.min(x1, x2),
@@ -207,14 +207,14 @@ class KonvaPatternControlPoint {
 			draggable: true,
 		});
 		this.k_cp_circle.on("click", ev => {
+			this.select_this(ev.evt.ctrlKey);
+			
 			if (ev.evt.altKey) {
 				pattern_stage.current_design.save_state();
-				const deleted_keyframes = pattern_stage.current_design.delete_keyframes([keyframe]);
+				const deleted_keyframes = pattern_stage.current_design.delete_keyframes([...pattern_stage.current_design.selected_keyframes]);
 				pattern_stage.current_design.commit_operation({ deleted_keyframes });
 				return;
 			}
-
-			this.select_this(ev.evt.ctrlKey);
 		});
 		this.k_cp_circle.on("mouseenter", ev => {
 			document.body.style.cursor = "pointer";
@@ -225,9 +225,7 @@ class KonvaPatternControlPoint {
 		this.k_cp_circle.on("dragstart", ev => {
 			// console.log("dragstart "+this.keyframe.time);
 
-			if (!this.pattern_stage.current_design.is_keyframe_selected(keyframe)) {
-				this.select_this(ev.evt.ctrlKey);
-			}
+			this.select_this(ev.evt.ctrlKey);
 		});
 		// this.k_cp_circle.on("dragend", ev => {
 		// 	console.log("dragend "+this.keyframe.time);
@@ -294,6 +292,11 @@ class KonvaPatternControlPoint {
 	 * @param {boolean} ctrlKey 
 	 */
 	select_this(ctrlKey) {
+		if (this.pattern_stage.current_design.is_keyframe_selected(this.keyframe)) {
+			if (ctrlKey) this.pattern_stage.current_design.deselect_keyframes([this.keyframe]);
+			return;
+		}
+
 		if (!ctrlKey) this.pattern_stage.current_design.deselect_all_keyframes();
 		this.pattern_stage.current_design.select_keyframes([this.keyframe]);
 	}

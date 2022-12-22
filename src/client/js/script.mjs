@@ -384,6 +384,13 @@ document.addEventListener("keydown", ev => {
 			//do nothing
 		}
 	}
+	if (ev.key == "Delete" && !ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
+		console.log("delete");
+		if (primary_design.selected_keyframes.size == 0) return;
+		primary_design.save_state();
+		const deleted_keyframes = primary_design.delete_keyframes([...primary_design.selected_keyframes]);
+		primary_design.commit_operation({ deleted_keyframes });
+	}
 });
 
 

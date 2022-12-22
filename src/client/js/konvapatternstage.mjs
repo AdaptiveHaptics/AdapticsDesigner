@@ -27,7 +27,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		this.k_control_points_layer = new Konva.Layer();
 		this.k_stage.add(this.k_control_points_layer);
 
-		this.k_stage.on("dblclick", ev => {
+		this.k_stage.on("dblclick", _ev => {
 			current_design.save_state();
 			const { x, y } = this.k_stage.getRelativePointerPosition();
 			const new_keyframe = this.current_design.append_new_keyframe({ coords: { x, y, z: 0 } });
@@ -78,7 +78,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 				// });
 				this.selection_rect.visible(false);
 
-				const box = this.selection_rect.getSelfRect();
+				// const box = this.selection_rect.getSelfRect();
 				const keyframes_in_box = current_design.filedata.keyframes.filter(kf => {
 					return (
 						Math.min(x1, x2) <= kf.coords.x && kf.coords.x <= Math.max(x1, x2) &&
@@ -101,14 +101,14 @@ export class KonvaPatternStage extends KonvaResizeStage {
 			const next_cp = keyframes[index + 1]?.[KonvaPatternControlPointSymbol];
 			if (prev_cp) {
 				prev_cp.lines.out?.line.destroy();
-				const kpcpl = new KonvaPatternControlPointLine(prev_cp, curr_cp, this);
+				const _kpcpl = new KonvaPatternControlPointLine(prev_cp, curr_cp, this);
 			}
 			if (next_cp) {
 				next_cp.lines.out?.line.destroy();
-				const kpcpl = new KonvaPatternControlPointLine(curr_cp, next_cp, this);
+				const _kpcpl = new KonvaPatternControlPointLine(curr_cp, next_cp, this);
 			}
 		});
-		current_design.state_change_events.addEventListener("rerender", ev => {
+		current_design.state_change_events.addEventListener("rerender", _ev => {
 			this.render_design();
 		});
 
@@ -126,16 +126,16 @@ export class KonvaPatternStage extends KonvaResizeStage {
 				// 	else return newBoundBox;
 				// }
 			});
-			this.transformer.on("dragstart", ev => {
+			this.transformer.on("dragstart", _ev => {
 				this.current_design.save_state();
 			});
-			this.transformer.on("dragend", ev => {
+			this.transformer.on("dragend", _ev => {
 				this.current_design.commit_operation({ updated_keyframes: [...this.current_design.selected_keyframes] });
 			});
-			this.transformer.on("transformstart", ev => {
+			this.transformer.on("transformstart", _ev => {
 				this.current_design.save_state();
 			});
-			this.transformer.on("transformend", ev => {
+			this.transformer.on("transformend", _ev => {
 				this.current_design.commit_operation({ updated_keyframes: [...this.current_design.selected_keyframes] });
 			});
 			this.k_control_points_layer.add(this.transformer);
@@ -156,7 +156,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		for (let i = 0; i < control_points.length && i + 1 < control_points.length; i++) {
 			const curr_cp = control_points[i];
 			const next_cp = control_points[i + 1];
-			const kpcpl = new KonvaPatternControlPointLine(curr_cp, next_cp, this);
+			const _kpcpl = new KonvaPatternControlPointLine(curr_cp, next_cp, this);
 		}
 
 	}
@@ -216,10 +216,10 @@ class KonvaPatternControlPoint {
 				return;
 			}
 		});
-		this.k_cp_circle.on("mouseenter", ev => {
+		this.k_cp_circle.on("mouseenter", _ev => {
 			document.body.style.cursor = "pointer";
 		});
-		this.k_cp_circle.on("mouseleave", ev => {
+		this.k_cp_circle.on("mouseleave", _ev => {
 			document.body.style.cursor = "";
 		});
 		this.k_cp_circle.on("dragstart", ev => {
@@ -231,16 +231,16 @@ class KonvaPatternControlPoint {
 		// 	console.log("dragend "+this.keyframe.time);
 		// 	pattern_stage.current_design.commit_operation({ updated_keyframes: [keyframe] });
 		// });
-		this.k_cp_circle.on("dragmove", ev => {
+		this.k_cp_circle.on("dragmove", _ev => {
 			this.update_control_point({ raw_x: this.k_cp_circle.x(), raw_y: this.k_cp_circle.y() });
 		});
-		this.k_cp_circle.on("transformstart", ev => {
+		this.k_cp_circle.on("transformstart", _ev => {
 			// console.log("transformstart "+this.keyframe.time);
 		});
-		this.k_cp_circle.on("transformend", ev => {
+		this.k_cp_circle.on("transformend", _ev => {
 			// console.log("transformend "+this.keyframe.time);
 		});
-		this.k_cp_circle.on("transform", ev => {
+		this.k_cp_circle.on("transform", _ev => {
 			// console.log("transform "+this.keyframe.time);
 			this.k_cp_circle.scale({ x: 1, y: 1 });
 			this.k_cp_circle.skew({ x: 0, y: 0 });

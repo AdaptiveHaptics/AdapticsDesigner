@@ -1,4 +1,4 @@
-import { KonvaResizeScrollStage, KonvaResizeStage } from "./konvashared.mjs";
+import { KonvaResizeScrollStage } from "./konvashared.mjs";
 import { milliseconds_to_hhmmssms_format } from "./util.mjs";
 
 const Konva = /** @type {import("konva").default} */ (window["Konva"]);
@@ -57,9 +57,9 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 		});
 
 		current_design.state_change_events.addEventListener("kf_new", ev => {
-			const timelinekeyframe = new KonvaTimelineKeyframe(ev.detail.keyframe, this);
+			const _timelinekeyframe = new KonvaTimelineKeyframe(ev.detail.keyframe, this);
 		});
-		current_design.state_change_events.addEventListener("rerender", ev => {
+		current_design.state_change_events.addEventListener("rerender", _ev => {
 			this.render_design();
 		});
 
@@ -71,7 +71,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 
 		const keyframes = this.current_design.filedata.keyframes;
 
-		const timestamp_rect = this.scrolling_layer.add(new Konva.Rect({
+		const _timestamp_rect = this.scrolling_layer.add(new Konva.Rect({
 			x: 0, y: 0, width: this.fullWidth, height: minor_gridline_start - keyframe_flag_size,
 			fill: getComputedStyle(document.body).getPropertyValue("--background-tertiary")
 		}));
@@ -79,9 +79,9 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 			x: 0, y: minor_gridline_start - keyframe_flag_size - 3, width: this.fullWidth, height: keyframe_flag_size + 3,
 			fill: getComputedStyle(document.body).getPropertyValue("--timeline-minor-gridline-stroke")
 		}));
-		keyframe_rect.on("dblclick", ev => {
+		keyframe_rect.on("dblclick", _ev => {
 			this.current_design.save_state();
-			const { x, y } = keyframe_rect.getRelativePointerPosition();
+			const { x } = keyframe_rect.getRelativePointerPosition();
 			const t = this.x_coord_to_milliseconds(x);
 			const new_keyframe = this.current_design.append_new_keyframe({ time: t });
 			this.current_design.commit_operation({ new_keyframes: [new_keyframe] });
@@ -118,7 +118,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 		}
 
 		// render control points
-		const timelinekeyframes = keyframes.map(keyframe => new KonvaTimelineKeyframe(keyframe, this));
+		const _timelinekeyframes = keyframes.map(keyframe => new KonvaTimelineKeyframe(keyframe, this));
 
 
 	}
@@ -155,19 +155,19 @@ class KonvaTimelineKeyframe {
 				timeline_stage.current_design.commit_operation({ deleted_keyframes });
 			}
 		});
-		this.flag.addEventListener("mouseenter", ev => {
+		this.flag.addEventListener("mouseenter", _ev => {
 			document.body.style.cursor = "ew-resize";
 		});
-		this.flag.addEventListener("mouseleave", ev => {
+		this.flag.addEventListener("mouseleave", _ev => {
 			document.body.style.cursor = "";
 		});
-		this.flag.addEventListener("dragstart", ev => {
+		this.flag.addEventListener("dragstart", _ev => {
 			timeline_stage.current_design.save_state();
 		});
-		this.flag.addEventListener("dragend", ev => {
+		this.flag.addEventListener("dragend", _ev => {
 			timeline_stage.current_design.commit_operation({ updated_keyframes: [keyframe] });
 		});
-		this.flag.addEventListener("dragmove", ev => {
+		this.flag.addEventListener("dragmove", _ev => {
 			const index = timeline_stage.current_design.get_keyframe_index(keyframe);
 			const prev_cp_time = timeline_stage.current_design.get_sorted_keyframes()[index-1]?.time || 0;
 			const next_cp_time = timeline_stage.current_design.get_sorted_keyframes()[index+1]?.time || Infinity;

@@ -1,5 +1,5 @@
 export interface MidAirHapticsAnimationFileFormat {
-    revision: string;
+    revision: "0.0.1-alpha.1";
     name: string;
 
     keyframes: MAHKeyframe[],

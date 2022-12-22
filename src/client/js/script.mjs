@@ -3,7 +3,6 @@ import { KonvaPatternStage } from "./konvapatternstage.mjs";
 import { KonvaTimelineStage } from "./konvatimeline.mjs";
 import { notnull } from "./util.mjs";
 const SplitGrid = /** @type {import("split-grid").default} */(/** @type {unknown} */(Split));
-const Konva = /** @type {import("konva").default} */ (window["Konva"]);
 
 /** @typedef {import("../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
@@ -347,7 +346,7 @@ MAHKeyframeFE.default = {
 };
 
 
-const mainsplit = SplitGrid({
+const _mainsplit = SplitGrid({
 	columnGutters: [
 		{ track: 1, element: notnull(mainsplitgridDiv.querySelector("div.mainsplitgrid > div.gutter.leftcenter")) },
 		{ track: 3, element: notnull(mainsplitgridDiv.querySelector("div.mainsplitgrid > div.gutter.centerright")) },
@@ -356,7 +355,7 @@ const mainsplit = SplitGrid({
 		{ track: 1, element: notnull(mainsplitgridDiv.querySelector("div.mainsplitgrid > div.gutter.topbottom")) },
 	],
 });
-const bottomsplit = SplitGrid({
+const _bottomsplit = SplitGrid({
 	columnGutters: [
 		{ track: 1, element: notnull(document.querySelector("div.bottom > div.gutter.column")) },
 	],

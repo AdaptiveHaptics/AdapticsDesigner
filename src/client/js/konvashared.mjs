@@ -21,8 +21,8 @@ export class KonvaResizeStage {
 
 
 		// adapt the stage on any window resize
-		window.addEventListener("resize", ev => this.fitStageIntoParentContainer());
-		const resize_observer = new ResizeObserver(entries => {
+		window.addEventListener("resize", _ev => this.fitStageIntoParentContainer());
+		const resize_observer = new ResizeObserver(_entries => {
 			this.fitStageIntoParentContainer();
 		});
 		resize_observer.observe(resize_container);
@@ -103,7 +103,7 @@ export class KonvaResizeScrollStage extends KonvaResizeStage {
 			},
 		});
 		this.scroll_bar_layer.add(this.horizontal_scroll_bar);
-		this.horizontal_scroll_bar.on("dragmove", pos => {
+		this.horizontal_scroll_bar.on("dragmove", _pos => {
 			const availableWidth = this.k_stage.width() - this.scrollbar_padding * 2 - this.horizontal_scroll_bar.width();
 			var delta = (this.horizontal_scroll_bar.x() - this.scrollbar_padding) / availableWidth; //delta in %
 

@@ -1,0 +1,144 @@
+:root {
+    --saturation-factor: 1;
+    --bg-hue: 210;
+    --bg-sat: 13%;
+    --background-primary: hsl(var(--bg-hue), var(--bg-sat), 40%);
+    --background-secondary: hsl(var(--bg-hue), var(--bg-sat), 30%);
+    --background-tertiary: hsl(var(--bg-hue), var(--bg-sat), 20%);
+    --background-tertiary-alt: hsl(var(--bg-hue), var(--bg-sat), 19%);
+    --background-titlebar: hsl(var(--bg-hue), var(--bg-sat), 14%);
+    --background-accent: hsl(var(--bg-hue), var(--bg-sat), 50%);
+    --background-gutter: hsl(var(--bg-hue), var(--bg-sat), 60%);
+    
+    --hitbox: green;
+    --hitbox: none;
+
+    --text-normal: rgb(250, 250, 255);
+    --text-low-priority: rgb(210, 210, 213);
+    --error: #cd5c5c;
+
+    --control-point-select-rect-fill: #8cc9f230;
+    --control-point-stroke: #f5fffa;
+    --control-point-stroke-selected: hwb(204 55% 5%);
+    --control-point-line-stroke: #74ecb0;
+
+    --keyframe-flag-fill: var(--control-point-stroke);
+    --keyframe-flag-fill-selected: var(--control-point-stroke-selected);
+
+    --timeline-major-gridline-stroke: hsl(var(--bg-hue), var(--bg-sat), 12%);
+    --timeline-major-gridline-text: hsl(var(--bg-hue), var(--bg-sat), 2%);
+    --timeline-minor-gridline-stroke: hsl(var(--bg-hue), var(--bg-sat), 16%);
+}
+
+html,
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: var(--background-primary);
+    color: var(--text-normal);
+    margin: 0;
+}
+
+div.app {
+    height: 100vh;
+    width: 100vw;
+    display: grid;
+    grid-template-rows: auto 1fr;
+}
+
+div.titlebar {
+    background-color: var(--background-titlebar);
+    padding: 1.2ex;
+    display: flex;
+    gap: 2ex;
+    justify-content: start;
+    align-items: center;
+}
+span.savedstate {
+    font-size: 0.9em;
+    color: var(--text-low-priority);
+}
+
+div.mainsplitgrid {
+    display: grid;
+    grid-template-columns: 20% 1px 1fr 1px 20%;
+    grid-template-rows: 65% 1px 35%;
+    overflow: hidden;
+}
+
+div.bottom {
+    grid-column: 1 / -1;
+    background-color: var(--background-primary);
+
+    display: grid;
+    grid-template-columns: 25% 1px 75%;
+}
+
+div.left,
+div.right,
+div.bottom {
+    background-color: var(--background-secondary);
+}
+
+div.center {
+    background-color: var(--background-tertiary);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+div.konvastagecontainer {
+    position: relative;
+    overflow: hidden;
+}
+div.konvastage {
+    position: absolute;
+}
+
+div#patternstage {
+    background-color: var(--background-tertiary-alt);
+}
+
+div.timeline {
+    background-color: var(--background-tertiary);
+}
+
+div#timelinestage {
+    background-color: var(--background-tertiary-alt);
+}
+
+div.gutter {
+    background-color: var(--background-gutter);
+    position: relative;
+}
+
+div.gutter::after {
+    background-color: var(--hitbox);
+    display: block;
+    content: "";
+    width: 100%;
+    height: 100%;
+    position: relative;
+    z-index: 50;
+}
+
+div.gutter.column::after {
+    width: 8px;
+    left: -4px;
+}
+
+div.gutter.row::after {
+    height: 8px;
+    top: -4px;
+}
+
+div.gutter.column {
+    cursor: col-resize;
+}
+
+div.gutter.row {
+    cursor: row-resize;
+}
+
+div.gutter.topbottom {
+    grid-column: 1 / -1;
+}

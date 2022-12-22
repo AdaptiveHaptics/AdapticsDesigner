@@ -1,6 +1,7 @@
 import Split from "../thirdparty/split-grid.mjs";
 import { KonvaPatternStage } from "./konvapatternstage.mjs";
 import { KonvaTimelineStage } from "./konvatimeline.mjs";
+import { notnull } from "./util.mjs";
 const SplitGrid = /** @type {import("split-grid").default} */(/** @type {unknown} */(Split));
 const Konva = /** @type {import("konva").default} */ (window["Konva"]);
 
@@ -13,13 +14,6 @@ const mainsplitgridDiv = /** @type {HTMLDivElement} */ (document.querySelector("
 const centerDiv = /** @type {HTMLDivElement} */ (mainsplitgridDiv.querySelector("div.center"));
 const timelineDiv = /** @type {HTMLDivElement} */ (document.querySelector("div.timeline"));
 const savedstateSpan = /** @type {HTMLSpanElement} */ (document.querySelector("span.savedstate"));
-/**
- * Assert Not Null
- * @template T
- * @param {T | null} t 
- * @returns {T}
- */
-const notnull = t => { if (t) { return t; } else { throw new TypeError("Unexpected null"); } };
 
 /**
  * @template {keyof StateEventMap} K
@@ -285,7 +279,9 @@ export class MAHPatternDesignFE {
 
 
 	serialize() {
-		return JSON.stringify(this);
+		const { filename, filedata, undo_states, redo_states, undo_states_size, redo_states_size } = this;
+		const serializable_obj = { filename, filedata, undo_states, redo_states, undo_states_size, redo_states_size };
+		return JSON.stringify(serializable_obj);
 	}
 	/**
 	 * 

@@ -1,3 +1,14 @@
+/**
+ * Assert Not Null
+ * @template T
+ * @param {T | null} t 
+ * @returns {T}
+ */
+export function notnull(t) {
+	if (t) return t;
+	else throw new TypeError("Unexpected null");
+}
+
 export function milliseconds_to_hhmmssms_format(t) {
 	const pad = (n, z = 2) => ("00" + n).slice(-z);
 	t = Math.floor(t);
@@ -8,5 +19,5 @@ export function milliseconds_to_hhmmssms_format(t) {
 	const mins = t % 60;
 	t = (t - mins) / 60;
 	const hrs = t;
-	return `${pad(hrs)}:${pad(mins)}:${pad(secs)}.${pad(ms,3)}`;
+	return `${pad(hrs)}:${pad(mins)}:${pad(secs)}.${pad(ms, 3)}`;
 }

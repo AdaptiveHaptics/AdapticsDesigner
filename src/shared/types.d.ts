@@ -1,5 +1,9 @@
+type REVISION_STRING = "0.0.1-alpha.2";
+
 export interface MidAirHapticsAnimationFileFormat {
-    revision: "0.0.1-alpha.1";
+    $DATA_FORMAT: "MidAirHapticsAnimationFileFormat",
+    $REVISION: REVISION_STRING;
+
     name: string;
 
     keyframes: MAHKeyframe[],
@@ -66,3 +70,12 @@ const TransitionLinear = make_variant<"Linear", {}>("Linear");
 const TransitionStep = make_variant<"Step", {}>("Step");
 type MAHTransition = ReturnType<typeof TransitionLinear> | ReturnType<typeof TransitionStep>;
 
+
+
+
+export interface MidAirHapticsClipboardFormat {
+    $DATA_FORMAT: "MidAirHapticsAnimationFileFormat",
+    $REVISION: REVISION_STRING;
+
+    keyframes: MAHKeyframe[]
+}

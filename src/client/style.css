@@ -23,6 +23,9 @@
     --control-point-stroke-selected: hwb(204 55% 5%);
     --control-point-line-stroke: #74ecb0;
 
+    --pattern-boundary: var(--background-tertiary);
+    --pattern-background: var(--background-tertiary-alt);
+
 
     --keyframe-flag-fill: var(--control-point-stroke);
     --keyframe-flag-fill-selected: var(--control-point-stroke-selected);
@@ -98,7 +101,7 @@ div.konvastage {
 }
 
 div#patternstage {
-    background-color: var(--background-tertiary-alt);
+    background-color: var(--pattern-background);
 }
 
 div.timeline {

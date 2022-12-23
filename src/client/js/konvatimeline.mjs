@@ -144,13 +144,16 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 		this.keyframe_rect.on("dblclick", _ev => {
 			this.current_design.save_state();
 			const { x } = this.keyframe_rect.getRelativePointerPosition();
-			const t = this.x_coord_to_milliseconds(x);
-			const new_keyframe = this.current_design.append_new_keyframe({ time: t });
+			const t = this.snap_time(this.x_coord_to_milliseconds(x));
+			const new_keyframe = this.current_design.insert_new_keyframe({ time: t });
 			this.current_design.commit_operation({ new_keyframes: [new_keyframe] });
 		});
 
 		{ //init transformer
 			this.transformer = new Konva.Transformer({
+				// sometimes weird results because scaling box goes till end of label instead of stopping in the middle
+				// centerScaling avoids this issue, but is stranger to use.
+				// centeredScaling: true,
 				rotateEnabled: false,
 				enabledAnchors: ["middle-left", "middle-right"],
 			});
@@ -188,7 +191,8 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 				const gridline = new Konva.Line({
 					points: [x, major_gridline_start, x, this.fullHeight],
 					stroke: getComputedStyle(document.body).getPropertyValue("--timeline-major-gridline-stroke"),
-					strokeWidth: 2
+					strokeWidth: 2,
+					listening: false,
 				});
 				this.scrolling_layer.add(gridline);
 				const timestamp_text = new Konva.Text({
@@ -197,14 +201,16 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 					fill: getComputedStyle(document.body).getPropertyValue("--timeline-major-gridline-text"),
 					text: milliseconds_to_hhmmssms_format(t),
 					fontSize: 15,
-					fontVariant: "bold"
+					fontVariant: "bold",
+					listening: false,
 				});
 				this.scrolling_layer.add(timestamp_text);
 			} else { //minor gridline
 				const gridline = new Konva.Line({
 					points: [x, minor_gridline_start, x, this.fullHeight],
 					stroke: getComputedStyle(document.body).getPropertyValue("--timeline-minor-gridline-stroke"),
-					strokeWidth: 2
+					strokeWidth: 2,
+					listening: false,
 				});
 				this.scrolling_layer.add(gridline);
 			}
@@ -232,6 +238,11 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 	}
 	x_coord_to_milliseconds(x) {
 		return (x - this.x_axis_left_padding_pixels) * this.milliseconds_per_pixel;
+	}
+
+	snap_time(t) {
+		const ms_snapping = this.milliseconds_snapping();
+		return Math.round(t / ms_snapping) * ms_snapping;
 	}
 }
 
@@ -360,10 +371,7 @@ class KonvaTimelineKeyframe {
 	raw_x_to_t({ raw_x, snap = false }) {
 		let raw_xt = this.timeline_stage.x_coord_to_milliseconds(raw_x);
 		raw_xt = Math.max(raw_xt, 0);
-		if (snap) {
-			const ms_snapping = this.timeline_stage.milliseconds_snapping();
-			raw_xt = Math.round(raw_xt / ms_snapping) * ms_snapping;
-		}
+		if (snap) raw_xt = this.timeline_stage.snap_time(raw_xt);
 		const t = raw_xt;
 		return t;
 	}

@@ -271,8 +271,7 @@ class KonvaTimelineKeyframe {
 			}
 		});
 		this.flag.add(new Konva.Tag({
-			fill: getComputedStyle(document.body).getPropertyValue(
-				timeline_stage.current_design.is_keyframe_selected(keyframe)?"--keyframe-flag-fill-selected":"--keyframe-flag-fill"),
+			fill: getComputedStyle(document.body).getPropertyValue("--keyframe-flag-fill"),
 			pointerDirection: "down",
 			pointerWidth: 10,
 			pointerHeight: 6,
@@ -332,8 +331,7 @@ class KonvaTimelineKeyframe {
 
 		timeline_stage.current_design.state_change_events.addEventListener("kf_select", ev => {
 			if (ev.detail.keyframe != keyframe) return;
-			this.flag.getTag().fill(getComputedStyle(document.body).getPropertyValue("--keyframe-flag-fill-selected"));
-			this.timeline_stage.transformer.nodes(this.timeline_stage.transformer.nodes().concat([this.flag]));
+			this.on_selected();
 		}, { signal: this.listener_abort.signal });
 
 		timeline_stage.current_design.state_change_events.addEventListener("kf_deselect", ev => {
@@ -347,6 +345,7 @@ class KonvaTimelineKeyframe {
 		keyframe[KonvaTimelineKeyframeSymbol] = this;
 
 		this.update_control_point({ time: keyframe.time });
+		if (timeline_stage.current_design.is_keyframe_selected(keyframe)) this.on_selected();
 	}
 
 	destroy() {
@@ -366,6 +365,11 @@ class KonvaTimelineKeyframe {
 
 		if (!ctrlKey) this.timeline_stage.current_design.deselect_all_keyframes();
 		this.timeline_stage.current_design.select_keyframes([this.keyframe]);
+	}
+
+	on_selected() {
+		this.flag.getTag().fill(getComputedStyle(document.body).getPropertyValue("--keyframe-flag-fill-selected"));
+		this.timeline_stage.transformer.nodes(this.timeline_stage.transformer.nodes().concat([this.flag]));
 	}
 
 	raw_x_to_t({ raw_x, snap = false }) {

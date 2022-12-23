@@ -167,7 +167,7 @@ export class MAHPatternDesignFE {
 	 * @returns 
 	 */
 	insert_new_keyframe(set) {
-		const keyframe = MAHKeyframeFE.from_previous_keyframes(this, set, this.get_sorted_keyframes());
+		const keyframe = MAHKeyframeFE.from_current_keyframes(this, set, this.get_sorted_keyframes());
 		this.filedata.keyframes.push(keyframe);
 		this.filedata.keyframes.sort();
 		return keyframe;
@@ -282,7 +282,7 @@ export class MAHPatternDesignFE {
 	async copy_selected_to_clipboard() {
 		/** @type {import("../../shared/types").MidAirHapticsClipboardFormat} */
 		const clipboard_data = {
-			$DATA_FORMAT: "MidAirHapticsAnimationFileFormat",
+			$DATA_FORMAT: "MidAirHapticsClipboardFormat",
 			$REVISION: "0.0.1-alpha.2",
 			keyframes: [...this.selected_keyframes]
 		};
@@ -292,26 +292,64 @@ export class MAHPatternDesignFE {
 		// });
 		// navigator.clipboard.write([ci]);
 		await navigator.clipboard.writeText(JSON.stringify(clipboard_data, null, "\t"));
+		this.deselect_all_keyframes();
 	}
 
 	async paste_clipboard() {
 		try {
 			const clipboard_data = await navigator.clipboard.readText();
 			/** @type {MidAirHapticsClipboardFormat} */
-			const clipboard_parsed = JSON.parse(clipboard_data);
-			if (clipboard_parsed.$DATA_FORMAT != "MidAirHapticsAnimationFileFormat") throw new Error("not MidAirHapticsAnimationFileFormat");
+			let clipboard_parsed;
+			try {
+				clipboard_parsed = JSON.parse(clipboard_data);
+			} catch (e) {
+				console.error(e);
+				throw new Error("Could not find MidAirHapticsClipboardFormat data in clipboard.");
+			}
+			if (clipboard_parsed.$DATA_FORMAT != "MidAirHapticsClipboardFormat") throw new Error(`incorrect $DATA_FORMAT ${clipboard_parsed.$DATA_FORMAT} expected ${"MidAirHapticsClipboardFormat"}`);
 			if (clipboard_parsed.$REVISION != "0.0.1-alpha.2") throw new Error(`incorrect revision ${clipboard_parsed.$REVISION} expected ${"0.0.1-alpha.2"}`);
 
 
 			// I was gonna do a more complicated "ghost" behaviour
 			// but google slides just drops the new objects at an offset
+			this.deselect_all_keyframes();
 			this.save_state();
-			TODO
-			this.commit_operation({});
+			clipboard_parsed.keyframes.sort();
 
+			const paste_time_offset = this.linterp_next_timestamp() - (clipboard_parsed.keyframes[0]?.time || 0);
+			console.log(paste_time_offset);
+
+			const new_keyframes = clipboard_parsed.keyframes.map(kf => {
+				console.log(kf.time);
+				kf.time += paste_time_offset;
+				console.log(kf.time);
+				Object.keys(kf.coords).forEach(k => kf.coords[k] += 5);
+				Object.keys(kf.coords).forEach(k => kf.coords[k] = Math.min(Math.max(kf.coords[k], 0), 500));
+				return this.insert_new_keyframe(kf);
+			});
+			this.commit_operation({ new_keyframes });
+			this.select_keyframes(new_keyframes);
 		} catch (e) {
 			alert("Could not find MidAirHapticsClipboardFormat data in clipboard");
 			throw e;
+		}
+	}
+
+	/**
+	 * 
+	 * @returns {number} timestamp for next keyframe
+	 */
+	linterp_next_timestamp() {
+		const last_keyframe = this.get_last_keyframe();
+		const secondlast_keyframe = this.get_secondlast_keyframe();
+		if (last_keyframe) { // linterp
+			if (secondlast_keyframe) {
+				return 2 * last_keyframe.time - secondlast_keyframe.time;
+			} else {
+				return last_keyframe.time + 500;
+			}
+		} else {
+			return 0;
 		}
 	}
 
@@ -405,9 +443,10 @@ export class MAHKeyframeFE {
 
 	
 	/**
-	 * @typedef {Object} MAHKeyframeSet
+	 * @typedef {Object} MAHKeyframeSetOptional
 	 * @property {{ x: number, y: number, z: number }=} coords
 	 * @property {number=} time
+	 * @typedef {MAHKeyframeSetOptional | MAHKeyframeFE} MAHKeyframeSet
 	 */
 	/**
 	 * 
@@ -415,20 +454,10 @@ export class MAHKeyframeFE {
 	 * @param {MAHKeyframeSet} set 
 	 * @param {MAHKeyframeFE[]} current_keyframes_sorted
 	 */
-	static from_previous_keyframes(pattern_design, set, current_keyframes_sorted) {
+	static from_current_keyframes(pattern_design, set, current_keyframes_sorted) {
 		let time;
 		if (set.time == undefined) {
-			const last_keyframe = /** @type {MAHKeyframeFE | undefined} */ (current_keyframes_sorted[current_keyframes_sorted.length-1]);
-			const secondlast_keyframe = /** @type {MAHKeyframeFE | undefined} */ (current_keyframes_sorted[current_keyframes_sorted.length-2]);
-			if (last_keyframe) { // linterp
-				if (secondlast_keyframe) {
-					time = 2 * last_keyframe.time - secondlast_keyframe.time;
-				} else {
-					time = last_keyframe.time + 500;
-				}
-			} else {
-				time = 0;
-			}
+			time = pattern_design.linterp_next_timestamp();
 		} else {
 			time = set.time;
 		}
@@ -452,6 +481,8 @@ export class MAHKeyframeFE {
 				Object.keys(coords).forEach(k => coords[k] = prev_keyframe.coords[k] + 5, 500);
 			}
 			Object.keys(coords).forEach(k => coords[k] = Math.min(Math.max(coords[k], 0), 500));
+		} else {
+			coords = set.coords;
 		}
 		const keyframe = new MAHKeyframeFE(window.structuredClone({ ...MAHKeyframeFE.default, ...next_keyframe?.toJSON(), ...prev_keyframe?.toJSON(), ...set, time, coords }), pattern_design);
 		

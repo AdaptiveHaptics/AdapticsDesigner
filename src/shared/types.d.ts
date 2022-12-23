@@ -74,7 +74,7 @@ type MAHTransition = ReturnType<typeof TransitionLinear> | ReturnType<typeof Tra
 
 
 export interface MidAirHapticsClipboardFormat {
-    $DATA_FORMAT: "MidAirHapticsAnimationFileFormat",
+    $DATA_FORMAT: "MidAirHapticsClipboardFormat",
     $REVISION: REVISION_STRING;
 
     keyframes: MAHKeyframe[]

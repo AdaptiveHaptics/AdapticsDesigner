@@ -8,6 +8,7 @@ const SplitGrid = /** @type {import("split-grid").default} */(/** @type {unknown
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
 /** @typedef {import("../../shared/gui-types").StateChangeEventTarget} StateChangeEventTarget */
 /** @typedef {import("../../shared/gui-types").StateEventMap} StateEventMap */
+/** @typedef {import("../../shared/gui-types").MAHAnimationFileFormatFE} MAHAnimationFileFormatFE */
 
 const mainsplitgridDiv = /** @type {HTMLDivElement} */ (document.querySelector("div.mainsplitgrid"));
 const centerDiv = /** @type {HTMLDivElement} */ (mainsplitgridDiv.querySelector("div.center"));
@@ -36,21 +37,25 @@ export class MAHPatternDesignFE {
 	 */
 	constructor(filename, filedata, undo_states = [], redo_states = [], undo_states_size = 50, redo_states_size = 50) {
 		this.filename = filename;
-		this.filedata = filedata;
+		
+		
+		this.filedata = this.load_filedata_into_fe_format(filedata);
+
 		this.undo_states = undo_states;
 		this.undo_states_size = undo_states_size;
 		this.redo_states = redo_states;
 		this.redo_states_size = redo_states_size;
 
-		this.filedata.keyframes = this.filedata.keyframes.map(kf => new MAHKeyframeFE(kf));
 
 		this.state_change_events = /** @type {StateChangeEventTarget} */ (new EventTarget());
 	}
 
 
 
+	/** @type {MidAirHapticsAnimationFileFormat[]} */
 	undo_states = [];
 	undo_states_size = 50;
+	/** @type {MidAirHapticsAnimationFileFormat[]} */
 	redo_states = [];
 	redo_states_size = 50;
 
@@ -71,7 +76,7 @@ export class MAHPatternDesignFE {
 		}
 		this.commited = false;
 		this.redo_states.length = 0;
-		this.undo_states.push(window.structuredClone(this.filedata));
+		this.undo_states.push(this.clone_filedata());
 		if (this.undo_states.length > this.undo_states_size) this.undo_states.shift();
 
 		this.save_to_localstorage();
@@ -126,26 +131,28 @@ export class MAHPatternDesignFE {
 	}
 
 	undo() {
-		if (this.undo_states.length == 0) return false;
+		const fd = this.undo_states.pop();
+		if (fd == null) return false;
 
-		this.redo_states.push(window.structuredClone(this.filedata));
+		this.redo_states.push(this.clone_filedata());
 		if (this.redo_states.length > this.redo_states_size) this.redo_states.shift();
 
 		this.selected_keyframes.clear();
-		this.filedata = this.undo_states.pop();
+		this.filedata = this.load_filedata_into_fe_format(fd);
 		this.commited = false;
 		this.commit_operation({ rerender: true });
 		return true;
 	}
 
 	redo() {
-		if (this.redo_states.length == 0) return false;
+		const fd = this.redo_states.pop();
+		if (fd == null) return false;
 
-		this.undo_states.push(window.structuredClone(this.filedata));
+		this.undo_states.push(this.clone_filedata());
 		if (this.undo_states.length > this.undo_states_size) this.undo_states.shift();
 
 		this.selected_keyframes.clear();
-		this.filedata = this.redo_states.pop();
+		this.filedata = this.load_filedata_into_fe_format(fd);
 		this.commited = false;
 		this.commit_operation({ rerender: true });
 		return true;
@@ -155,33 +162,13 @@ export class MAHPatternDesignFE {
 
 	/**
 	 * 
-	 * @param {Object} set
-	 * @param {{ x: number, y: number, z: number }} [set.coords]
-	 * @param {number} [set.time]
+	 * @param {MAHKeyframeSet} set
 	 * @returns 
 	 */
 	append_new_keyframe(set) {
 		const last_keyframe = this.get_last_keyframe();
 		const secondlast_keyframe = this.get_secondlast_keyframe();
-		const keyframe = new MAHKeyframeFE(window.structuredClone({ ...MAHKeyframeFE.default, ...last_keyframe, ...set }));
-		if (last_keyframe) {
-			if (set.time == undefined) {
-				let add_to_time = 500;
-				if (secondlast_keyframe) { // linterp
-					add_to_time = last_keyframe.time - secondlast_keyframe.time;
-				}
-				keyframe.time += Math.max(add_to_time, 1);
-			}
-			if (set.coords == undefined) {
-				let newcoords = keyframe.coords;
-				Object.keys(newcoords).forEach(k => newcoords[k] += 5);
-				if (secondlast_keyframe) { // linterp
-					Object.keys(newcoords).forEach(k => newcoords[k] = 2 * last_keyframe.coords[k] - secondlast_keyframe.coords[k], 500);
-				}
-				Object.keys(newcoords).forEach(k => newcoords[k] = Math.min(Math.max(newcoords[k], 0), 500));
-				keyframe.coords = newcoords;
-			}
-		}
+		const keyframe = MAHKeyframeFE.from_previous_keyframes(this, set, last_keyframe, secondlast_keyframe);
 		this.filedata.keyframes.push(keyframe);
 		this.filedata.keyframes.sort();
 		return keyframe;
@@ -254,8 +241,10 @@ export class MAHPatternDesignFE {
 	 * 
 	 * @param {MAHKeyframeFE} keyframe 
 	 */
-	get_keyframe_index(keyframe) {
-		return this.get_sorted_keyframes().indexOf(keyframe);
+	get_sorted_keyframe_index(keyframe) {
+		const index = this.get_sorted_keyframes().indexOf(keyframe);
+		if (index == -1) throw new TypeError("keyframe not in array");
+		return index;
 	}
 
 	/**
@@ -265,20 +254,81 @@ export class MAHPatternDesignFE {
 	delete_keyframes(keyframes) {
 		this.deselect_all_keyframes();
 		for (const keyframe of keyframes) {
-			const index = this.get_keyframe_index(keyframe);
-			if (index == -1) throw new TypeError("keyframe not in array");
+			const index = this.get_sorted_keyframe_index(keyframe);
 			this.filedata.keyframes.splice(index, 1);
 		}
 		return keyframes;
 	}
+	
+	/**
+	 * 
+	 * @param {MAHKeyframeFE} keyframe
+	 */
+	check_for_reorder(keyframe) {
+		const index = this.filedata.keyframes.indexOf(keyframe);
+		if (index == -1) throw new TypeError("keyframe not in array");
+		const prev_kf = this.filedata.keyframes[index-1];
+		const next_kf = this.filedata.keyframes[index+1];
+		if (
+			(prev_kf && prev_kf.time > keyframe.time) ||
+			(next_kf && next_kf.time < keyframe.time)
+		) { //reorder needed
+			console.log("reorder needed");
+			const change_event = new StateChangeEvent("kf_reorder", { detail: { keyframe } });
+			this.state_change_events.dispatchEvent(change_event);
+		}
+	}
 
 
+	async copy_selected_to_clipboard() {
+		/** @type {import("../../shared/types").MidAirHapticsClipboardFormat} */
+		const clipboard_data = {
+			$DATA_FORMAT: "MidAirHapticsAnimationFileFormat",
+			$REVISION: "0.0.1-alpha.2",
+			keyframes: [...this.selected_keyframes]
+		};
+		// const ci = new ClipboardItem({
+		// 	// "application/json": JSON.stringify(clipboard_data), //not allowed in chrome for security reasons
+		// 	"text/plain": JSON.stringify(clipboard_data),
+		// });
+		// navigator.clipboard.write([ci]);
+		await navigator.clipboard.writeText(JSON.stringify(clipboard_data));
+	}
+
+	async paste_clipboard() {
+		try {
+			const clipboard_data = await navigator.clipboard.readText();
+		} catch (e) {
+			alert("Could not find MidAirHapticsClipboardFormat data in clipboard");
+			throw e;
+		}
+	}
 
 
-
+	/**
+	 * @param {MidAirHapticsAnimationFileFormat} filedata 
+	 * @returns {MAHAnimationFileFormatFE}
+	 */
+	load_filedata_into_fe_format(filedata) {
+		const keyframesFE = filedata.keyframes.map(kf => new MAHKeyframeFE(kf, this));
+		const filedataFE = { ...filedata, keyframes: keyframesFE };
+		return filedataFE;
+	}
+	/**
+	 * @returns {MidAirHapticsAnimationFileFormat}
+	 */
+	clone_filedata() {
+		/** @type {MidAirHapticsAnimationFileFormat} */
+		const filedata = JSON.parse(JSON.stringify(this.filedata));
+		filedata.$DATA_FORMAT = "MidAirHapticsAnimationFileFormat";
+		filedata.$REVISION = "0.0.1-alpha.2";
+		return filedata;
+	}
 
 	serialize() {
 		const { filename, filedata, undo_states, redo_states, undo_states_size, redo_states_size } = this;
+		filedata.$DATA_FORMAT = "MidAirHapticsAnimationFileFormat";
+		filedata.$REVISION = "0.0.1-alpha.2";
 		const serializable_obj = { filename, filedata, undo_states, redo_states, undo_states_size, redo_states_size };
 		return JSON.stringify(serializable_obj);
 	}
@@ -314,13 +364,68 @@ export class MAHKeyframeFE {
 	/**
 	 * 
 	 * @param {MAHKeyframe} keyframe 
+	 * @param {MAHPatternDesignFE} pattern_design
 	 */
-	constructor(keyframe) {
-		this.time = keyframe.time;
+	constructor(keyframe, pattern_design) {
+		this._pattern_design = pattern_design;
+		this._time = keyframe.time;
 		this.brush = keyframe.brush;
 		this.intensity = keyframe.intensity;
 		this.coords = keyframe.coords;
 		this.transition = keyframe.transition;
+	}
+
+	get time() {
+		return this._time;
+	}
+	set_time(t) {
+		if (this._time == t) return;
+		this._time = t;
+		this._pattern_design.check_for_reorder(this);
+	}
+	
+	/**
+	 * @returns {MAHKeyframe}
+	 */
+	toJSON() {
+		const { time, brush, intensity, coords, transition } = this;
+		return { time, brush, intensity, coords, transition };
+	}
+
+	
+	/**
+	 * @typedef {Object} MAHKeyframeSet
+	 * @property {{ x: number, y: number, z: number }=} coords
+	 * @property {number=} time
+	 */
+	/**
+	 * 
+	 * @param {MAHPatternDesignFE} pattern_design 
+	 * @param {MAHKeyframeSet} set 
+	 * @param {MAHKeyframe=} last_keyframe 
+	 * @param {MAHKeyframe=} secondlast_keyframe 
+	 */
+	static from_previous_keyframes(pattern_design, set, last_keyframe, secondlast_keyframe) {
+		const keyframe = new MAHKeyframeFE(window.structuredClone({ ...MAHKeyframeFE.default, ...last_keyframe, ...set }), pattern_design);
+		if (last_keyframe) {
+			if (set.time == undefined) {
+				let add_to_time = 500;
+				if (secondlast_keyframe) { // linterp
+					add_to_time = last_keyframe.time - secondlast_keyframe.time;
+				}
+				keyframe._time += Math.max(add_to_time, 1);
+			}
+			if (set.coords == undefined) {
+				let newcoords = keyframe.coords;
+				Object.keys(newcoords).forEach(k => newcoords[k] += 5);
+				if (secondlast_keyframe) { // linterp
+					Object.keys(newcoords).forEach(k => newcoords[k] = 2 * last_keyframe.coords[k] - secondlast_keyframe.coords[k], 500);
+				}
+				Object.keys(newcoords).forEach(k => newcoords[k] = Math.min(Math.max(newcoords[k], 0), 500));
+				keyframe.coords = newcoords;
+			}
+		}
+		return keyframe;
 	}
 }
 /** @type {MAHKeyframe} */
@@ -367,6 +472,8 @@ document.addEventListener("keydown", ev => {
 	ctrl+shift+z to redo
 	double click on the pattern canvas to create a new control point
 	alt+click on a control point to delete it
+	click and drag to select multiple
+	ctrl+click or ctrl+click and drag to add to selection
 	`);
 	if (ev.key == "z" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
 		console.log("undo");
@@ -384,12 +491,29 @@ document.addEventListener("keydown", ev => {
 			//do nothing
 		}
 	}
+	if (ev.key == "Delete" && !ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
+		console.log("delete");
+		if (primary_design.selected_keyframes.size == 0) return;
+		primary_design.save_state();
+		const deleted_keyframes = primary_design.delete_keyframes([...primary_design.selected_keyframes]);
+		primary_design.commit_operation({ deleted_keyframes });
+	}
+});
+
+document.addEventListener("copy", ev => {
+	primary_design.copy_selected_to_clipboard();
+});
+document.addEventListener("paste", ev => {
+	primary_design.paste_clipboard(); 
 });
 
 
 
+
 const primary_design = MAHPatternDesignFE.load_from_localstorage() || new MAHPatternDesignFE("test.json", {
-	revision: "0.0.1-alpha.1",
+	$DATA_FORMAT: "MidAirHapticsAnimationFileFormat",
+	$REVISION: "0.0.1-alpha.2",
+
 	name: "test",
 
 	direction: "normal",

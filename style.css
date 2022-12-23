@@ -17,14 +17,17 @@
     --text-low-priority: rgb(210, 210, 213);
     --error: #cd5c5c;
 
+    
     --control-point-select-rect-fill: #8cc9f230;
     --control-point-stroke: #f5fffa;
     --control-point-stroke-selected: hwb(204 55% 5%);
     --control-point-line-stroke: #74ecb0;
 
+
     --keyframe-flag-fill: var(--control-point-stroke);
     --keyframe-flag-fill-selected: var(--control-point-stroke-selected);
 
+    --timeline-select-rect-fill: var(--control-point-select-rect-fill);
     --timeline-major-gridline-stroke: hsl(var(--bg-hue), var(--bg-sat), 12%);
     --timeline-major-gridline-text: hsl(var(--bg-hue), var(--bg-sat), 2%);
     --timeline-minor-gridline-stroke: hsl(var(--bg-hue), var(--bg-sat), 16%);

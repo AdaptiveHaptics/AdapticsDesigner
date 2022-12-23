@@ -3,6 +3,7 @@ import { notnull } from "./util.mjs";
 
 const Konva = /** @type {import("konva").default} */ (window["Konva"]);
 
+/** @typedef {import("./script.mjs").MAHKeyframeFE} MAHKeyframeFE */
 /** @typedef {import("./script.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
 /** @typedef {import("../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
@@ -111,13 +112,20 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		current_design.state_change_events.addEventListener("rerender", _ev => {
 			this.render_design();
 		});
+		current_design.state_change_events.addEventListener("kf_reorder", _ev => {
+			//just take the easy route
+			this.render_design();
+		});
 
 
 		this.render_design();
 	}
 
 	render_design() {
-		this.k_control_points_layer.destroyChildren(); // i assume no memory leak since external references to KonvaPatternControlPointLines should be overwritten by following code
+		for (const kf of this.current_design.filedata.keyframes) {
+			kf[KonvaPatternControlPointSymbol]?.destroy();
+		}
+		this.k_control_points_layer.destroyChildren();
 
 		{ //init transformer
 			this.transformer = new Konva.Transformer({
@@ -162,35 +170,12 @@ export class KonvaPatternStage extends KonvaResizeStage {
 	}
 }
 
-class KonvaPatternControlPointLine {
-	/**
-	 * 
-	 * @param {KonvaPatternControlPoint} curr_cp 
-	 * @param {KonvaPatternControlPoint} next_cp 
-	 * @param {KonvaPatternStage} pattern_stage 
-	 */
-	constructor(curr_cp, next_cp, pattern_stage) {
-		this.line = new Konva.Line({
-			points: [curr_cp.k_cp_circle.x(), curr_cp.k_cp_circle.y(), next_cp.k_cp_circle.x(), next_cp.k_cp_circle.y()],
-			stroke: getComputedStyle(document.body).getPropertyValue("--control-point-line-stroke"),
-			strokeWidth: 2
-		});
-		curr_cp.lines.out = this;
-		next_cp.lines.in = this;
-
-		this.curr_cp = curr_cp;
-		this.next_cp = next_cp;
-
-		pattern_stage.k_control_points_layer.add(this.line);
-	}
-}
-
 class KonvaPatternControlPoint {
 	/** @type {{ in: KonvaPatternControlPointLine | null, out: KonvaPatternControlPointLine | null }} */
 	lines = { in: null, out: null };
 	/**
 	 * 
-	 * @param {MAHKeyframe} keyframe 
+	 * @param {MAHKeyframeFE} keyframe 
 	 * @param {KonvaPatternStage} pattern_stage 
 	 */
 	constructor(keyframe, pattern_stage) {
@@ -202,7 +187,8 @@ class KonvaPatternControlPoint {
 			x: keyframe.coords.x,
 			y: keyframe.coords.y,
 			radius: 20,
-			stroke: getComputedStyle(document.body).getPropertyValue("--control-point-stroke"),
+			stroke: getComputedStyle(document.body).getPropertyValue(
+				pattern_stage.current_design.is_keyframe_selected(keyframe)?"--control-point-stroke-selected":"--control-point-stroke"),
 			strokeWidth: 2,
 			draggable: true,
 		});
@@ -227,18 +213,8 @@ class KonvaPatternControlPoint {
 
 			this.select_this(ev.evt.ctrlKey);
 		});
-		// this.k_cp_circle.on("dragend", ev => {
-		// 	console.log("dragend "+this.keyframe.time);
-		// 	pattern_stage.current_design.commit_operation({ updated_keyframes: [keyframe] });
-		// });
 		this.k_cp_circle.on("dragmove", _ev => {
 			this.update_control_point({ raw_x: this.k_cp_circle.x(), raw_y: this.k_cp_circle.y() });
-		});
-		this.k_cp_circle.on("transformstart", _ev => {
-			// console.log("transformstart "+this.keyframe.time);
-		});
-		this.k_cp_circle.on("transformend", _ev => {
-			// console.log("transformend "+this.keyframe.time);
 		});
 		this.k_cp_circle.on("transform", _ev => {
 			// console.log("transform "+this.keyframe.time);
@@ -248,7 +224,7 @@ class KonvaPatternControlPoint {
 			this.update_control_point({ raw_x: this.k_cp_circle.x(), raw_y: this.k_cp_circle.y() });
 		});
 
-		const listener_abort = new AbortController();
+		this.listener_abort = new AbortController();
 		pattern_stage.current_design.state_change_events.addEventListener("kf_delete", ev => {
 			if (ev.detail.keyframe != keyframe) return;
 			const prev_cp = this.lines.in?.curr_cp;
@@ -261,30 +237,34 @@ class KonvaPatternControlPoint {
 				if (next_cp) next_cp.lines.in = null;
 			}
 
-			this.k_cp_circle.destroy();
+			this.destroy();
+		}, { signal: this.listener_abort.signal });
 
-			listener_abort.abort();
-
-		}, { signal: listener_abort.signal });
 		pattern_stage.current_design.state_change_events.addEventListener("kf_update", ev => {
 			if (ev.detail.keyframe != keyframe) return;
 			this.update_control_point();
-		}, { signal: listener_abort.signal });
+		}, { signal: this.listener_abort.signal });
 
 		pattern_stage.current_design.state_change_events.addEventListener("kf_select", ev => {
 			if (ev.detail.keyframe != keyframe) return;
 			this.k_cp_circle.stroke(getComputedStyle(document.body).getPropertyValue("--control-point-stroke-selected"));
 			this.pattern_stage.transformer.nodes(this.pattern_stage.transformer.nodes().concat([this.k_cp_circle]));
-		}, { signal: listener_abort.signal });
+		}, { signal: this.listener_abort.signal });
+
 		pattern_stage.current_design.state_change_events.addEventListener("kf_deselect", ev => {
 			if (ev.detail.keyframe != keyframe) return;
 			this.k_cp_circle.stroke(getComputedStyle(document.body).getPropertyValue("--control-point-stroke"));
 			this.pattern_stage.transformer.nodes(this.pattern_stage.transformer.nodes().filter(n => n != this.k_cp_circle));
-		}, { signal: listener_abort.signal });
+		}, { signal: this.listener_abort.signal });
 
 		pattern_stage.k_control_points_layer.add(this.k_cp_circle);
 
 		keyframe[KonvaPatternControlPointSymbol] = this;
+	}
+
+	destroy() {
+		this.k_cp_circle.destroy();
+		this.listener_abort.abort();
 	}
 
 	/**
@@ -324,5 +304,28 @@ class KonvaPatternControlPoint {
 			points[1] = y;
 			this.lines.out.line.points(points);
 		}
+	}
+}
+
+class KonvaPatternControlPointLine {
+	/**
+	 * 
+	 * @param {KonvaPatternControlPoint} curr_cp 
+	 * @param {KonvaPatternControlPoint} next_cp 
+	 * @param {KonvaPatternStage} pattern_stage 
+	 */
+	constructor(curr_cp, next_cp, pattern_stage) {
+		this.line = new Konva.Line({
+			points: [curr_cp.k_cp_circle.x(), curr_cp.k_cp_circle.y(), next_cp.k_cp_circle.x(), next_cp.k_cp_circle.y()],
+			stroke: getComputedStyle(document.body).getPropertyValue("--control-point-line-stroke"),
+			strokeWidth: 2
+		});
+		curr_cp.lines.out = this;
+		next_cp.lines.in = this;
+
+		this.curr_cp = curr_cp;
+		this.next_cp = next_cp;
+
+		pattern_stage.k_control_points_layer.add(this.line);
 	}
 }

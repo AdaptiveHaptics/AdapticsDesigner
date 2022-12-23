@@ -248,7 +248,7 @@ class KonvaTimelineKeyframe {
 		this.timeline_stage = timeline_stage;
 
 		this.flag = new Konva.Label({
-			x: timeline_stage.milliseconds_to_x_coord(keyframe.time),
+			x: -1,
 			y: this.ycoord,
 			// fill: getComputedStyle(document.body).getPropertyValue("--keyframe-flag-fill"),
 			draggable: true,
@@ -268,7 +268,7 @@ class KonvaTimelineKeyframe {
 			lineJoin: "round",
 		}));
 		this.flag.add(new Konva.Text({
-			text: milliseconds_to_hhmmssms_format(keyframe.time),
+			text: "",
 			fill: getComputedStyle(document.body).getPropertyValue("--keyframe-flag-text"),
 			padding: 2,
 			fontSize: 12,
@@ -295,7 +295,7 @@ class KonvaTimelineKeyframe {
 		});
 		this.flag.on("dragmove", _ev => {
 			//TODO: it would be nice if perfectly overlapping control points were more obvious to the user
-			this.update_control_point({ time: this.raw_x_to_t({ raw_x: this.flag.x(), snap: true }) });
+			this.update_control_point({ time: this.raw_x_to_t({ raw_x: this.flag.x(), snap: this.timeline_stage.transformer.nodes().length<=1 }) });
 		});
 		this.flag.on("transform", _ev => {
 			this.flag.scale({ x: 1, y: 1 });
@@ -303,7 +303,8 @@ class KonvaTimelineKeyframe {
 			this.flag.rotation(0);
 			this.update_control_point({ time: this.raw_x_to_t({ raw_x: this.flag.x(), snap: false }) });
 		});
-		this.flag.on("transformend", _ev => {
+
+		this.flag.on("dragend transformend", _ev => {
 			this.update_control_point({ time: this.raw_x_to_t({ raw_x: this.flag.x(), snap: true }) });
 		});
 
@@ -333,6 +334,8 @@ class KonvaTimelineKeyframe {
 		timeline_stage.scrolling_layer.add(this.flag);
 
 		keyframe[KonvaTimelineKeyframeSymbol] = this;
+
+		this.update_control_point({ time: keyframe.time });
 	}
 
 	destroy() {
@@ -368,7 +371,7 @@ class KonvaTimelineKeyframe {
 	update_control_point({ time }) {	
 		this.flag.x(this.timeline_stage.milliseconds_to_x_coord(time));
 		this.flag.y(this.ycoord);
-		this.flag.getText().text(milliseconds_to_hhmmssms_format(time));
+		this.flag.getText().text(milliseconds_to_hhmmssms_format(time).slice(-6));
 		this.keyframe.set_time(time);
 	}
 }

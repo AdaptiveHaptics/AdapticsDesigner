@@ -71,7 +71,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 
 		{ //initialize selection_rect
 			let x1, x2;
-			this.k_stage.on("mousedown touchstart", ev => {
+			this.k_stage.on("pointerdown", ev => {
 				if (!(ev.target == this.k_stage || ev.target == this.keyframe_rect)) return;
 				ev.evt.preventDefault();
 				x1 = notnull(this.scrolling_layer.getRelativePointerPosition()).x;
@@ -81,7 +81,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 				this.selection_rect.width(0);
 				this.selection_rect.height(0);
 			});
-			this.k_stage.on("mousemove touchmove", ev => {
+			this.k_stage.on("pointermove", ev => {
 				// do nothing if we didn't start selection
 				if (!this.selection_rect.visible()) return;
 				ev.evt.preventDefault();
@@ -94,7 +94,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 					height: keyframe_rect_height,
 				});
 			});
-			this.k_stage.on("mouseup mouseleave touchend", ev => {
+			this.k_stage.on("pointerup", ev => {
 				// do nothing if we didn't start selection
 				if (!this.selection_rect.visible()) return;
 				ev.evt.preventDefault();
@@ -108,7 +108,8 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 					return time_low <= kf.time && kf.time <= time_high;
 				});
 				if (!ev.evt.ctrlKey) this.current_design.deselect_all_keyframes();
-				this.current_design.select_keyframes(keyframes_in_box);
+				if (ev.evt.ctrlKey && ev.evt.shiftKey) this.current_design.deselect_keyframes(keyframes_in_box);
+				else this.current_design.select_keyframes(keyframes_in_box);
 			});
 		}
 
@@ -141,7 +142,8 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 			fill: getComputedStyle(document.body).getPropertyValue("--timeline-minor-gridline-stroke")
 		});
 		this.scrolling_layer.add(this.keyframe_rect);
-		this.keyframe_rect.on("dblclick", _ev => {
+		this.keyframe_rect.on("dblclick", ev => {
+			if (ev.target != this.keyframe_rect) return;
 			this.current_design.save_state();
 			const { x } = this.keyframe_rect.getRelativePointerPosition();
 			const t = this.snap_time(this.x_coord_to_milliseconds(x));
@@ -285,7 +287,7 @@ class KonvaTimelineKeyframe {
 			fontVariant: "bold",
 		}));
 		this.flag.on("click", ev => {
-			this.select_this(ev.evt.ctrlKey);
+			this.select_this(ev.evt.ctrlKey, false);
 
 			if (ev.evt.altKey) {
 				timeline_stage.current_design.save_state();
@@ -301,7 +303,7 @@ class KonvaTimelineKeyframe {
 			document.body.style.cursor = "";
 		});
 		this.flag.on("dragstart", ev => {
-			this.select_this(ev.evt.ctrlKey);
+			this.select_this(ev.evt.ctrlKey, true);
 		});
 		this.flag.on("dragmove", _ev => {
 			//TODO: it would be nice if perfectly overlapping control points were more obvious to the user
@@ -356,10 +358,11 @@ class KonvaTimelineKeyframe {
 	/**
 	 * 
 	 * @param {boolean} ctrlKey 
+	 * @param {boolean} dont_deselect
 	 */
-	select_this(ctrlKey) {
+	select_this(ctrlKey, dont_deselect) {
 		if (this.timeline_stage.current_design.is_keyframe_selected(this.keyframe)) {
-			if (ctrlKey) this.timeline_stage.current_design.deselect_keyframes([this.keyframe]);
+			if (ctrlKey && !dont_deselect) this.timeline_stage.current_design.deselect_keyframes([this.keyframe]);
 			return;
 		}
 

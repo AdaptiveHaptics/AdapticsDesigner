@@ -544,7 +544,8 @@ document.addEventListener("keydown", ev => {
 			//do nothing
 		}
 	}
-	if (ev.key == "Z" && ev.ctrlKey && ev.shiftKey && !ev.altKey) {
+	if (ev.key == "Z" && ev.ctrlKey && ev.shiftKey && !ev.altKey ||
+		ev.key == "y" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
 		console.log("redo");
 		if (primary_design.redo()) {
 			//success

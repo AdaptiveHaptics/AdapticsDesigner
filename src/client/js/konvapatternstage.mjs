@@ -40,12 +40,14 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		this.k_control_points_layer = new Konva.Layer();
 		this.k_stage.add(this.k_control_points_layer);
 
-		this.k_stage.on("dblclick", _ev => {
+		this.k_stage.on("dblclick", ev => {
+			if (ev.target != this.k_stage) return;
 			current_design.save_state();
 			const { x: raw_x, y: raw_y } = this.k_control_points_layer.getRelativePointerPosition();
 			const { x, y } = this.layer_coords_to_pattern_coords({ raw_x, raw_y });
 			const new_keyframe = this.current_design.insert_new_keyframe({ coords: { x, y, z: 0 } });
 			current_design.commit_operation({ new_keyframes: [new_keyframe] });
+			if (ev.evt.ctrlKey) current_design.select_keyframes([new_keyframe]);
 		});
 		// this.k_stage.on("click", ev => {
 		// 	if (ev.target == this.k_stage && !ev.evt.ctrlKey) current_design.deselect_all_keyframes();
@@ -102,7 +104,8 @@ export class KonvaPatternStage extends KonvaResizeStage {
 					);
 				});
 				if (!ev.evt.ctrlKey) current_design.deselect_all_keyframes();
-				current_design.select_keyframes(keyframes_in_box);
+				if (ev.evt.ctrlKey && ev.evt.shiftKey) current_design.deselect_keyframes(keyframes_in_box);
+				else current_design.select_keyframes(keyframes_in_box);
 			});
 		}
 
@@ -235,7 +238,7 @@ class KonvaPatternControlPoint {
 			draggable: true,
 		});
 		this.k_cp_circle.on("click", ev => {
-			this.select_this(ev.evt.ctrlKey);
+			this.select_this(ev.evt.ctrlKey, false);
 			
 			if (ev.evt.altKey) {
 				pattern_stage.current_design.save_state();
@@ -253,7 +256,7 @@ class KonvaPatternControlPoint {
 		this.k_cp_circle.on("dragstart", ev => {
 			// console.log("dragstart "+this.keyframe.time);
 
-			this.select_this(ev.evt.ctrlKey);
+			this.select_this(ev.evt.ctrlKey, true);
 		});
 		this.k_cp_circle.on("dragmove", _ev => {
 			this.update_control_point(this.raw_coords_to_pattern_coords({ raw_x: this.k_cp_circle.x(), raw_y: this.k_cp_circle.y() }));
@@ -314,10 +317,11 @@ class KonvaPatternControlPoint {
 	/**
 	 * 
 	 * @param {boolean} ctrlKey 
+	 * @param {boolean} dont_deselect
 	 */
-	select_this(ctrlKey) {
+	select_this(ctrlKey, dont_deselect) {
 		if (this.pattern_stage.current_design.is_keyframe_selected(this.keyframe)) {
-			if (ctrlKey) this.pattern_stage.current_design.deselect_keyframes([this.keyframe]);
+			if (ctrlKey && !dont_deselect) this.pattern_stage.current_design.deselect_keyframes([this.keyframe]);
 			return;
 		}
 

@@ -60,7 +60,9 @@ const IntensityRandom = make_variant<"Random", { min: number, max: number }>("Ra
 type MAHIntensity = ReturnType<typeof IntensityConstant> | ReturnType<typeof IntensityRandom>;
 
 
+/** Linear interpolation between the control points */
 const TransitionLinear = make_variant<"Linear", {}>("Linear");
-const TransitionSteps = make_variant<"Steps", {}>("Steps");
-type MAHTransition = ReturnType<typeof TransitionLinear> | ReturnType<typeof TransitionSteps>;
+/** Step/Jump between the control points */
+const TransitionStep = make_variant<"Step", {}>("Step");
+type MAHTransition = ReturnType<typeof TransitionLinear> | ReturnType<typeof TransitionStep>;
 

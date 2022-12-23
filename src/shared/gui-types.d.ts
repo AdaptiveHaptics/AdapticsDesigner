@@ -8,6 +8,7 @@ interface StateEventMap {
     "rerender": {};
     "kf_select": { keyframe: MAHKeyframeFE };
     "kf_deselect": { keyframe: MAHKeyframeFE };
+    "kf_reorder": { keyframe: MAHKeyframeFE };
 }
 
 interface StateChangeEventTarget extends EventTarget {
@@ -21,4 +22,8 @@ interface StateChangeEventTarget extends EventTarget {
     //     callback: EventListenerOrEventListenerObject | null,
     //     options?: EventListenerOptions | boolean
     // ): void;
+}
+
+interface MAHAnimationFileFormatFE extends MidAirHapticsAnimationFileFormat {
+    keyframes: MAHKeyframeFE[]
 }

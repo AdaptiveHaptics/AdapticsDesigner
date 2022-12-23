@@ -170,29 +170,6 @@ export class KonvaPatternStage extends KonvaResizeStage {
 	}
 }
 
-class KonvaPatternControlPointLine {
-	/**
-	 * 
-	 * @param {KonvaPatternControlPoint} curr_cp 
-	 * @param {KonvaPatternControlPoint} next_cp 
-	 * @param {KonvaPatternStage} pattern_stage 
-	 */
-	constructor(curr_cp, next_cp, pattern_stage) {
-		this.line = new Konva.Line({
-			points: [curr_cp.k_cp_circle.x(), curr_cp.k_cp_circle.y(), next_cp.k_cp_circle.x(), next_cp.k_cp_circle.y()],
-			stroke: getComputedStyle(document.body).getPropertyValue("--control-point-line-stroke"),
-			strokeWidth: 2
-		});
-		curr_cp.lines.out = this;
-		next_cp.lines.in = this;
-
-		this.curr_cp = curr_cp;
-		this.next_cp = next_cp;
-
-		pattern_stage.k_control_points_layer.add(this.line);
-	}
-}
-
 class KonvaPatternControlPoint {
 	/** @type {{ in: KonvaPatternControlPointLine | null, out: KonvaPatternControlPointLine | null }} */
 	lines = { in: null, out: null };
@@ -210,7 +187,8 @@ class KonvaPatternControlPoint {
 			x: keyframe.coords.x,
 			y: keyframe.coords.y,
 			radius: 20,
-			stroke: getComputedStyle(document.body).getPropertyValue("--control-point-stroke"),
+			stroke: getComputedStyle(document.body).getPropertyValue(
+				pattern_stage.current_design.is_keyframe_selected(keyframe)?"--control-point-stroke-selected":"--control-point-stroke"),
 			strokeWidth: 2,
 			draggable: true,
 		});
@@ -326,5 +304,28 @@ class KonvaPatternControlPoint {
 			points[1] = y;
 			this.lines.out.line.points(points);
 		}
+	}
+}
+
+class KonvaPatternControlPointLine {
+	/**
+	 * 
+	 * @param {KonvaPatternControlPoint} curr_cp 
+	 * @param {KonvaPatternControlPoint} next_cp 
+	 * @param {KonvaPatternStage} pattern_stage 
+	 */
+	constructor(curr_cp, next_cp, pattern_stage) {
+		this.line = new Konva.Line({
+			points: [curr_cp.k_cp_circle.x(), curr_cp.k_cp_circle.y(), next_cp.k_cp_circle.x(), next_cp.k_cp_circle.y()],
+			stroke: getComputedStyle(document.body).getPropertyValue("--control-point-line-stroke"),
+			strokeWidth: 2
+		});
+		curr_cp.lines.out = this;
+		next_cp.lines.in = this;
+
+		this.curr_cp = curr_cp;
+		this.next_cp = next_cp;
+
+		pattern_stage.k_control_points_layer.add(this.line);
 	}
 }

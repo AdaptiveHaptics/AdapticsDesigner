@@ -71,7 +71,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 
 		{ //initialize selection_rect
 			let x1, x2;
-			this.k_stage.on("mousedown touchstart", ev => {
+			this.k_stage.on("pointerdown", ev => {
 				if (!(ev.target == this.k_stage || ev.target == this.keyframe_rect)) return;
 				ev.evt.preventDefault();
 				x1 = notnull(this.scrolling_layer.getRelativePointerPosition()).x;
@@ -81,7 +81,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 				this.selection_rect.width(0);
 				this.selection_rect.height(0);
 			});
-			this.k_stage.on("mousemove touchmove", ev => {
+			this.k_stage.on("pointermove", ev => {
 				// do nothing if we didn't start selection
 				if (!this.selection_rect.visible()) return;
 				ev.evt.preventDefault();
@@ -94,7 +94,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 					height: keyframe_rect_height,
 				});
 			});
-			this.k_stage.on("mouseup mouseleave touchend", ev => {
+			this.k_stage.on("pointerup", ev => {
 				// do nothing if we didn't start selection
 				if (!this.selection_rect.visible()) return;
 				ev.evt.preventDefault();
@@ -108,7 +108,8 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 					return time_low <= kf.time && kf.time <= time_high;
 				});
 				if (!ev.evt.ctrlKey) this.current_design.deselect_all_keyframes();
-				this.current_design.select_keyframes(keyframes_in_box);
+				if (ev.evt.ctrlKey && ev.evt.shiftKey) this.current_design.deselect_keyframes(keyframes_in_box);
+				else this.current_design.select_keyframes(keyframes_in_box);
 			});
 		}
 
@@ -141,16 +142,20 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 			fill: getComputedStyle(document.body).getPropertyValue("--timeline-minor-gridline-stroke")
 		});
 		this.scrolling_layer.add(this.keyframe_rect);
-		this.keyframe_rect.on("dblclick", _ev => {
+		this.keyframe_rect.on("dblclick", ev => {
+			if (ev.target != this.keyframe_rect) return;
 			this.current_design.save_state();
 			const { x } = this.keyframe_rect.getRelativePointerPosition();
-			const t = this.x_coord_to_milliseconds(x);
-			const new_keyframe = this.current_design.append_new_keyframe({ time: t });
+			const t = this.snap_time(this.x_coord_to_milliseconds(x));
+			const new_keyframe = this.current_design.insert_new_keyframe({ time: t });
 			this.current_design.commit_operation({ new_keyframes: [new_keyframe] });
 		});
 
 		{ //init transformer
 			this.transformer = new Konva.Transformer({
+				// sometimes weird results because scaling box goes till end of label instead of stopping in the middle
+				// centerScaling avoids this issue, but is stranger to use.
+				// centeredScaling: true,
 				rotateEnabled: false,
 				enabledAnchors: ["middle-left", "middle-right"],
 			});
@@ -188,7 +193,8 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 				const gridline = new Konva.Line({
 					points: [x, major_gridline_start, x, this.fullHeight],
 					stroke: getComputedStyle(document.body).getPropertyValue("--timeline-major-gridline-stroke"),
-					strokeWidth: 2
+					strokeWidth: 2,
+					listening: false,
 				});
 				this.scrolling_layer.add(gridline);
 				const timestamp_text = new Konva.Text({
@@ -197,14 +203,16 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 					fill: getComputedStyle(document.body).getPropertyValue("--timeline-major-gridline-text"),
 					text: milliseconds_to_hhmmssms_format(t),
 					fontSize: 15,
-					fontVariant: "bold"
+					fontVariant: "bold",
+					listening: false,
 				});
 				this.scrolling_layer.add(timestamp_text);
 			} else { //minor gridline
 				const gridline = new Konva.Line({
 					points: [x, minor_gridline_start, x, this.fullHeight],
 					stroke: getComputedStyle(document.body).getPropertyValue("--timeline-minor-gridline-stroke"),
-					strokeWidth: 2
+					strokeWidth: 2,
+					listening: false,
 				});
 				this.scrolling_layer.add(gridline);
 			}
@@ -233,6 +241,11 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 	x_coord_to_milliseconds(x) {
 		return (x - this.x_axis_left_padding_pixels) * this.milliseconds_per_pixel;
 	}
+
+	snap_time(t) {
+		const ms_snapping = this.milliseconds_snapping();
+		return Math.round(t / ms_snapping) * ms_snapping;
+	}
 }
 
 class KonvaTimelineKeyframe {
@@ -248,7 +261,7 @@ class KonvaTimelineKeyframe {
 		this.timeline_stage = timeline_stage;
 
 		this.flag = new Konva.Label({
-			x: timeline_stage.milliseconds_to_x_coord(keyframe.time),
+			x: -1,
 			y: this.ycoord,
 			// fill: getComputedStyle(document.body).getPropertyValue("--keyframe-flag-fill"),
 			draggable: true,
@@ -260,22 +273,21 @@ class KonvaTimelineKeyframe {
 			}
 		});
 		this.flag.add(new Konva.Tag({
-			fill: getComputedStyle(document.body).getPropertyValue(
-				timeline_stage.current_design.is_keyframe_selected(keyframe)?"--keyframe-flag-fill-selected":"--keyframe-flag-fill"),
+			fill: getComputedStyle(document.body).getPropertyValue("--keyframe-flag-fill"),
 			pointerDirection: "down",
 			pointerWidth: 10,
 			pointerHeight: 6,
 			lineJoin: "round",
 		}));
 		this.flag.add(new Konva.Text({
-			text: milliseconds_to_hhmmssms_format(keyframe.time),
+			text: "",
 			fill: getComputedStyle(document.body).getPropertyValue("--keyframe-flag-text"),
 			padding: 2,
 			fontSize: 12,
 			fontVariant: "bold",
 		}));
 		this.flag.on("click", ev => {
-			this.select_this(ev.evt.ctrlKey);
+			this.select_this(ev.evt.ctrlKey, false);
 
 			if (ev.evt.altKey) {
 				timeline_stage.current_design.save_state();
@@ -285,17 +297,17 @@ class KonvaTimelineKeyframe {
 			}
 		});
 		this.flag.on("mouseenter", _ev => {
-			document.body.style.cursor = "ew-resize";
+			document.body.style.cursor = "pointer";
 		});
 		this.flag.on("mouseleave", _ev => {
 			document.body.style.cursor = "";
 		});
 		this.flag.on("dragstart", ev => {
-			this.select_this(ev.evt.ctrlKey);
+			this.select_this(ev.evt.ctrlKey, true);
 		});
 		this.flag.on("dragmove", _ev => {
 			//TODO: it would be nice if perfectly overlapping control points were more obvious to the user
-			this.update_control_point({ time: this.raw_x_to_t({ raw_x: this.flag.x(), snap: true }) });
+			this.update_control_point({ time: this.raw_x_to_t({ raw_x: this.flag.x(), snap: this.timeline_stage.transformer.nodes().length<=1 }) });
 		});
 		this.flag.on("transform", _ev => {
 			this.flag.scale({ x: 1, y: 1 });
@@ -303,7 +315,8 @@ class KonvaTimelineKeyframe {
 			this.flag.rotation(0);
 			this.update_control_point({ time: this.raw_x_to_t({ raw_x: this.flag.x(), snap: false }) });
 		});
-		this.flag.on("transformend", _ev => {
+
+		this.flag.on("dragend transformend", _ev => {
 			this.update_control_point({ time: this.raw_x_to_t({ raw_x: this.flag.x(), snap: true }) });
 		});
 
@@ -320,8 +333,7 @@ class KonvaTimelineKeyframe {
 
 		timeline_stage.current_design.state_change_events.addEventListener("kf_select", ev => {
 			if (ev.detail.keyframe != keyframe) return;
-			this.flag.getTag().fill(getComputedStyle(document.body).getPropertyValue("--keyframe-flag-fill-selected"));
-			this.timeline_stage.transformer.nodes(this.timeline_stage.transformer.nodes().concat([this.flag]));
+			this.on_selected();
 		}, { signal: this.listener_abort.signal });
 
 		timeline_stage.current_design.state_change_events.addEventListener("kf_deselect", ev => {
@@ -333,6 +345,9 @@ class KonvaTimelineKeyframe {
 		timeline_stage.scrolling_layer.add(this.flag);
 
 		keyframe[KonvaTimelineKeyframeSymbol] = this;
+
+		this.update_control_point({ time: keyframe.time });
+		if (timeline_stage.current_design.is_keyframe_selected(keyframe)) this.on_selected();
 	}
 
 	destroy() {
@@ -343,10 +358,11 @@ class KonvaTimelineKeyframe {
 	/**
 	 * 
 	 * @param {boolean} ctrlKey 
+	 * @param {boolean} dont_deselect
 	 */
-	select_this(ctrlKey) {
+	select_this(ctrlKey, dont_deselect) {
 		if (this.timeline_stage.current_design.is_keyframe_selected(this.keyframe)) {
-			if (ctrlKey) this.timeline_stage.current_design.deselect_keyframes([this.keyframe]);
+			if (ctrlKey && !dont_deselect) this.timeline_stage.current_design.deselect_keyframes([this.keyframe]);
 			return;
 		}
 
@@ -354,13 +370,15 @@ class KonvaTimelineKeyframe {
 		this.timeline_stage.current_design.select_keyframes([this.keyframe]);
 	}
 
+	on_selected() {
+		this.flag.getTag().fill(getComputedStyle(document.body).getPropertyValue("--keyframe-flag-fill-selected"));
+		this.timeline_stage.transformer.nodes(this.timeline_stage.transformer.nodes().concat([this.flag]));
+	}
+
 	raw_x_to_t({ raw_x, snap = false }) {
 		let raw_xt = this.timeline_stage.x_coord_to_milliseconds(raw_x);
 		raw_xt = Math.max(raw_xt, 0);
-		if (snap) {
-			const ms_snapping = this.timeline_stage.milliseconds_snapping();
-			raw_xt = Math.round(raw_xt / ms_snapping) * ms_snapping;
-		}
+		if (snap) raw_xt = this.timeline_stage.snap_time(raw_xt);
 		const t = raw_xt;
 		return t;
 	}
@@ -368,7 +386,7 @@ class KonvaTimelineKeyframe {
 	update_control_point({ time }) {	
 		this.flag.x(this.timeline_stage.milliseconds_to_x_coord(time));
 		this.flag.y(this.ycoord);
-		this.flag.getText().text(milliseconds_to_hhmmssms_format(time));
+		this.flag.getText().text(milliseconds_to_hhmmssms_format(time).slice(-6));
 		this.keyframe.set_time(time);
 	}
 }

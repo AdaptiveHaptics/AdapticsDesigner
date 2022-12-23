@@ -250,12 +250,17 @@ class KonvaPatternControlPoint {
 		this.k_cp_circle.on("mouseenter", _ev => {
 			document.body.style.cursor = "pointer";
 		});
+		// not using "pointer" makes alt+click, etc less discoverable
+		// this.k_cp_circle.on("mousedown", _ev => {
+		// 	document.body.style.cursor = "grabbing";
+		// });
+		// this.k_cp_circle.on("mouseup", _ev => {
+		// 	document.body.style.cursor = "grab";
+		// });
 		this.k_cp_circle.on("mouseleave", _ev => {
 			document.body.style.cursor = "";
 		});
 		this.k_cp_circle.on("dragstart", ev => {
-			// console.log("dragstart "+this.keyframe.time);
-
 			this.select_this(ev.evt.ctrlKey, true);
 		});
 		this.k_cp_circle.on("dragmove", _ev => {
@@ -379,7 +384,8 @@ class KonvaPatternControlPointLine {
 		this.line = new Konva.Line({
 			points: [curr_cp.k_cp_circle.x(), curr_cp.k_cp_circle.y(), next_cp.k_cp_circle.x(), next_cp.k_cp_circle.y()],
 			stroke: getComputedStyle(document.body).getPropertyValue("--control-point-line-stroke"),
-			strokeWidth: 2
+			strokeWidth: 2,
+			listening: false,
 		});
 
 		const old_out = curr_cp.lines.out;

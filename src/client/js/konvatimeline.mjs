@@ -297,7 +297,7 @@ class KonvaTimelineKeyframe {
 			}
 		});
 		this.flag.on("mouseenter", _ev => {
-			document.body.style.cursor = "ew-resize";
+			document.body.style.cursor = "pointer";
 		});
 		this.flag.on("mouseleave", _ev => {
 			document.body.style.cursor = "";

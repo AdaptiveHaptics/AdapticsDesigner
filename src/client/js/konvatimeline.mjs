@@ -153,10 +153,6 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 			this.transformer = new Konva.Transformer({
 				rotateEnabled: false,
 				enabledAnchors: ["middle-left", "middle-right"],
-				// boundBoxFunc: (oldBoundBox, newBoundBox) => {
-				// 	if (newBoundBox.width != oldBoundBox.width || newBoundBox.height != oldBoundBox.height) return oldBoundBox;
-				// 	else return newBoundBox;
-				// }
 			});
 			this.transformer.on("dragstart", _ev => {
 				this.current_design.save_state();
@@ -255,7 +251,13 @@ class KonvaTimelineKeyframe {
 			x: timeline_stage.milliseconds_to_x_coord(keyframe.time),
 			y: this.ycoord,
 			// fill: getComputedStyle(document.body).getPropertyValue("--keyframe-flag-fill"),
-			draggable: true
+			draggable: true,
+			dragBoundFunc: pos => {
+				return {
+					x: pos.x,
+					y: this.ycoord,
+				};
+			}
 		});
 		this.flag.add(new Konva.Tag({
 			fill: getComputedStyle(document.body).getPropertyValue(

@@ -83,10 +83,10 @@ export class KonvaPatternStage extends KonvaResizeStage {
 					height: Math.abs(y2 - y1),
 				});
 			});
-			this.k_stage.on("pointerup", ev => {
+			document.body.addEventListener("pointerup", ev => {
 				// do nothing if we didn't start selection
 				if (!this.selection_rect.visible()) return;
-				ev.evt.preventDefault();
+				ev.preventDefault();
 
 				// update visibility in timeout, so we can check it in click event
 				// setTimeout(() => {
@@ -103,8 +103,8 @@ export class KonvaPatternStage extends KonvaResizeStage {
 						low_coords.y <= kf.coords.y && kf.coords.y <= high_coords.y
 					);
 				});
-				if (!ev.evt.ctrlKey) current_design.deselect_all_keyframes();
-				if (ev.evt.ctrlKey && ev.evt.shiftKey) current_design.deselect_keyframes(keyframes_in_box);
+				if (!ev.ctrlKey) current_design.deselect_all_keyframes();
+				if (ev.ctrlKey && ev.shiftKey) current_design.deselect_keyframes(keyframes_in_box);
 				else current_design.select_keyframes(keyframes_in_box);
 			});
 		}
@@ -297,13 +297,12 @@ class KonvaPatternControlPoint {
 
 		pattern_stage.current_design.state_change_events.addEventListener("kf_select", ev => {
 			if (ev.detail.keyframe != keyframe) return;
-			this.on_selected();
+			this.update_select(true);
 		}, { signal: this.listener_abort.signal });
 
 		pattern_stage.current_design.state_change_events.addEventListener("kf_deselect", ev => {
 			if (ev.detail.keyframe != keyframe) return;
-			this.k_cp_circle.stroke(getComputedStyle(document.body).getPropertyValue("--control-point-stroke"));
-			this.pattern_stage.transformer.nodes(this.pattern_stage.transformer.nodes().filter(n => n != this.k_cp_circle));
+			this.update_select(false);
 		}, { signal: this.listener_abort.signal });
 
 		pattern_stage.k_control_points_layer.add(this.k_cp_circle);
@@ -311,7 +310,7 @@ class KonvaPatternControlPoint {
 		keyframe[KonvaPatternControlPointSymbol] = this;
 
 		this.update_control_point();
-		if (pattern_stage.current_design.is_keyframe_selected(keyframe)) this.on_selected();
+		this.update_select(pattern_stage.current_design.is_keyframe_selected(keyframe));
 	}
 
 	destroy() {
@@ -334,9 +333,15 @@ class KonvaPatternControlPoint {
 		this.pattern_stage.current_design.select_keyframes([this.keyframe]);
 	}
 
-	on_selected() {
-		this.k_cp_circle.stroke(getComputedStyle(document.body).getPropertyValue("--control-point-stroke-selected"));
-		this.pattern_stage.transformer.nodes(this.pattern_stage.transformer.nodes().concat([this.k_cp_circle]));
+	/**
+	 * 
+	 * @param {boolean} selected 
+	 */
+	update_select(selected) {
+		const stroke = selected? "--control-point-stroke-selected" : "--control-point-stroke";
+		this.k_cp_circle.stroke(getComputedStyle(document.body).getPropertyValue(stroke));
+		if (selected) this.pattern_stage.transformer.nodes(this.pattern_stage.transformer.nodes().concat([this.k_cp_circle]));
+		else this.pattern_stage.transformer.nodes(this.pattern_stage.transformer.nodes().filter(n => n != this.k_cp_circle));
 	}
 
 	raw_coords_to_pattern_coords({ raw_x, raw_y }) {

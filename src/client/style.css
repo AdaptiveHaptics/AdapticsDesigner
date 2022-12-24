@@ -29,6 +29,7 @@
 
     --keyframe-flag-fill: var(--control-point-stroke);
     --keyframe-flag-fill-selected: var(--control-point-stroke-selected);
+    --keyframe-flag-shadow: rgba(0,0,0,0.5);
 
     --timeline-select-rect-fill: var(--control-point-select-rect-fill);
     --timeline-major-gridline-stroke: hsl(var(--bg-hue), var(--bg-sat), 12%);

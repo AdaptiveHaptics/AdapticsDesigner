@@ -560,6 +560,12 @@ document.addEventListener("keydown", ev => {
 		const deleted_keyframes = primary_design.delete_keyframes([...primary_design.selected_keyframes]);
 		primary_design.commit_operation({ deleted_keyframes });
 	}
+
+	if (ev.key == "s" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
+		ev.preventDefault();
+		console.warn("todo");
+		//todo
+	}
 });
 
 document.addEventListener("copy", _ev => {

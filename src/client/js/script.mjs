@@ -135,6 +135,13 @@ export class MAHPatternDesignFE {
 			return;
 		}
 
+
+		if (deleted_keyframes) {
+			for (const keyframe of deleted_keyframes) {
+				const change_event = new StateChangeEvent("kf_delete", { detail: { keyframe } });
+				this.state_change_events.dispatchEvent(change_event);
+			}
+		}
 		if (new_keyframes) {
 			for (const keyframe of new_keyframes) {
 				const change_event = new StateChangeEvent("kf_new", { detail: { keyframe } });
@@ -144,12 +151,6 @@ export class MAHPatternDesignFE {
 		if (updated_keyframes) {
 			for (const keyframe of updated_keyframes) {
 				const change_event = new StateChangeEvent("kf_update", { detail: { keyframe } });
-				this.state_change_events.dispatchEvent(change_event);
-			}
-		}
-		if (deleted_keyframes) {
-			for (const keyframe of deleted_keyframes) {
-				const change_event = new StateChangeEvent("kf_delete", { detail: { keyframe } });
 				this.state_change_events.dispatchEvent(change_event);
 			}
 		}

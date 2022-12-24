@@ -76,7 +76,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 			let x1, x2;
 			this.k_stage.on("pointerdown", ev => {
 				if (!(ev.target == this.k_stage || ev.target == this.keyframe_rect)) return;
-				ev.evt.preventDefault();
+				// ev.evt.preventDefault();
 				x1 = notnull(this.scrolling_layer.getRelativePointerPosition()).x;
 				x2 = notnull(this.scrolling_layer.getRelativePointerPosition()).x;
 
@@ -145,7 +145,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 			fill: getComputedStyle(document.body).getPropertyValue("--timeline-minor-gridline-stroke")
 		});
 		this.scrolling_layer.add(this.keyframe_rect);
-		this.keyframe_rect.on("dblclick", ev => {
+		this.keyframe_rect.on("pointerdblclick", ev => {
 			if (ev.target != this.keyframe_rect) return;
 			this.current_design.save_state();
 			const { x } = this.keyframe_rect.getRelativePointerPosition();
@@ -372,6 +372,7 @@ class KonvaTimelineKeyframe {
 
 	destroy() {
 		this.flag.destroy();
+		this.line.destroy();
 		this.listener_abort.abort();
 	}
 

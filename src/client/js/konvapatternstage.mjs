@@ -41,7 +41,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		this.k_control_points_layer = new Konva.Layer();
 		this.k_stage.add(this.k_control_points_layer);
 
-		this.k_stage.on("dblclick", ev => {
+		this.k_stage.on("pointerdblclick", ev => {
 			if (ev.target != this.k_stage) return;
 			current_design.save_state();
 			const { x: raw_x, y: raw_y } = this.k_control_points_layer.getRelativePointerPosition();

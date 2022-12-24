@@ -176,6 +176,27 @@ div.unifiedkeyframeeditor {
     overflow: auto;
 }
 
+div.typecontainer {
+    background-color: var(--background-tertiary-alt);
+    padding: 1ex 0ex;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1ex;
+    align-items: center;
+}
+
+div.typecontainer select, div.typecontainer option {
+    color: var(--text-normal);
+    background-color: var(--background-primary);
+    padding: 1ex;
+}
+
+div.typecontainer, summary, div.typecontainer select, div.typecontainer option {
+    font-weight: bold;
+    text-transform: capitalize;
+    padding: 0.5em;
+}
+
 details {
     background-color: var(--background-tertiary-alt);
     border: 1px solid var(--background-titlebar);
@@ -184,9 +205,7 @@ details {
 }
 
 summary {
-    font-weight: bold;
     margin: -0.5em -0.5em 0;
-    padding: 0.5em;
 }
 
 details[open] {

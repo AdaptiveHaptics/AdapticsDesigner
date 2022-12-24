@@ -620,6 +620,7 @@ export class MAHKeyframePauseFE extends MAHKeyframeBaseFE {
 
 
 const _mainsplit = SplitGrid({
+	minSize: 5,
 	columnGutters: [
 		{ track: 1, element: notnull(mainsplitgridDiv.querySelector("div.mainsplitgrid > div.gutter.leftcenter")) },
 		{ track: 3, element: notnull(mainsplitgridDiv.querySelector("div.mainsplitgrid > div.gutter.centerright")) },
@@ -629,6 +630,7 @@ const _mainsplit = SplitGrid({
 	],
 });
 const _bottomsplit = SplitGrid({
+	minSize: 5,
 	columnGutters: [
 		{ track: 1, element: notnull(document.querySelector("div.bottom > div.gutter.column")) },
 	],

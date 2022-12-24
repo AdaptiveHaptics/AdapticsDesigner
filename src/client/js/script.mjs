@@ -1,22 +1,23 @@
 import Split from "../thirdparty/split-grid.mjs";
 import { KonvaPatternStage } from "./konvapatternstage.mjs";
 import { KonvaTimelineStage } from "./konvatimeline.mjs";
+import { UnifiedKeyframeEditor } from "./unifiedkeyframeeditor.mjs";
 import { notnull } from "./util.mjs";
 
 const ignoreErrorsContaining = [
 	"The play() request was interrupted by a new load request"
 ];
 window.addEventListener("unhandledrejection", event => {
-	console.error(event.reason);
+	// console.error(event.reason);
 	const estr = `Unhandled Rejection: ${event.reason}\n${event.reason?event.reason.name||"":""}\n${event.reason?event.reason.message||"":""}\n${event.reason?event.reason.stack||"":""}`;
-	console.error(estr);
+	// console.error(estr);
 	if (ignoreErrorsContaining.findIndex(istr => estr.includes(istr)) == -1) alert(estr);
 });
 window.addEventListener("error", event => {
-	console.error(event);
+	// console.error(event);
 	// @ts-ignore
 	const estr = `Unhandled Error: ${event}\n${event?event.name||"":""}\n${event?event.message||"":""}\n${event?event.stack||"":""}`;
-	console.error(estr);
+	// console.error(estr);
 	if (ignoreErrorsContaining.findIndex(istr => estr.includes(istr)) == -1) alert(estr);
 });
 
@@ -186,17 +187,24 @@ export class MAHPatternDesignFE {
 
 	/**
 	 * 
-	 * @param {MAHKeyframeStandardSet} set
+	 * @param {{ type: "standard" | "pause" } | MAHKeyframe} set
 	 * @returns 
 	 */
-	insert_new_standard_keyframe(set) {
-		const keyframe = MAHKeyframeStandardFE.from_current_keyframes(this, set, this.get_sorted_keyframes());
+	insert_new_keyframe(set) {
+		let keyframe;
+		switch (set.type) {
+			case "standard": { keyframe = MAHKeyframeStandardFE.from_current_keyframes(this, set); break; }
+			case "pause": { keyframe = MAHKeyframePauseFE.from_current_keyframes(this, set); break; }
+			// @ts-ignore
+			default: throw new TypeError(`Unknown keyframe type '${keyframe.type}'`);
+		}
 		this.filedata.keyframes.push(keyframe);
 		this.filedata.keyframes.sort();
 		return keyframe;
 	}
 
 	
+	/** @type {Set<MAHKeyframeFE>} */
 	selected_keyframes = new Set();
 
 	/**
@@ -350,7 +358,7 @@ export class MAHPatternDesignFE {
 					Object.keys(kf.coords).forEach(k => kf.coords[k] += 5);
 					Object.keys(kf.coords).forEach(k => kf.coords[k] = Math.min(Math.max(kf.coords[k], 0), 500));
 				}
-				return this.insert_new_standard_keyframe(kf);
+				return this.insert_new_keyframe(kf);
 			});
 			this.commit_operation({ new_keyframes });
 			this.select_keyframes(new_keyframes);
@@ -439,31 +447,27 @@ export class MAHPatternDesignFE {
  * @implements {MAHKeyframeBase}
  */
 export class MAHKeyframeBaseFE {
+	#_pattern_design;
+	/** @readonly */
+	time;
+	
 	/**
 	 * 
 	 * @param {MAHKeyframe} keyframe 
 	 * @param {MAHPatternDesignFE} pattern_design
 	 */
 	constructor(keyframe, pattern_design) {
-		this._pattern_design = pattern_design;
-		this._time = keyframe.time;
+		this.#_pattern_design = pattern_design;
+		this.time = keyframe.time;
 	}
 
-	get time() {
-		return this._time;
-	}
 	set_time(t) {
-		if (this._time == t) return;
-		this._time = t;
+		if (this.time == t) return;
+		//@ts-ignore i give up
+		this.time = t;
 		//@ts-ignore assume abstract, so `this` must be an implementation
 		const this_non_abstract = /** @type {MAHKeyframeFE} */ (this);
-		this._pattern_design.check_for_reorder(this_non_abstract);
-	}
-
-	/** @returns {MAHKeyframeBase} */
-	toJSON() {
-		const { time } = this;
-		return { time };
+		this.#_pattern_design.check_for_reorder(this_non_abstract);
 	}
 
 	/**
@@ -479,10 +483,6 @@ export class MAHKeyframeBaseFE {
 			// @ts-ignore
 			default: throw new TypeError(`Unknown keyframe type '${keyframe.type}'`);
 		}
-	}
-
-	static get_list_of_types() {
-		return ["standard", "pause"];
 	}
 }
 
@@ -506,32 +506,18 @@ export class MAHKeyframeStandardFE extends MAHKeyframeBaseFE {
 	}
 	
 	/**
-	 * @returns {MAHKeyframeStandard}
-	 */
-	toJSON() {
-		const { type, time, brush, intensity, coords, transition } = this;
-		return { type, time, brush, intensity, coords, transition };
-	}
-
-	
-	/**
-	 * @typedef {Object} MAHKeyframeStandardSetOptional
-	 * @property {{ x: number, y: number, z: number }=} coords
-	 * @property {number=} time
-	 * @typedef {MAHKeyframeStandardSetOptional | MAHKeyframeStandardFE} MAHKeyframeStandardSet
-	 */
-	/**
 	 * 
 	 * @param {MAHPatternDesignFE} pattern_design 
-	 * @param {MAHKeyframeStandardSet} set 
-	 * @param {MAHKeyframeFE[]} current_keyframes_sorted
+	 * @param {{} | MAHKeyframeFE} set 
 	 */
-	static from_current_keyframes(pattern_design, set, current_keyframes_sorted) {
+	static from_current_keyframes(pattern_design, set) {
+		const current_keyframes_sorted = pattern_design.get_sorted_keyframes();
+
 		let time;
-		if (set.time == undefined) {
-			time = pattern_design.linterp_next_timestamp();
-		} else {
+		if ("time" in set) {
 			time = set.time;
+		} else {
+			time = pattern_design.linterp_next_timestamp();
 		}
 
 		let next_keyframe_index = current_keyframes_sorted.findIndex(kf => kf.time > time);
@@ -558,7 +544,9 @@ export class MAHKeyframeStandardFE extends MAHKeyframeBaseFE {
 		// const secondnext_keyframe = /** @type {MAHKeyframeFE | undefined} */ (current_keyframes_sorted[next_keyframe_index+1]);
 
 		let coords = { x: 0, y: 0, z: 0 };
-		if (set.coords == undefined) {
+		if ("coords" in set) {
+			coords = set.coords;
+		} else {
 			if (prev_keyframe && next_keyframe) {
 				Object.keys(coords).forEach(k => coords[k] = (prev_keyframe.coords[k] + next_keyframe.coords[k])/2, 500);
 			} else if (secondprev_keyframe && prev_keyframe) {
@@ -569,10 +557,11 @@ export class MAHKeyframeStandardFE extends MAHKeyframeBaseFE {
 				Object.keys(coords).forEach(k => coords[k] = prev_keyframe.coords[k] + 5, 500);
 			}
 			Object.keys(coords).forEach(k => coords[k] = Math.min(Math.max(coords[k], 0), 500));
-		} else {
-			coords = set.coords;
 		}
-		const keyframe = new MAHKeyframeStandardFE(window.structuredClone({ ...MAHKeyframeStandardFE.DEFAULT, ...next_keyframe?.toJSON(), ...prev_keyframe?.toJSON(), ...set, time, coords }), pattern_design);
+
+
+		console.log(set);
+		const keyframe = new MAHKeyframeStandardFE(window.structuredClone({ ...MAHKeyframeStandardFE.DEFAULT, ...next_keyframe, ...prev_keyframe, ...set, time, coords }), pattern_design);
 		
 		return keyframe;
 	}
@@ -615,6 +604,22 @@ export class MAHKeyframePauseFE extends MAHKeyframeBaseFE {
 		if (keyframe.type != "pause") throw new TypeError(`keyframe is not of type 'pause' found '${keyframe.type}'`);
 		super(keyframe, pattern_design);
 		this.type = /** @type {"pause"} */ ("pause"); //for type check
+	}
+
+	/**
+	 * 
+	 * @param {MAHPatternDesignFE} pattern_design 
+	 * @param {{} | MAHKeyframeFE} set 
+	 */
+	static from_current_keyframes(pattern_design, set) {
+		let time;
+		if ("time" in set) {
+			time = set.time;
+		} else {
+			time = pattern_design.linterp_next_timestamp();
+		}
+		
+		return new MAHKeyframePauseFE({ type: "pause", time: time }, pattern_design);
 	}
 }
 
@@ -738,10 +743,13 @@ try {
 primary_design.commit_operation({});
 const konva_pattern_stage = new KonvaPatternStage(primary_design, "patternstage", centerDiv);
 const konva_timeline_stage = new KonvaTimelineStage(primary_design, "timelinestage", timelineDiv);
+const unified_keyframe_editor = new UnifiedKeyframeEditor(primary_design, notnull(document.querySelector("div.unifiedkeyframeeditor")));
 
 // @ts-ignore
 window.konva_pattern_stage = konva_pattern_stage;
 // @ts-ignore
 window.konva_timeline_stage = konva_timeline_stage;
+// @ts-ignore
+window.unified_keyframe_editor = unified_keyframe_editor;
 // @ts-ignore
 window.primary_design = primary_design;

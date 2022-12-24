@@ -30,36 +30,64 @@
 			<div class="gutter column centerright"></div>
 			<div class="right">
 				<div class="unifiedkeyframeeditor betterscroll">
-					<div class="typecontainer">
-						<label for="type-select">Type: </label>
-						<select name="type" id="type-select">
-							<option value="">standard</option>
-							<option value="">pause</option>
-						</select>
+					<div class="help">
+						<h1>Help</h1>
+						(im not sure how to make this look better)
+						<p>
+							<h4><code>Double Click</code> to create a new keyframe</h4>
+							<ul>
+								<li>In background of the Pattern Pane</li>
+								<li>WIthin the keyframe track of the Timeline Pane</li>
+							</ul>
+						</p>
+						<p>
+							<h4>Clicking a control point/keyframe:</h4>
+							<ul>
+								<li><code>Alt</code> is deletion</li>
+								<li><code>Ctrl</code> toggles selection</li>
+							</ul>							
+						</p>
+						<p>
+							<h4>During group selection:</h4>
+							<ul>
+								<li><code>Ctrl</code> is union/addition to selection</li>
+								<li><code>Ctrl+shift</code> is subtraction from selection</li>
+							</ul>
+						</p>
 					</div>
-					<details class="coords">
-						<summary>Coords</summary>
-						<div class="coordsconfig">
-							
+					<form>
+						<div class="typecontainer">
+							<label>Type: </label>
+							<select name="type" class="type">
+								<option hidden disabled selected value>multipletypes</option>
+								<option value="standard">standard</option>
+								<option value="pause">pause</option>
+							</select>
 						</div>
-					</details>
-					<details class="brush">
-						<summary>Brush</summary>
-						<div class="brushconfig">
-							
-						</div>
-					</details>
-					<details class="intensity">
-						<summary>Intensity</summary>
-						<div class="intensityconfig">
-							
-						</div>
-					</details>
-					<details class="transition">
-						<summary>Transition</summary>
-						<div class="transitionconfig">
-						</div>
-					</details>
+						<details class="coords">
+							<summary>Coords</summary>
+							<div class="coordsconfig">
+								
+							</div>
+						</details>
+						<details class="brush">
+							<summary>Brush</summary>
+							<div class="brushconfig">
+								
+							</div>
+						</details>
+						<details class="intensity">
+							<summary>Intensity</summary>
+							<div class="intensityconfig">
+								
+							</div>
+						</details>
+						<details class="transition">
+							<summary>Transition</summary>
+							<div class="transitionconfig">
+							</div>
+						</details>
+					</form>
 				</div>
 			</div>
 			<div class="gutter row topbottom"></div>

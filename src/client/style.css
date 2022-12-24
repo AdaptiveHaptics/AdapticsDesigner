@@ -175,6 +175,20 @@ div.unifiedkeyframeeditor {
     flex-direction: column;
     overflow: auto;
 }
+div.unifiedkeyframeeditor > div.help {
+    display: none;
+    padding: 1ex;
+    background-color: var(--background-tertiary-alt);
+}
+div.unifiedkeyframeeditor.showhelp > * {
+    display: none;
+}
+div.unifiedkeyframeeditor.showhelp > div.help {
+    display: block;
+}
+div.unifiedkeyframeeditor > form {
+    display: contents;
+}
 
 div.typecontainer {
     background-color: var(--background-tertiary-alt);

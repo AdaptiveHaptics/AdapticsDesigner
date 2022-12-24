@@ -150,7 +150,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 			this.current_design.save_state();
 			const { x } = this.keyframe_rect.getRelativePointerPosition();
 			const t = this.snap_time(this.x_coord_to_milliseconds(x));
-			const new_keyframe = this.current_design.insert_new_standard_keyframe({ time: t });
+			const new_keyframe = this.current_design.insert_new_keyframe({ type: "standard", time: t });
 			this.current_design.commit_operation({ new_keyframes: [new_keyframe] });
 		});
 

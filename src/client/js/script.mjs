@@ -278,6 +278,34 @@ export class MAHPatternDesignFE {
 		return index;
 	}
 
+
+
+	/**
+	 * @template R
+	 * @param {(keyframe: MAHKeyframeFE) => (R | null)} pred
+	 * @param {MAHKeyframeFE} keyframe 
+	 * @returns {R | null}
+	 */
+	get_nearest_neighbor_matching_pred(keyframe, pred, previous = false) {
+		const keyframes = this.get_sorted_keyframes();
+		const index = this.get_sorted_keyframe_index(keyframe);
+		for (
+			let i = previous ?
+				index :
+				index + 1;
+			previous ?
+				i-- :
+				i < keyframes.length;
+			previous ?
+				null :
+				i++
+		) {
+			const kf = pred(keyframes[i]);
+			if (kf) return kf;
+		}
+		return null;
+	}
+
 	/**
 	 * 
 	 * @param {MAHKeyframeFE[]} keyframes 
@@ -485,6 +513,15 @@ export class MAHKeyframeBaseFE {
 			default: throw new TypeError(`Unknown keyframe type '${keyframe.type}'`);
 		}
 	}
+
+	/**
+	 * 
+	 * @param {MAHKeyframeFE} keyframe 
+	 */
+	static filter_by_coords(keyframe) {
+		if ("coords" in keyframe) return keyframe;
+		else null;
+	}
 }
 
 /**
@@ -539,10 +576,6 @@ export class MAHKeyframeStandardFE extends MAHKeyframeBaseFE {
 		}
 		const [next_keyframe, secondnext_keyframe] = next_neighbors;
 		const [prev_keyframe, secondprev_keyframe] = prev_neighbors;
-		// const secondprev_keyframe = /** @type {MAHKeyframeFE | undefined} */ (current_keyframes_sorted[next_keyframe_index-2]);
-		// const prev_keyframe = /** @type {MAHKeyframeFE | undefined} */ (current_keyframes_sorted[next_keyframe_index-1]);
-		// const next_keyframe = /** @type {MAHKeyframeFE | undefined} */ (current_keyframes_sorted[next_keyframe_index]);
-		// const secondnext_keyframe = /** @type {MAHKeyframeFE | undefined} */ (current_keyframes_sorted[next_keyframe_index+1]);
 
 		let coords = { x: 0, y: 0, z: 0 };
 		if ("coords" in set) {

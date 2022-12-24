@@ -1,4 +1,5 @@
 import { KonvaResizeStage } from "./konvashared.mjs";
+import { MAHKeyframeBaseFE } from "./script.mjs";
 import { notnull } from "./util.mjs";
 
 const Konva = /** @type {import("konva").default} */ (window["Konva"]);
@@ -113,16 +114,35 @@ export class KonvaPatternStage extends KonvaResizeStage {
 
 
 		current_design.state_change_events.addEventListener("kf_new", ev => {
-			if (!("coords" in ev.detail.keyframe)) return;
-			const keyframes = this.current_design.get_sorted_keyframes();
-			const index = keyframes.indexOf(ev.detail.keyframe);
-			const curr_cp = new KonvaPatternControlPoint(ev.detail.keyframe, this);
-			/** @type {KonvaPatternControlPoint} */
-			const prev_cp = keyframes[index - 1]?.[KonvaPatternControlPointSymbol];
-			/** @type {KonvaPatternControlPoint} */
-			const next_cp = keyframes[index + 1]?.[KonvaPatternControlPointSymbol];
-			if (prev_cp) new KonvaPatternControlPointLine(prev_cp, curr_cp, this);
-			if (next_cp) new KonvaPatternControlPointLine(curr_cp, next_cp, this);
+			if ("coords" in ev.detail.keyframe) {
+				const curr_cp = new KonvaPatternControlPoint(ev.detail.keyframe, this);
+				/** @type {KonvaPatternControlPoint} */
+				const prev_cp = this.current_design.get_nearest_neighbor_matching_pred(
+					ev.detail.keyframe, MAHKeyframeBaseFE.filter_by_coords, true)?.[KonvaPatternControlPointSymbol];
+				/** @type {KonvaPatternControlPoint} */
+				const next_cp = this.current_design.get_next_of_type(ev.detail.keyframe, "standard")?.[KonvaPatternControlPointSymbol];
+				if (prev_cp) new KonvaPatternControlPointLine(prev_cp, curr_cp, this);
+				if (next_cp) new KonvaPatternControlPointLine(curr_cp, next_cp, this);
+			} else if (ev.detail.keyframe.type == "pause") {
+				const prev_cp = this.current_design.get_prev_of_type(ev.detail.keyframe, "standard")?.[KonvaPatternControlPointSymbol];
+				if (prev_cp) prev_cp.show_pause();
+			}
+		});
+		current_design.state_change_events.addEventListener("kf_delete", ev => { 
+			if (ev.detail.keyframe.type == "pause") {
+
+				let last_cp = null;
+				for (const kf of this.current_design.get_sorted_keyframes()) {
+					if ("coords" in kf) {
+						
+					}
+				}
+				//just take the easy route
+				this.render_design();
+
+				//this wont work cause the pause keyframe has already been removed
+				// this.current_design.get_prev_of_type(ev.detail.keyframe);
+			}
 		});
 		current_design.state_change_events.addEventListener("rerender", _ev => {
 			this.render_design();

@@ -65,16 +65,27 @@ export class UnifiedKeyframeEditor {
 				break;
 			}
 		}
+		// @ts-ignore setting to null
 		this.type_select.value = selected_type;
 
 
 
 		const common_fields = new Set(["coords", "brush", "intensity", "transition"]);
+		for (const field of common_fields) {
+			/** @type {HTMLDetailsElement} */
+			const field_details = notnull(this.ukfeForm.querySelector(`details.${field}`));
+			field_details.style.display = "none";
+		}
 		for (const kf of selected) {
 			for (const common_field of common_fields) {
 				if (common_field in kf) continue;
 				else common_fields.delete(common_field);
 			}
+		}
+		for (const field of common_fields) {
+			/** @type {HTMLDetailsElement} */
+			const field_details = notnull(this.ukfeForm.querySelector(`details.${field}`));
+			field_details.style.display = "";
 		}
 	}
 

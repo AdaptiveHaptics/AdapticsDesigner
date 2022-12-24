@@ -149,7 +149,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 			if (ev.target != this.keyframe_rect) return;
 			this.current_design.save_state();
 			const { x } = this.keyframe_rect.getRelativePointerPosition();
-			const t = this.snap_time(this.x_coord_to_milliseconds(x));
+			const t = this.raw_x_to_t({ raw_x: x, snap: true });
 			const new_keyframe = this.current_design.insert_new_keyframe({ type: "standard", time: t });
 			this.current_design.commit_operation({ new_keyframes: [new_keyframe] });
 		});
@@ -249,6 +249,14 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 		const ms_snapping = this.milliseconds_snapping();
 		return Math.round(t / ms_snapping) * ms_snapping;
 	}
+
+	raw_x_to_t({ raw_x, snap = false }) {
+		let raw_xt = this.x_coord_to_milliseconds(raw_x);
+		raw_xt = Math.max(raw_xt, 0);
+		if (snap) raw_xt = this.snap_time(raw_xt);
+		const t = raw_xt;
+		return t;
+	}
 }
 
 class KonvaTimelineKeyframe {
@@ -319,17 +327,17 @@ class KonvaTimelineKeyframe {
 		});
 		this.flag.on("dragmove", _ev => {
 			//TODO: it would be nice if perfectly overlapping control points were more obvious to the user
-			this.update_control_point({ time: this.raw_x_to_t({ raw_x: this.flag.x(), snap: this.timeline_stage.transformer.nodes().length<=1 }) });
+			this.update_control_point({ time: this.timeline_stage.raw_x_to_t({ raw_x: this.flag.x(), snap: this.timeline_stage.transformer.nodes().length<=1 }) });
 		});
 		this.flag.on("transform", _ev => {
 			this.flag.scale({ x: 1, y: 1 });
 			this.flag.skew({ x: 0, y: 0 });
 			this.flag.rotation(0);
-			this.update_control_point({ time: this.raw_x_to_t({ raw_x: this.flag.x(), snap: false }) });
+			this.update_control_point({ time: this.timeline_stage.raw_x_to_t({ raw_x: this.flag.x(), snap: false }) });
 		});
 
 		this.flag.on("dragend transformend", _ev => {
-			this.update_control_point({ time: this.raw_x_to_t({ raw_x: this.flag.x(), snap: true }) });
+			this.update_control_point({ time: this.timeline_stage.raw_x_to_t({ raw_x: this.flag.x(), snap: true }) });
 		});
 
 		this.line = new Konva.Line({
@@ -401,14 +409,6 @@ class KonvaTimelineKeyframe {
 		this.line.stroke(getComputedStyle(document.body).getPropertyValue(fill));
 		if (selected) this.timeline_stage.transformer.nodes(this.timeline_stage.transformer.nodes().concat([this.flag]));
 		else this.timeline_stage.transformer.nodes(this.timeline_stage.transformer.nodes().filter(n => n != this.flag));
-	}
-
-	raw_x_to_t({ raw_x, snap = false }) {
-		let raw_xt = this.timeline_stage.x_coord_to_milliseconds(raw_x);
-		raw_xt = Math.max(raw_xt, 0);
-		if (snap) raw_xt = this.timeline_stage.snap_time(raw_xt);
-		const t = raw_xt;
-		return t;
 	}
 
 	update_control_point({ time }) {	

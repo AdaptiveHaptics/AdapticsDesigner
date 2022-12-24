@@ -10,14 +10,16 @@ const Konva = /** @type {import("konva").default} */ (window["Konva"]);
 
 const KonvaTimelineKeyframeSymbol = Symbol("KonvaTimelineKeyframe");
 
+const major_gridline_timestamp_rect_height = 26;
 const major_gridline_start = 0;
-const minor_gridline_start = 46;
-const keyframe_flag_size = 20;
-const keyframe_rect_y = minor_gridline_start - keyframe_flag_size - 3;
-const keyframe_rect_height = keyframe_flag_size + 3;
+const keyframe_flag_size = 28;
+const keyframe_rect_padding_top = 0;
+const keyframe_rect_y = major_gridline_timestamp_rect_height - keyframe_rect_padding_top;
+const keyframe_rect_height = keyframe_flag_size + keyframe_rect_padding_top;
+const minor_gridline_start = keyframe_rect_y + keyframe_rect_height;
 
 export class KonvaTimelineStage extends KonvaResizeScrollStage {
-	static major_gridline_millisecond_presets = [10 / 10, 10 / 8, 10 / 6, 10 / 5, 10 / 4, 10/3, 10/2];
+	static major_gridline_millisecond_presets = [10 / 10, 10 / 8, 10 / 5, 10 / 4, 10 / 2];
 
 	/** best effort */
 	maximum_pixels_per_major_gridline = 180;
@@ -31,7 +33,8 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 			KonvaTimelineStage.major_gridline_millisecond_presets[this.major_gridline_preset_index % KonvaTimelineStage.major_gridline_millisecond_presets.length];
 	}
 	minor_gridlines_per_major = 4;
-	x_axis_left_padding_pixels = 20;
+
+	x_axis_left_padding_pixels = 30;
 
 	milliseconds_snapping() {
 		return this.milliseconds_per_major_gridline/20;
@@ -134,7 +137,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 		const keyframes = this.current_design.filedata.keyframes;
 
 		const _timestamp_rect = this.scrolling_layer.add(new Konva.Rect({
-			x: 0, y: 0, width: this.fullWidth, height: minor_gridline_start - keyframe_flag_size,
+			x: 0, y: 0, width: this.fullWidth, height: major_gridline_timestamp_rect_height,
 			fill: getComputedStyle(document.body).getPropertyValue("--background-tertiary")
 		}));
 		this.keyframe_rect = new Konva.Rect({
@@ -202,8 +205,8 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 					y: major_gridline_start + 5,
 					fill: getComputedStyle(document.body).getPropertyValue("--timeline-major-gridline-text"),
 					text: milliseconds_to_hhmmssms_format(t),
-					fontSize: 15,
-					fontVariant: "bold",
+					fontSize: 16,
+					fontStyle: "bold",
 					listening: false,
 				});
 				this.scrolling_layer.add(timestamp_text);
@@ -249,7 +252,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 }
 
 class KonvaTimelineKeyframe {
-	ycoord = minor_gridline_start;
+	ycoord = minor_gridline_start + 3;
 
 	/**
 	 * 
@@ -283,16 +286,17 @@ class KonvaTimelineKeyframe {
 			fill: getComputedStyle(document.body).getPropertyValue("--keyframe-flag-fill"),
 			pointerDirection: "down",
 			pointerWidth: 10,
-			pointerHeight: 6,
+			pointerHeight: 5,
+			cornerRadius: 1,
 			lineJoin: "round",
 			...shadow_settings,
 		}));
 		this.flag.add(new Konva.Text({
 			text: "",
 			fill: getComputedStyle(document.body).getPropertyValue("--keyframe-flag-text"),
-			padding: 2,
-			fontSize: 12,
-			fontVariant: "bold",
+			padding: 4,
+			fontSize: 14,
+			fontStyle: "bold",
 		}));
 		this.flag.on("click", ev => {
 			this.select_this(ev.evt.ctrlKey, false);
@@ -407,9 +411,10 @@ class KonvaTimelineKeyframe {
 	}
 
 	update_control_point({ time }) {	
-		this.flag.x(this.timeline_stage.milliseconds_to_x_coord(time));
+		const x = this.timeline_stage.milliseconds_to_x_coord(time);
+		this.flag.x(x);
 		this.flag.y(this.ycoord);
-		this.line.x(this.timeline_stage.milliseconds_to_x_coord(time));
+		this.line.points([x, this.ycoord, x, this.timeline_stage.fullHeight]);
 		this.flag.getText().text(milliseconds_to_hhmmssms_format(time).slice(-6));
 		this.keyframe.set_time(time);
 	}

@@ -1,5 +1,5 @@
 /*** GUI TYPES ***/
-import { MAHKeyframeFE, StateChangeEvent } from "../client/js/script.mjs";
+import { MAHKeyframeBaseFE, MAHKeyframeStandardFE, MAHKeyframePauseFE } from "../client/js/script.mjs";
 import { MidAirHapticsAnimationFileFormat } from "./types";
 
 interface StateEventMap {
@@ -28,3 +28,5 @@ interface StateChangeEventTarget extends EventTarget {
 interface MAHAnimationFileFormatFE extends MidAirHapticsAnimationFileFormat {
     keyframes: MAHKeyframeFE[]
 }
+
+type MAHKeyframeFE = MAHKeyframeStandardFE | MAHKeyframePauseFE;

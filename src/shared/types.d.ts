@@ -1,4 +1,4 @@
-type REVISION_STRING = "0.0.1-alpha.2";
+type REVISION_STRING = "0.0.1-alpha.3";
 
 export interface MidAirHapticsAnimationFileFormat {
     $DATA_FORMAT: "MidAirHapticsAnimationFileFormat",
@@ -34,9 +34,12 @@ export interface MidAirHapticsAnimationFileFormat {
     // timing-function: MAHTimingFunction,
 }
 
-export interface MAHKeyframe {
+export interface MAHKeyframeBase {
     /** Time in milliseconds */
     time: number,
+}
+export interface MAHKeyframeStandard extends MAHKeyframeBase {
+    type: "standard",
     brush: MAHBrush,
     intensity: MAHIntensity,
     coords: {
@@ -47,6 +50,10 @@ export interface MAHKeyframe {
     /** Describes the transition to the next keyframe */
     transition: MAHTransition,
 }
+export interface MAHKeyframePause extends MAHKeyframeBase {
+    type: "pause"
+}
+export type MAHKeyframe = MAHKeyframeStandard | MAHKeyframePause;
 
 
 type Variant<Key extends string, Value = undefined> = {

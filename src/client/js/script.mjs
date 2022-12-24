@@ -2,14 +2,37 @@ import Split from "../thirdparty/split-grid.mjs";
 import { KonvaPatternStage } from "./konvapatternstage.mjs";
 import { KonvaTimelineStage } from "./konvatimeline.mjs";
 import { notnull } from "./util.mjs";
+
+const ignoreErrorsContaining = [
+	"The play() request was interrupted by a new load request"
+];
+window.addEventListener("unhandledrejection", event => {
+	console.error(event.reason);
+	const estr = `Unhandled Rejection: ${event.reason}\n${event.reason?event.reason.name||"":""}\n${event.reason?event.reason.message||"":""}\n${event.reason?event.reason.stack||"":""}`;
+	console.error(estr);
+	if (ignoreErrorsContaining.findIndex(istr => estr.includes(istr)) == -1) alert(estr);
+});
+window.addEventListener("error", event => {
+	console.error(event);
+	// @ts-ignore
+	const estr = `Unhandled Error: ${event}\n${event?event.name||"":""}\n${event?event.message||"":""}\n${event?event.stack||"":""}`;
+	console.error(estr);
+	if (ignoreErrorsContaining.findIndex(istr => estr.includes(istr)) == -1) alert(estr);
+});
+
+
 const SplitGrid = /** @type {import("split-grid").default} */(/** @type {unknown} */(Split));
 
 /** @typedef {import("../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
+/** @typedef {import("../../shared/types").MAHKeyframeBase} MAHKeyframeBase */
+/** @typedef {import("../../shared/types").MAHKeyframeStandard} MAHKeyframeStandard */
+/** @typedef {import("../../shared/types").MAHKeyframePause} MAHKeyframePause */
 /** @typedef {import("../../shared/types").MidAirHapticsClipboardFormat} MidAirHapticsClipboardFormat */
 /** @typedef {import("../../shared/gui-types").StateChangeEventTarget} StateChangeEventTarget */
 /** @typedef {import("../../shared/gui-types").StateEventMap} StateEventMap */
 /** @typedef {import("../../shared/gui-types").MAHAnimationFileFormatFE} MAHAnimationFileFormatFE */
+/** @typedef {import("../../shared/gui-types").MAHKeyframeFE} MAHKeyframeFE */
 
 const mainsplitgridDiv = /** @type {HTMLDivElement} */ (document.querySelector("div.mainsplitgrid"));
 const centerDiv = /** @type {HTMLDivElement} */ (mainsplitgridDiv.querySelector("div.center"));
@@ -163,11 +186,11 @@ export class MAHPatternDesignFE {
 
 	/**
 	 * 
-	 * @param {MAHKeyframeSet} set
+	 * @param {MAHKeyframeStandardSet} set
 	 * @returns 
 	 */
-	insert_new_keyframe(set) {
-		const keyframe = MAHKeyframeFE.from_current_keyframes(this, set, this.get_sorted_keyframes());
+	insert_new_standard_keyframe(set) {
+		const keyframe = MAHKeyframeStandardFE.from_current_keyframes(this, set, this.get_sorted_keyframes());
 		this.filedata.keyframes.push(keyframe);
 		this.filedata.keyframes.sort();
 		return keyframe;
@@ -283,7 +306,7 @@ export class MAHPatternDesignFE {
 		/** @type {import("../../shared/types").MidAirHapticsClipboardFormat} */
 		const clipboard_data = {
 			$DATA_FORMAT: "MidAirHapticsClipboardFormat",
-			$REVISION: "0.0.1-alpha.2",
+			$REVISION: "0.0.1-alpha.3",
 			keyframes: [...this.selected_keyframes]
 		};
 		// const ci = new ClipboardItem({
@@ -307,7 +330,7 @@ export class MAHPatternDesignFE {
 				throw new Error("Could not find MidAirHapticsClipboardFormat data in clipboard.");
 			}
 			if (clipboard_parsed.$DATA_FORMAT != "MidAirHapticsClipboardFormat") throw new Error(`incorrect $DATA_FORMAT ${clipboard_parsed.$DATA_FORMAT} expected ${"MidAirHapticsClipboardFormat"}`);
-			if (clipboard_parsed.$REVISION != "0.0.1-alpha.2") throw new Error(`incorrect revision ${clipboard_parsed.$REVISION} expected ${"0.0.1-alpha.2"}`);
+			if (clipboard_parsed.$REVISION != "0.0.1-alpha.3") throw new Error(`incorrect revision ${clipboard_parsed.$REVISION} expected ${"0.0.1-alpha.2"}`);
 
 
 			// I was gonna do a more complicated "ghost" behaviour
@@ -323,9 +346,11 @@ export class MAHPatternDesignFE {
 				console.log(kf.time);
 				kf.time += paste_time_offset;
 				console.log(kf.time);
-				Object.keys(kf.coords).forEach(k => kf.coords[k] += 5);
-				Object.keys(kf.coords).forEach(k => kf.coords[k] = Math.min(Math.max(kf.coords[k], 0), 500));
-				return this.insert_new_keyframe(kf);
+				if ("coords" in kf) {
+					Object.keys(kf.coords).forEach(k => kf.coords[k] += 5);
+					Object.keys(kf.coords).forEach(k => kf.coords[k] = Math.min(Math.max(kf.coords[k], 0), 500));
+				}
+				return this.insert_new_standard_keyframe(kf);
 			});
 			this.commit_operation({ new_keyframes });
 			this.select_keyframes(new_keyframes);
@@ -359,7 +384,7 @@ export class MAHPatternDesignFE {
 	 * @returns {MAHAnimationFileFormatFE}
 	 */
 	load_filedata_into_fe_format(filedata) {
-		const keyframesFE = filedata.keyframes.map(kf => new MAHKeyframeFE(kf, this));
+		const keyframesFE = filedata.keyframes.map(kf => MAHKeyframeBaseFE.create_correct_fe_wrapper(kf, this));
 		const filedataFE = { ...filedata, keyframes: keyframesFE };
 		return filedataFE;
 	}
@@ -370,14 +395,14 @@ export class MAHPatternDesignFE {
 		/** @type {MidAirHapticsAnimationFileFormat} */
 		const filedata = JSON.parse(JSON.stringify(this.filedata));
 		filedata.$DATA_FORMAT = "MidAirHapticsAnimationFileFormat";
-		filedata.$REVISION = "0.0.1-alpha.2";
+		filedata.$REVISION = "0.0.1-alpha.3";
 		return filedata;
 	}
 
 	serialize() {
 		const { filename, filedata, undo_states, redo_states, undo_states_size, redo_states_size } = this;
 		filedata.$DATA_FORMAT = "MidAirHapticsAnimationFileFormat";
-		filedata.$REVISION = "0.0.1-alpha.2";
+		filedata.$REVISION = "0.0.1-alpha.3";
 		const serializable_obj = { filename, filedata, undo_states, redo_states, undo_states_size, redo_states_size };
 		return JSON.stringify(serializable_obj);
 	}
@@ -388,6 +413,8 @@ export class MAHPatternDesignFE {
 	 */
 	static deserialize(json_str) {
 		const { filename, filedata, undo_states, redo_states, undo_states_size, redo_states_size } = JSON.parse(json_str);
+		if (filedata.$DATA_FORMAT != "MidAirHapticsAnimationFileFormat") throw new Error(`incorrect $DATA_FORMAT ${filedata.$DATA_FORMAT} expected ${"MidAirHapticsAnimationFileFormat"}`);
+		if (filedata.$REVISION != "0.0.1-alpha.3") throw new Error(`incorrect revision ${filedata.$REVISION} expected ${"0.0.1-alpha.3"}`);
 		return new MAHPatternDesignFE(filename, filedata, undo_states, redo_states, undo_states_size, redo_states_size);
 	}
 
@@ -406,10 +433,12 @@ export class MAHPatternDesignFE {
 	}
 }
 
+
 /**
- * @implements {MAHKeyframe}
+ * @abstract
+ * @implements {MAHKeyframeBase}
  */
-export class MAHKeyframeFE {
+export class MAHKeyframeBaseFE {
 	/**
 	 * 
 	 * @param {MAHKeyframe} keyframe 
@@ -418,10 +447,6 @@ export class MAHKeyframeFE {
 	constructor(keyframe, pattern_design) {
 		this._pattern_design = pattern_design;
 		this._time = keyframe.time;
-		this.brush = keyframe.brush;
-		this.intensity = keyframe.intensity;
-		this.coords = keyframe.coords;
-		this.transition = keyframe.transition;
 	}
 
 	get time() {
@@ -430,28 +455,75 @@ export class MAHKeyframeFE {
 	set_time(t) {
 		if (this._time == t) return;
 		this._time = t;
-		this._pattern_design.check_for_reorder(this);
+		//@ts-ignore assume abstract, so `this` must be an implementation
+		const this_non_abstract = /** @type {MAHKeyframeFE} */ (this);
+		this._pattern_design.check_for_reorder(this_non_abstract);
+	}
+
+	/** @returns {MAHKeyframeBase} */
+	toJSON() {
+		const { time } = this;
+		return { time };
+	}
+
+	/**
+	 * 
+	 * @param {MAHKeyframe} keyframe 
+	 * @param {MAHPatternDesignFE} pattern_design
+	 * @returns {MAHKeyframeFE}
+	 */
+	static create_correct_fe_wrapper(keyframe, pattern_design) {
+		switch (keyframe.type) {
+			case "standard": return new MAHKeyframeStandardFE(keyframe, pattern_design);
+			case "pause": return new MAHKeyframePauseFE(keyframe, pattern_design);
+			// @ts-ignore
+			default: throw new TypeError(`Unknown keyframe type '${keyframe.type}'`);
+		}
+	}
+
+	static get_list_of_types() {
+		return ["standard", "pause"];
+	}
+}
+
+/**
+ * @implements {MAHKeyframeStandard}
+ */
+export class MAHKeyframeStandardFE extends MAHKeyframeBaseFE {
+	/**
+	 * 
+	 * @param {MAHKeyframeStandard} keyframe 
+	 * @param {MAHPatternDesignFE} pattern_design
+	 */
+	constructor(keyframe, pattern_design) {
+		if (keyframe.type != "standard") throw new TypeError(`keyframe is not of type 'standard' found '${keyframe.type}'`);
+		super(keyframe, pattern_design);
+		this.type = /** @type {"standard"} */ ("standard"); //for type check
+		this.brush = keyframe.brush;
+		this.intensity = keyframe.intensity;
+		this.coords = keyframe.coords;
+		this.transition = keyframe.transition;
 	}
 	
 	/**
-	 * @returns {MAHKeyframe}
+	 * @returns {MAHKeyframeStandard}
 	 */
 	toJSON() {
-		const { time, brush, intensity, coords, transition } = this;
-		return { time, brush, intensity, coords, transition };
+		const { type, time, brush, intensity, coords, transition } = this;
+		return { type, time, brush, intensity, coords, transition };
 	}
 
 	
 	/**
-	 * @typedef {Object} MAHKeyframeSetOptional
+	 * @typedef {Object} MAHKeyframeStandardSetOptional
 	 * @property {{ x: number, y: number, z: number }=} coords
 	 * @property {number=} time
-	 * @typedef {MAHKeyframeSetOptional | MAHKeyframeFE} MAHKeyframeSet
+	 * @typedef {MAHKeyframeStandardSetOptional | MAHKeyframeStandardFE} MAHKeyframeStandardSet
 	 */
 	/**
 	 * 
 	 * @param {MAHPatternDesignFE} pattern_design 
-	 * @param {MAHKeyframeSet} set 
+	 * @param {MAHKeyframeStandardSet} set 
 	 * @param {MAHKeyframeFE[]} current_keyframes_sorted
 	 */
 	static from_current_keyframes(pattern_design, set, current_keyframes_sorted) {
@@ -464,10 +536,26 @@ export class MAHKeyframeFE {
 
 		let next_keyframe_index = current_keyframes_sorted.findIndex(kf => kf.time > time);
 		if (next_keyframe_index == -1) next_keyframe_index = current_keyframes_sorted.length;
-		const secondprev_keyframe = /** @type {MAHKeyframeFE | undefined} */ (current_keyframes_sorted[next_keyframe_index-2]);
-		const prev_keyframe = /** @type {MAHKeyframeFE | undefined} */ (current_keyframes_sorted[next_keyframe_index-1]);
-		const next_keyframe = /** @type {MAHKeyframeFE | undefined} */ (current_keyframes_sorted[next_keyframe_index]);
-		const secondnext_keyframe = /** @type {MAHKeyframeFE | undefined} */ (current_keyframes_sorted[next_keyframe_index+1]);
+		const next_neighbors = [];
+		for (let i=next_keyframe_index; i<current_keyframes_sorted.length; i++) {
+			const kf = current_keyframes_sorted[i];
+			if (kf.type == "standard") next_neighbors.push(kf);
+			if (next_neighbors.length == 2) break;
+			else continue;
+		}
+		const prev_neighbors = [];
+		for (let i=next_keyframe_index; i--; ) {
+			const kf = current_keyframes_sorted[i];
+			if (kf.type == "standard") prev_neighbors.push(kf);
+			if (prev_neighbors.length == 2) break;
+			else continue;
+		}
+		const [next_keyframe, secondnext_keyframe] = next_neighbors;
+		const [prev_keyframe, secondprev_keyframe] = prev_neighbors;
+		// const secondprev_keyframe = /** @type {MAHKeyframeFE | undefined} */ (current_keyframes_sorted[next_keyframe_index-2]);
+		// const prev_keyframe = /** @type {MAHKeyframeFE | undefined} */ (current_keyframes_sorted[next_keyframe_index-1]);
+		// const next_keyframe = /** @type {MAHKeyframeFE | undefined} */ (current_keyframes_sorted[next_keyframe_index]);
+		// const secondnext_keyframe = /** @type {MAHKeyframeFE | undefined} */ (current_keyframes_sorted[next_keyframe_index+1]);
 
 		let coords = { x: 0, y: 0, z: 0 };
 		if (set.coords == undefined) {
@@ -484,32 +572,51 @@ export class MAHKeyframeFE {
 		} else {
 			coords = set.coords;
 		}
-		const keyframe = new MAHKeyframeFE(window.structuredClone({ ...MAHKeyframeFE.default, ...next_keyframe?.toJSON(), ...prev_keyframe?.toJSON(), ...set, time, coords }), pattern_design);
+		const keyframe = new MAHKeyframeStandardFE(window.structuredClone({ ...MAHKeyframeStandardFE.DEFAULT, ...next_keyframe?.toJSON(), ...prev_keyframe?.toJSON(), ...set, time, coords }), pattern_design);
 		
 		return keyframe;
 	}
+
+
+	/** @type {MAHKeyframeStandard} */
+	static DEFAULT = {
+		type: "standard",
+		time: 0.000,
+		coords: { x: 0, y: 0, z: 0, },
+		intensity: {
+			name: "Constant",
+			params: {
+				value: 1.00
+			}
+		},
+		brush: {
+			name: "Point",
+			params: {
+				size: 1.00
+			}
+		},
+		transition: {
+			name: "Linear",
+			params: {}
+		}
+	};
 }
-/** @type {MAHKeyframe} */
-MAHKeyframeFE.default = {
-	time: 0.000,
-	coords: { x: 0, y: 0, z: 0, },
-	intensity: {
-		name: "Constant",
-		params: {
-			value: 1.00
-		}
-	},
-	brush: {
-		name: "Point",
-		params: {
-			size: 1.00
-		}
-	},
-	transition: {
-		name: "Linear",
-		params: {}
+
+/**
+ * @implements {MAHKeyframePause}
+ */
+export class MAHKeyframePauseFE extends MAHKeyframeBaseFE {
+	/**
+	 * 
+	 * @param {MAHKeyframePause} keyframe 
+	 * @param {MAHPatternDesignFE} pattern_design
+	 */
+	constructor(keyframe, pattern_design) {
+		if (keyframe.type != "pause") throw new TypeError(`keyframe is not of type 'pause' found '${keyframe.type}'`);
+		super(keyframe, pattern_design);
+		this.type = /** @type {"pause"} */ ("pause"); //for type check
 	}
-};
+}
 
 
 const _mainsplit = SplitGrid({
@@ -576,11 +683,10 @@ document.addEventListener("paste", _ev => {
 });
 
 
-
-
-const primary_design = MAHPatternDesignFE.load_from_localstorage() || new MAHPatternDesignFE("test.json", {
+/** @type {[string, MidAirHapticsAnimationFileFormat]} */
+MAHPatternDesignFE.DEFAULT = ["test.json", {
 	$DATA_FORMAT: "MidAirHapticsAnimationFileFormat",
-	$REVISION: "0.0.1-alpha.2",
+	$REVISION: "0.0.1-alpha.3",
 
 	name: "test",
 
@@ -593,6 +699,7 @@ const primary_design = MAHPatternDesignFE.load_from_localstorage() || new MAHPat
 
 	keyframes: [
 		{
+			type: "standard",
 			time: 0.000,
 			coords: {
 				x: 250,
@@ -617,7 +724,15 @@ const primary_design = MAHPatternDesignFE.load_from_localstorage() || new MAHPat
 			}
 		}
 	]
-});
+}];
+let primary_design;
+try {
+	primary_design = MAHPatternDesignFE.load_from_localstorage() || new MAHPatternDesignFE(...MAHPatternDesignFE.DEFAULT);
+} catch (e) {
+	alert("loading design from local storage failed.\nProbably due to the format changing, and migration not being implemented during initial development (version<1.0.0)). loading default pattern...");
+	primary_design = new MAHPatternDesignFE(...MAHPatternDesignFE.DEFAULT);
+	console.error(e);
+}
 primary_design.commit_operation({});
 const konva_pattern_stage = new KonvaPatternStage(primary_design, "patternstage", centerDiv);
 const konva_timeline_stage = new KonvaTimelineStage(primary_design, "timelinestage", timelineDiv);

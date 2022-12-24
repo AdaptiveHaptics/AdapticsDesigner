@@ -5,6 +5,7 @@ const Konva = /** @type {import("konva").default} */ (window["Konva"]);
 
 /** @typedef {import("./script.mjs").MAHKeyframeFE} MAHKeyframeFE */
 /** @typedef {import("./script.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
+/** @typedef {import("./script.mjs").MAHKeyframeStandardFE} MAHKeyframeStandardFE */
 /** @typedef {import("../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
 
@@ -45,7 +46,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 			current_design.save_state();
 			const { x: raw_x, y: raw_y } = this.k_control_points_layer.getRelativePointerPosition();
 			const { x, y } = this.layer_coords_to_pattern_coords({ raw_x, raw_y });
-			const new_keyframe = this.current_design.insert_new_keyframe({ coords: { x, y, z: 0 } });
+			const new_keyframe = this.current_design.insert_new_standard_keyframe({ coords: { x, y, z: 0 } });
 			current_design.commit_operation({ new_keyframes: [new_keyframe] });
 			if (ev.evt.ctrlKey) current_design.select_keyframes([new_keyframe]);
 		});
@@ -99,6 +100,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 				const high_coords = this.layer_coords_to_pattern_coords({ raw_x: Math.max(x1, x2), raw_y: Math.max(y1, y2) });
 				const keyframes_in_box = current_design.filedata.keyframes.filter(kf => {
 					return (
+						"coords" in kf &&
 						low_coords.x <= kf.coords.x && kf.coords.x <= high_coords.x &&
 						low_coords.y <= kf.coords.y && kf.coords.y <= high_coords.y
 					);
@@ -111,6 +113,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 
 
 		current_design.state_change_events.addEventListener("kf_new", ev => {
+			if (!("coords" in ev.detail.keyframe)) return;
 			const keyframes = this.current_design.get_sorted_keyframes();
 			const index = keyframes.indexOf(ev.detail.keyframe);
 			const curr_cp = new KonvaPatternControlPoint(ev.detail.keyframe, this);
@@ -179,11 +182,14 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		this.k_control_points_layer.add(this.selection_rect);
 
 		const keyframes = this.current_design.get_sorted_keyframes();
+		const control_points = [];
+		for (const kf of keyframes) { // render control points
+			if (!("coords" in kf)) continue;
+			const cp = new KonvaPatternControlPoint(kf, this);
+			control_points.push(cp);
+		}
 
-		// render control points
-		const control_points = keyframes.map(keyframe => new KonvaPatternControlPoint(keyframe, this));
-
-		//render path interp
+		// render path interp
 		for (let i = 0; i < control_points.length && i + 1 < control_points.length; i++) {
 			const curr_cp = control_points[i];
 			const next_cp = control_points[i + 1];
@@ -221,7 +227,7 @@ class KonvaPatternControlPoint {
 	lines = { in: null, out: null };
 	/**
 	 * 
-	 * @param {MAHKeyframeFE} keyframe 
+	 * @param {MAHKeyframeStandardFE} keyframe 
 	 * @param {KonvaPatternStage} pattern_stage 
 	 */
 	constructor(keyframe, pattern_stage) {

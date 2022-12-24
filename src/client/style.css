@@ -35,6 +35,23 @@
     --timeline-major-gridline-stroke: hsl(var(--bg-hue), var(--bg-sat), 12%);
     --timeline-major-gridline-text: hsl(var(--bg-hue), var(--bg-sat), 2%);
     --timeline-minor-gridline-stroke: hsl(var(--bg-hue), var(--bg-sat), 16%);
+
+    --scrollbar-track-color: var(--background-titlebar);
+    --scrollbar-thumb-color: var(--background-primary);
+}
+
+.betterscroll::-webkit-scrollbar {
+    width: 1.5ex;
+}
+
+.betterscroll::-webkit-scrollbar-track {
+    background: var(--scrollbar-track-color);
+    /* -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); */
+}
+
+.betterscroll::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-thumb-color);
+    /* outline: 1px solid slategrey; */
 }
 
 html,
@@ -148,4 +165,35 @@ div.gutter.row {
 
 div.gutter.topbottom {
     grid-column: 1 / -1;
+}
+
+div.right {
+    display: grid;
+}
+div.unifiedkeyframeeditor {
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+}
+
+details {
+    background-color: var(--background-tertiary-alt);
+    border: 1px solid var(--background-titlebar);
+    border-radius: 4px;
+    padding: 0.5em 0.5em 0;
+}
+
+summary {
+    font-weight: bold;
+    margin: -0.5em -0.5em 0;
+    padding: 0.5em;
+}
+
+details[open] {
+    padding: 0.5em;
+}
+
+details[open] summary {
+    border-bottom: 1px solid var(--background-titlebar);
+    margin-bottom: 0.5em;
 }

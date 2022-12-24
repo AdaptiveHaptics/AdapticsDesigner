@@ -63,7 +63,7 @@ export class KonvaResizeScrollStage extends KonvaResizeStage {
 		this.vertical_scroll_bar = new Konva.Rect({
 			width: 10,
 			height: 100,
-			fill: "grey",
+			fill: getComputedStyle(document.body).getPropertyValue("--scrollbar-thumb-color"),
 			opacity: 0.8,
 			x: this.k_stage.width() - this.scrollbar_padding - 10,
 			y: this.scrollbar_padding,
@@ -88,7 +88,7 @@ export class KonvaResizeScrollStage extends KonvaResizeStage {
 		this.horizontal_scroll_bar = new Konva.Rect({
 			width: 100,
 			height: 10,
-			fill: "grey",
+			fill: getComputedStyle(document.body).getPropertyValue("--scrollbar-thumb-color"),
 			opacity: 0.8,
 			x: this.scrollbar_padding,
 			y: this.k_stage.height() - this.scrollbar_padding - 10,

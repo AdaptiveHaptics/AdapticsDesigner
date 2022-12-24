@@ -1,43 +1,70 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <title>Web Haptic Designer</title>
-    <script src="./thirdparty/konva.min.js" defer></script>
-    <script src="./js/script.mjs" type="module"></script>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="stylesheet" href="style.css">
+	<title>Web Haptic Designer</title>
+	<script src="./thirdparty/konva.min.js" defer></script>
+	<script src="./js/script.mjs" type="module"></script>
 </head>
+
 <body>
-    <div class="app">
-        <div class="titlebar">
-            <span class="filename">test.json</span>
-            <span class="savedstate">loading....</span>
-        </div>
-        <div class="mainsplitgrid">
-            <div class="left">
-                <div class="designs">
-    
-                </div>
-            </div>
-            <div class="gutter column leftcenter"></div>
-            <div class="center konvastagecontainer">
-                <div id="patternstage" class="konvastage"></div>
-            </div>
-            <div class="gutter column centerright"></div>
-            <div class="right">
-                <div class="brusheditor"></div>
-            </div>
-            <div class="gutter row topbottom"></div>
-            <div class="bottom">
-                <div class="keyframeeditor"></div>
-                <div class="gutter column"></div>
-                <div class="timeline konvastagecontainer">
-                    <div id="timelinestage" class="konvastage"></div>
-                </div>
-            </div>
-        </div>
-    </div>
+	<div class="app">
+		<div class="titlebar">
+			<span class="filename">test.json</span>
+			<span class="savedstate">loading....</span>
+		</div>
+		<div class="mainsplitgrid">
+			<div class="left">
+				<div class="designs">
+
+				</div>
+			</div>
+			<div class="gutter column leftcenter"></div>
+			<div class="center konvastagecontainer">
+				<div id="patternstage" class="konvastage"></div>
+			</div>
+			<div class="gutter column centerright"></div>
+			<div class="right">
+				<div class="unifiedkeyframeeditor betterscroll">
+					<details class="coords">
+						<summary>coords</summary>
+						<div class="coordsconfig">
+							
+						</div>
+					</details>
+					<details class="brush">
+						<summary>Brush</summary>
+						<div class="brushconfig">
+							
+						</div>
+					</details>
+					<details class="intensity">
+						<summary>Intensity</summary>
+						<div class="intensityconfig">
+							
+						</div>
+					</details>
+					<details class="transition">
+						<summary>Transition</summary>
+						<div class="transitionconfig">
+						</div>
+					</details>
+				</div>
+			</div>
+			<div class="gutter row topbottom"></div>
+			<div class="bottom">
+				<div class="keyframeeditor"></div>
+				<div class="gutter column"></div>
+				<div class="timeline konvastagecontainer">
+					<div id="timelinestage" class="konvastage"></div>
+				</div>
+			</div>
+		</div>
+	</div>
 </body>
+
 </html>

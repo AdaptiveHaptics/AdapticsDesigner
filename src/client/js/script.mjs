@@ -112,13 +112,13 @@ try {
 	primary_design = new MAHPatternDesignFE(...MAHPatternDesignFE.DEFAULT);
 	console.error(e);
 }
+primary_design.state_change_events.addEventListener("commit_update", ev => {
+	savedstateSpan.textContent = ev.detail.committed ? "saved to localstorage" : "pending change";
+});
 primary_design.commit_operation({});
 const konva_pattern_stage = new KonvaPatternStage(primary_design, "patternstage", centerDiv);
 const konva_timeline_stage = new KonvaTimelineStage(primary_design, "timelinestage", timelineDiv);
 const unified_keyframe_editor = new UnifiedKeyframeEditor(primary_design, notnull(document.querySelector("div.unifiedkeyframeeditor")));
-primary_design.state_change_events.addEventListener("commit_update", ev => {
-	savedstateSpan.textContent = ev.detail.committed ? "saved to localstorage" : "pending change";
-});
 
 // @ts-ignore
 window.konva_pattern_stage = konva_pattern_stage;

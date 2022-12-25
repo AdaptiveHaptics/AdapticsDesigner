@@ -5,6 +5,7 @@ import { notnull } from "./util.mjs";
 const Konva = /** @type {import("konva").default} */ (window["Konva"]);
 
 /** @typedef {import("./fe/keyframes/index.mjs").MAHKeyframeFE} MAHKeyframeFE */
+/** @typedef {import("./fe/keyframes/index.mjs").MAHKeyframePauseFE} MAHKeyframePauseFE */
 /** @typedef {import("./fe/patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
 /** @typedef {import("../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
@@ -126,16 +127,16 @@ export class KonvaPatternStage extends KonvaResizeStage {
 				if (prev_cp) new KonvaPatternControlPointLine(prev_cp, curr_cp, this);
 				if (next_cp) new KonvaPatternControlPointLine(curr_cp, next_cp, this);
 				if (prev_cp?.is_paused()) {
-					this.update_pause();
+					this.update_all_pause();
 				}
 			} else if (ev.detail.keyframe.type == "pause") {
 				const prev_cp = KonvaPatternControlPoint.get_control_point_from_keyframe(
 					this.current_design.get_nearest_neighbor_keyframe_matching_pred(ev.detail.keyframe, filter_by_coords, "prev"));
-				if (prev_cp) prev_cp.update_pause(true);
+				if (prev_cp) prev_cp.update_pause(ev.detail.keyframe);
 			}
 		});
 		current_design.state_change_events.addEventListener("kf_delete", ev => { 
-			this.update_pause();
+			this.update_all_pause();
 		});
 		current_design.state_change_events.addEventListener("rerender", _ev => {
 			this.render_design();
@@ -204,12 +205,12 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		}
 
 		this.update_paths();
-		this.update_pause();
+		this.update_all_pause();
 	}
 
 	update_order() {
 		this.update_paths();
-		this.update_pause();
+		this.update_all_pause();
 	}
 
 	update_paths() {
@@ -229,15 +230,15 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		}
 	}
 
-	update_pause() {
+	update_all_pause() {
 		let last_cp = null;
 		for (const kf of this.current_design.get_sorted_keyframes()) {
 			if ("coords" in kf) {
 				const curr_cp = KonvaPatternControlPoint.get_control_point_from_keyframe(kf);
-				curr_cp?.update_pause(false);
+				curr_cp?.update_pause(null);
 				last_cp = curr_cp;
 			} else if (kf.type == "pause") {
-				last_cp?.update_pause(true);
+				last_cp?.update_pause(kf);
 			}
 		}
 	}
@@ -280,10 +281,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 
 const pausex = 4;
 const pausey = 8;
-const pause_style = {
-	stroke: getComputedStyle(document.body).getPropertyValue("--control-point-pause-stroke"),
-	strokeWidth: 3,
-};
+const pausewidth = 3;
 
 class KonvaPatternControlPoint {
 	/** @type {{ in: KonvaPatternControlPointLine | null, out: KonvaPatternControlPointLine | null }} */
@@ -348,13 +346,17 @@ class KonvaPatternControlPoint {
 			visible: false,
 			listening: false,
 		});
-		this.paused_group.add(new Konva.Line({
-			points: [-pausex, -pausey, -pausex, pausey],
-			...pause_style
+		this.paused_group.add(new Konva.Rect({
+			x: -pausex-pausewidth/2,
+			y: -pausey,
+			width: pausewidth,
+			height: 2*pausey,
 		}));
-		this.paused_group.add(new Konva.Line({
-			points: [pausex, -pausey, pausex, pausey],
-			...pause_style
+		this.paused_group.add(new Konva.Rect({
+			x: pausex-pausewidth/2,
+			y: -pausey,
+			width: pausewidth,
+			height: 2*pausey,
 		}));
 		pattern_stage.k_control_points_layer.add(this.paused_group);
 
@@ -380,13 +382,19 @@ class KonvaPatternControlPoint {
 		}, { signal: this.listener_abort.signal });
 
 		pattern_stage.current_design.state_change_events.addEventListener("kf_select", ev => {
-			if (ev.detail.keyframe != keyframe) return;
-			this.update_select(true);
+			if (ev.detail.keyframe == keyframe) {
+				this.update_select(true);
+			} else if (ev.detail.keyframe == this.pause_keyframe) {
+				this.update_pause(this.pause_keyframe);
+			}
 		}, { signal: this.listener_abort.signal });
 
 		pattern_stage.current_design.state_change_events.addEventListener("kf_deselect", ev => {
-			if (ev.detail.keyframe != keyframe) return;
-			this.update_select(false);
+			if (ev.detail.keyframe == keyframe) {
+				this.update_select(false);
+			} else if (ev.detail.keyframe == this.pause_keyframe) {
+				this.update_pause(this.pause_keyframe);
+			}
 		}, { signal: this.listener_abort.signal });
 
 		pattern_stage.k_control_points_layer.add(this.k_cp_circle);
@@ -424,11 +432,17 @@ class KonvaPatternControlPoint {
 
 	/**
 	 * 
-	 * @param {boolean} paused 
+	 * @param {MAHKeyframePauseFE | null} pause_keyframe 
 	 */
-	update_pause(paused) {
-		this.paused_group.visible(paused);
-		this.paused_group.setZIndex(999);
+	update_pause(pause_keyframe) {
+		this.pause_keyframe = pause_keyframe;
+		this.paused_group.visible(!!pause_keyframe);
+		if (pause_keyframe) {
+			const fillvar = this.pattern_stage.current_design.selected_keyframes.has(pause_keyframe)?"--control-point-pause-selected":"--control-point-pause";
+			//@ts-ignore
+			for (const c of this.paused_group.children) c.fill(getComputedStyle(document.body).getPropertyValue(fillvar));
+			this.paused_group.setZIndex((this.pattern_stage.k_control_points_layer.children?.length || 999)-1);
+		}
 	}
 
 	/**

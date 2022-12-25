@@ -279,15 +279,16 @@ class KonvaTimelineKeyframe {
 			shadowOffset: { x: 1, y: 1 } ,
 		};
 
-		const pause_config = {
+		/** @type {import("konva/lib/shapes/Label.js").TagConfig} */
+		const pause_config = keyframe.type == "pause" ? {
 			stroke: getComputedStyle(document.body).getPropertyValue("--paused-keyframe-color"),
-			strokeWidth: 2,
-		};
+			strokeWidth: 3,
+		} : {};
+		
 		this.flag = new Konva.Label({
 			x: -1,
 			y: this.ycoord,
 			draggable: true,
-			...pause_config,
 			dragBoundFunc: pos => {
 				return {
 					x: pos.x,
@@ -302,6 +303,7 @@ class KonvaTimelineKeyframe {
 			cornerRadius: 1,
 			lineJoin: "round",
 			...shadow_settings,
+			...pause_config,
 		}));
 		this.flag.add(new Konva.Text({
 			text: "",

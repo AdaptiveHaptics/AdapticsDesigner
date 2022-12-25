@@ -1,17 +1,17 @@
-import { filter_by_coords } from "./fe/keyframes/index.mjs";
-import { KonvaResizeStage } from "./konvashared.mjs";
-import { notnull } from "./util.mjs";
+import { filter_by_coords } from "../fe/keyframes/index.mjs";
+import { KonvaResizeStage } from "./shared.mjs";
+import { notnull } from "../util.mjs";
 
 const Konva = /** @type {import("konva").default} */ (window["Konva"]);
 
-/** @typedef {import("./fe/keyframes/index.mjs").MAHKeyframeFE} MAHKeyframeFE */
-/** @typedef {import("./fe/keyframes/index.mjs").MAHKeyframePauseFE} MAHKeyframePauseFE */
-/** @typedef {import("./fe/patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
-/** @typedef {import("../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
-/** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
+/** @typedef {import("../fe/keyframes/index.mjs").MAHKeyframeFE} MAHKeyframeFE */
+/** @typedef {import("../fe/keyframes/index.mjs").MAHKeyframePauseFE} MAHKeyframePauseFE */
+/** @typedef {import("../fe/patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
+/** @typedef {import("../../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
+/** @typedef {import("../../../shared/types").MAHKeyframe} MAHKeyframe */
 /** 
  * @template T
- * @typedef {import("../../shared/util").NotNullable<T>} NotNullable
+ * @typedef {import("../../../shared/util").NotNullable<T>} NotNullable
  */
 
 const KonvaPatternControlPointSymbol = Symbol("KonvaPatternControlPoint");
@@ -289,7 +289,7 @@ class KonvaPatternControlPoint {
 	
 	/**
 	 * 
-	 * @param {NotNullable<ReturnType<import("./fe/keyframes/index.mjs").filter_by_coords>>} keyframe 
+	 * @param {NotNullable<ReturnType<import("../fe/keyframes/index.mjs").filter_by_coords>>} keyframe 
 	 * @param {KonvaPatternStage} pattern_stage 
 	 */
 	constructor(keyframe, pattern_stage) {

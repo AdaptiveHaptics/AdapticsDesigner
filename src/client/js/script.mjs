@@ -1,7 +1,7 @@
 import Split from "../thirdparty/split-grid.mjs";
 import { MAHPatternDesignFE } from "./fe/patterndesign.mjs";
-import { KonvaPatternStage } from "./konvapatternstage.mjs";
-import { KonvaTimelineStage } from "./konvatimeline.mjs";
+import { KonvaPatternStage } from "./konvapanes/patternstage.mjs";
+import { KonvaTimelineStage } from "./konvapanes/timelinestage.mjs";
 import { UnifiedKeyframeEditor } from "./unifiedkeyframeeditor.mjs";
 import { notnull } from "./util.mjs";
 

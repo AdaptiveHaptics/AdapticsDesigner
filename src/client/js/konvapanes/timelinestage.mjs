@@ -1,12 +1,12 @@
-import { KonvaResizeScrollStage } from "./konvashared.mjs";
-import { milliseconds_to_hhmmssms_format, notnull } from "./util.mjs";
+import { KonvaResizeScrollStage } from "./shared.mjs";
+import { milliseconds_to_hhmmssms_format, notnull } from "../util.mjs";
 
 const Konva = /** @type {import("konva").default} */ (window["Konva"]);
 
-/** @typedef {import("./fe/keyframes/index.mjs").MAHKeyframeFE} MAHKeyframeFE */
-/** @typedef {import("./fe/patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
-/** @typedef {import("../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
-/** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
+/** @typedef {import("../fe/keyframes/index.mjs").MAHKeyframeFE} MAHKeyframeFE */
+/** @typedef {import("../fe/patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
+/** @typedef {import("../../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
+/** @typedef {import("../../../shared/types").MAHKeyframe} MAHKeyframe */
 
 const KonvaTimelineKeyframeSymbol = Symbol("KonvaTimelineKeyframe");
 

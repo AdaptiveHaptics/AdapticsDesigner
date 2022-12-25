@@ -17,6 +17,7 @@
     --text-low-priority: rgb(210, 210, 213);
     --error: #cd5c5c;
 
+    --selected-konva-stage: hsl(204, 40%, 75%);
 
     --paused-keyframe-color: #ecb474;
     --selected-keyframe-color: hwb(204 55% 5%);
@@ -116,9 +117,22 @@ div.center {
     align-items: center;
 }
 
+
+
 div.konvastagecontainer {
     position: relative;
     overflow: hidden;
+}
+div.konvastagecontainer:focus:before, div.konvastagecontainer:focus:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: 100%;
+    box-shadow: inset 0px 0px 1px 1px var(--selected-konva-stage);
+    z-index: 1;
+    pointer-events: none;
 }
 div.konvastage {
     position: absolute;
@@ -183,7 +197,7 @@ div.unifiedkeyframeeditor {
 }
 div.unifiedkeyframeeditor > div.help {
     display: none;
-    padding: 1ex;
+    padding: 1.5ex;
     background-color: var(--background-tertiary-alt);
 }
 div.unifiedkeyframeeditor.showhelp > * {
@@ -193,57 +207,65 @@ div.unifiedkeyframeeditor.showhelp > div.help {
     display: block;
 }
 div.unifiedkeyframeeditor > form {
-    display: contents;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--background-tertiary-alt);
+}
+div.unifiedkeyframeeditor > form > h1 {
+    padding: 0.5em;
+    margin: 0px;
 }
 
 div.typecontainer {
     background-color: var(--background-tertiary-alt);
-    padding: 1ex 0ex;
+    padding: 1ex;
     display: grid;
     grid-template-columns: auto 1fr;
     gap: 1ex;
     align-items: center;
+    border: 1px solid var(--background-titlebar);
 }
 
-div.typecontainer select, div.typecontainer option {
+div.unifiedkeyframeeditor select, div.unifiedkeyframeeditor option, div.unifiedkeyframeeditor input {
     color: var(--text-normal);
     background-color: var(--background-primary);
     padding: 1ex;
+    border: none;
 }
 
-div.typecontainer, summary, div.typecontainer select, div.typecontainer option {
+div.unifiedkeyframeeditor summary, div.typecontainer select, div.typecontainer option {
     font-weight: bold;
     text-transform: capitalize;
-    padding: 0.5em;
+    padding: 1ex;
 }
 
-details {
+div.unifiedkeyframeeditor details {
     background-color: var(--background-tertiary-alt);
     border: 1px solid var(--background-titlebar);
     border-radius: 4px;
-    padding: 0.5em 0.5em 0;
+    padding: 1ex 1ex 0;
 }
 
-summary {
-    margin: -0.5em -0.5em 0;
+div.unifiedkeyframeeditor summary {
+    margin: -1ex -1ex 0;
 }
 
-details[open] {
-    padding: 0.5em;
+div.unifiedkeyframeeditor details[open] {
+    padding: 1ex;
 }
 
-details[open] summary {
+div.unifiedkeyframeeditor details[open] summary {
     border-bottom: 1px solid var(--background-titlebar);
-    margin-bottom: 0.5em;
+    margin-bottom: 1ex;
 }
 
-div.coordsconfig {
+div.labelinputgrid {
     display: grid;
     grid-template-columns: auto 1fr;
     gap: 0.5ex 1ex;
     align-items: center;
 }
 
-div.coordsconfig > label {
+div.labelinputgrid > label {
     display: contents;
 }

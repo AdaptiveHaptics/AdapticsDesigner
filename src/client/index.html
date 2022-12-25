@@ -24,7 +24,7 @@
 				</div>
 			</div>
 			<div class="gutter column leftcenter"></div>
-			<div class="center konvastagecontainer">
+			<div class="center konvastagecontainer" tabindex="1">
 				<div id="patternstage" class="konvastage"></div>
 			</div>
 			<div class="gutter column centerright"></div>
@@ -32,12 +32,19 @@
 				<div class="unifiedkeyframeeditor betterscroll">
 					<div class="help">
 						<h1>Help</h1>
-						(incomplete)
+						(maybe get rid of this or keep it minimal and move more to a "tips" section)
 						<p>
 							<h4><code>Double Click</code> to create a new keyframe</h4>
 							<ul>
 								<li>In background of the Pattern Pane</li>
 								<li>WIthin the keyframe track of the Timeline Pane</li>
+							</ul>
+						</p>
+						<p>
+							<h4><code>Ctrl+a</code> to select all</h4>
+							<ul>
+								<li>With Pattern Pane selected, only select keyframes with coordinates</li>
+								<li>Otherwise, select all keyframes</li>
 							</ul>
 						</p>
 						<p>
@@ -51,22 +58,23 @@
 							<h4>During group selection:</h4>
 							<ul>
 								<li><code>Ctrl</code> is union/addition to selection</li>
-								<li><code>Ctrl+shift</code> is subtraction from selection</li>
+								<li><code>Ctrl+Shift</code> is subtraction from selection</li>
 							</ul>
 						</p>
 					</div>
 					<form>
+						<h1>Keyframe Editor</h1>
 						<div class="typecontainer">
-							<label>Keyframe Type: </label>
+							<label>Type: </label>
 							<select name="type" class="type">
-								<option hidden disabled selected value>multipletypes</option>
+								<option disabled selected value="multipletypes">multiple types</option>
 								<option value="standard">standard</option>
 								<option value="pause">pause</option>
 							</select>
 						</div>
 						<details class="coords">
 							<summary>Coords</summary>
-							<div class="coordsconfig">
+							<div class="coordsconfig labelinputgrid">
 								<label>x: <input type="number" name="x" min="0" max="500"></label>
 								<label>y: <input type="number" name="y" min="0" max="500"></label>
 								<label>z: <input type="number" name="z" min="0" max="500"></label>
@@ -75,18 +83,25 @@
 						<details class="brush">
 							<summary>Brush</summary>
 							<div class="brushconfig">
-								
+								<label>Brush Type: </label>
+								<select name="type" class="type">
+									<option disabled selected value="multipletypes">multiple types</option>
+									<option value="standard">standard</option>
+									<option value="pause">pause</option>
+								</select>
+								TODO
 							</div>
 						</details>
 						<details class="intensity">
 							<summary>Intensity</summary>
 							<div class="intensityconfig">
-								
+								TODO
 							</div>
 						</details>
 						<details class="transition">
 							<summary>Transition</summary>
 							<div class="transitionconfig">
+								TODO
 							</div>
 						</details>
 					</form>
@@ -96,7 +111,7 @@
 			<div class="bottom">
 				<div class="keyframeeditor"></div>
 				<div class="gutter column"></div>
-				<div class="timeline konvastagecontainer">
+				<div class="timeline konvastagecontainer" tabindex="2">
 					<div id="timelinestage" class="konvastage"></div>
 				</div>
 			</div>

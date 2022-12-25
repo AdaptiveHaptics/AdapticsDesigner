@@ -3,6 +3,7 @@
 /** @typedef {import("../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
 
+import { has_coords } from "./fe/keyframes/index.mjs";
 import { notnull } from "./util.mjs";
 
 export class UnifiedKeyframeEditor {
@@ -15,7 +16,12 @@ export class UnifiedKeyframeEditor {
 		this.pattern_design = pattern_design;
 		this.unifiedkeyframeeditorDiv = unifiedkeyframeeditorDiv;
 
+		this.pattern_design.state_change_events.addEventListener("rerender", ev => this.select_update());
+		this.pattern_design.state_change_events.addEventListener("kf_reorder", ev => this.select_update());
 		this.pattern_design.state_change_events.addEventListener("kf_select", ev => this.select_update());
+		this.pattern_design.state_change_events.addEventListener("kf_update", ev => {
+			if (this.pattern_design.selected_keyframes.has(ev.detail.keyframe)) this.select_update();
+		});
 		this.pattern_design.state_change_events.addEventListener("kf_deselect", ev => this.select_update());
 
 		this.ukfeForm = notnull(this.unifiedkeyframeeditorDiv.querySelector("form"));
@@ -27,7 +33,9 @@ export class UnifiedKeyframeEditor {
 		notnull(this.ukfeForm.querySelector("div.typecontainer")).addEventListener("change", ev => {
 			this.on_type_change();
 		});
-		notnull(this.ukfeForm.querySelector("details.coords")).addEventListener("change", ev => {
+		/** @type {HTMLDetailsElement} */
+		this.coords_details = notnull(this.ukfeForm.querySelector("details.coords"));
+		this.coords_details.addEventListener("change", ev => {
 			this.on_coords_change();
 		});
 		notnull(this.ukfeForm.querySelector("details.brush")).addEventListener("change", ev => {
@@ -39,6 +47,7 @@ export class UnifiedKeyframeEditor {
 		notnull(this.ukfeForm.querySelector("details.transition")).addEventListener("change", ev => {
 			this.on_transition_change();
 		});
+		
 
 
 		/** @type {HTMLSelectElement} */
@@ -49,23 +58,29 @@ export class UnifiedKeyframeEditor {
 	}
 
 
+
+	/**
+	 * @template T
+	 * @template F
+	 * @param {T[]} keyframes
+	 * @param {(arg0: T) => F} map_to_field 
+	 * @returns {F | null}
+	 */
+	get_if_field_identical(keyframes, map_to_field) {
+		const fa = keyframes.map(map_to_field);
+		if (fa.every(v => v == fa[0])) return fa[0];
+		else return null;
+	}
+
+
 	select_update() {
 		const selected = [...this.pattern_design.selected_keyframes];
-		if (selected.length == 0) this.unifiedkeyframeeditorDiv.classList.add("showhelp");
+		if (selected.length == 0) return this.unifiedkeyframeeditorDiv.classList.add("showhelp");
 		else this.unifiedkeyframeeditorDiv.classList.remove("showhelp");
 
 
-		let selected_type;
-		for (const kf of selected) {
-			if (!selected_type) selected_type = kf.type;
-			else if (selected_type == kf.type) continue;
-			else {
-				selected_type = null;
-				break;
-			}
-		}
-		// @ts-ignore setting to null
-		this.type_select.value = selected_type;
+		const selected_type = this.get_if_field_identical(selected, kf => kf.type);
+		this.type_select.value = selected_type || "multipletypes";
 
 
 
@@ -81,16 +96,34 @@ export class UnifiedKeyframeEditor {
 				else common_fields.delete(common_field);
 			}
 		}
-		for (const field of common_fields) {
+
+		if (common_fields.has("coords")) {
+			const for_type_check = selected.filter(has_coords);
+			
+			this.coords_details.style.display = "";
+			this.coords_details.querySelectorAll("input").forEach(i => i.value = this.get_if_field_identical(for_type_check, kf => kf.coords[i.name]));
+		}
+		if (common_fields.has("brush")) {
 			/** @type {HTMLDetailsElement} */
-			const field_details = notnull(this.ukfeForm.querySelector(`details.${field}`));
-			field_details.style.display = "";
+			const brush_details = notnull(this.ukfeForm.querySelector("details.brush"));
+			brush_details.style.display = "";
+		}
+		if (common_fields.has("intensity")) {
+			/** @type {HTMLDetailsElement} */
+			const intensity_details = notnull(this.ukfeForm.querySelector("details.intensity"));
+			intensity_details.style.display = "";
+		}
+		if (common_fields.has("transition")) {
+			/** @type {HTMLDetailsElement} */
+			const transition_details = notnull(this.ukfeForm.querySelector("details.transition"));
+			transition_details.style.display = "";
 		}
 	}
 
 
 	on_type_change(ev) {
 		this.pattern_design.save_state();
+		
 		const new_type = this.type_select.value;
 		const selected = [...this.pattern_design.selected_keyframes];
 		const deleted_keyframes = this.pattern_design.delete_keyframes(selected);
@@ -106,7 +139,10 @@ export class UnifiedKeyframeEditor {
 	on_coords_change() {
 		this.pattern_design.save_state();
 
-		this.pattern_design.commit_operation();
+		const keyframes = [...this.pattern_design.selected_keyframes].filter(has_coords); //filter for type_check;
+		this.coords_details.querySelectorAll("input").forEach(i => keyframes.forEach(kf => kf.coords[i.name] = Math.min(Math.max(parseFloat(i.value), 0), 500)));
+
+		this.pattern_design.commit_operation({ updated_keyframes: keyframes });
 	}
 	on_brush_change() {
 		this.pattern_design.save_state();

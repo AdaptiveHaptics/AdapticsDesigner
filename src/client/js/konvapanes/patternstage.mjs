@@ -1,4 +1,4 @@
-import { filter_by_coords } from "../fe/keyframes/index.mjs";
+import { filter_by_coords, has_coords } from "../fe/keyframes/index.mjs";
 import { KonvaResizeStage } from "./shared.mjs";
 import { notnull } from "../util.mjs";
 
@@ -54,6 +54,14 @@ export class KonvaPatternStage extends KonvaResizeStage {
 			const new_keyframe = this.current_design.insert_new_keyframe({ type: "standard", coords: { x, y, z: 0 } });
 			current_design.commit_operation({ new_keyframes: [new_keyframe] });
 			if (ev.evt.ctrlKey) current_design.select_keyframes([new_keyframe]);
+		});
+		resize_container.addEventListener("keydown", ev => {
+			if (ev.key == "a" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
+				ev.preventDefault();
+				ev.stopPropagation();
+				this.current_design.deselect_all_keyframes();
+				this.current_design.select_keyframes(this.current_design.filedata.keyframes.filter(has_coords));
+			}
 		});
 		// this.k_stage.on("click", ev => {
 		// 	if (ev.target == this.k_stage && !ev.evt.ctrlKey) current_design.deselect_all_keyframes();
@@ -135,7 +143,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 				if (prev_cp) prev_cp.update_pause(ev.detail.keyframe);
 			}
 		});
-		current_design.state_change_events.addEventListener("kf_delete", ev => { 
+		current_design.state_change_events.addEventListener("kf_delete", _ev => { 
 			this.update_all_pause();
 		});
 		current_design.state_change_events.addEventListener("rerender", _ev => {

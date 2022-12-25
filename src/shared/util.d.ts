@@ -24,3 +24,5 @@ type OptProp<T, K extends keyof T> = Partial<Pick<T, K>> & T;
 type ReqProp<T, K extends keyof T> = Required<Pick<T, K>> & T;
 
 type NotNullable<T> = Exclude<T, null | undefined>;
+
+type KeysOfUnion<T> = T extends T ? keyof T: never;

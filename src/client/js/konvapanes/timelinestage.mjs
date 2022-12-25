@@ -46,6 +46,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 
 	transformer = new Konva.Transformer();
 	selection_rect = new Konva.Rect();
+	timestamp_rect = new Konva.Rect();
 	keyframe_rect = new Konva.Rect();
 
 	/**
@@ -70,6 +71,13 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 			this.milliseconds_per_pixel = Math.max(100/500, this.milliseconds_per_pixel + dy / 500);
 
 			this.render_design();
+		});
+		resize_container.addEventListener("keydown", ev => {
+			if (ev.key == "a" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
+				ev.preventDefault();
+				ev.stopPropagation();
+				this.current_design.select_all_keyframes();
+			}
 		});
 
 		{ //initialize selection_rect
@@ -136,10 +144,11 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 
 		const keyframes = this.current_design.filedata.keyframes;
 
-		const _timestamp_rect = this.scrolling_layer.add(new Konva.Rect({
+		this.timestamp_rect = new Konva.Rect({
 			x: 0, y: 0, width: this.fullWidth, height: major_gridline_timestamp_rect_height,
 			fill: getComputedStyle(document.body).getPropertyValue("--background-tertiary")
-		}));
+		});
+		this.scrolling_layer.add(this.timestamp_rect);
 		this.keyframe_rect = new Konva.Rect({
 			x: 0, y: keyframe_rect_y, width: this.fullWidth, height: keyframe_rect_height,
 			fill: getComputedStyle(document.body).getPropertyValue("--timeline-minor-gridline-stroke")

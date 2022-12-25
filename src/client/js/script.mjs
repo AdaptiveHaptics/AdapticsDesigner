@@ -55,6 +55,17 @@ const _bottomsplit = SplitGrid({
 	],
 });
 
+
+/** @type {MAHPatternDesignFE} */
+let primary_design;
+try {
+	primary_design = MAHPatternDesignFE.load_from_localstorage() || new MAHPatternDesignFE(...MAHPatternDesignFE.DEFAULT);
+} catch (e) {
+	alert("loading design from local storage failed.\nProbably due to the format changing, and migration not being implemented during initial development (version<1.0.0)). loading default pattern...");
+	primary_design = new MAHPatternDesignFE(...MAHPatternDesignFE.DEFAULT);
+	console.error(e);
+}
+
 document.addEventListener("keydown", ev => {
 	if (ev.key == "/" || ev.key == "?") alert(`Help:
 	ctrl+z to undo
@@ -88,7 +99,10 @@ document.addEventListener("keydown", ev => {
 		const deleted_keyframes = primary_design.delete_keyframes([...primary_design.selected_keyframes]);
 		primary_design.commit_operation({ deleted_keyframes });
 	}
-
+	if (ev.key == "a" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
+		ev.preventDefault();
+		primary_design.select_all_keyframes();
+	}
 	if (ev.key == "s" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
 		ev.preventDefault();
 		console.warn("todo");
@@ -103,15 +117,6 @@ document.addEventListener("paste", _ev => {
 	primary_design.paste_clipboard(); 
 });
 
-
-let primary_design;
-try {
-	primary_design = MAHPatternDesignFE.load_from_localstorage() || new MAHPatternDesignFE(...MAHPatternDesignFE.DEFAULT);
-} catch (e) {
-	alert("loading design from local storage failed.\nProbably due to the format changing, and migration not being implemented during initial development (version<1.0.0)). loading default pattern...");
-	primary_design = new MAHPatternDesignFE(...MAHPatternDesignFE.DEFAULT);
-	console.error(e);
-}
 primary_design.state_change_events.addEventListener("commit_update", ev => {
 	savedstateSpan.textContent = ev.detail.committed ? "saved to localstorage" : "pending change";
 });

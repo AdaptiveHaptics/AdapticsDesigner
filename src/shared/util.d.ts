@@ -16,3 +16,11 @@ export type ImmutableArray<T> = ReadonlyArray<Immutable<T>>;
 export type ImmutableMap<K, V> = ReadonlyMap<Immutable<K>, Immutable<V>>;
 export type ImmutableSet<T> = ReadonlySet<Immutable<T>>;
 export type ImmutableObject<T> = { readonly [K in keyof T]: Immutable<T[K]> };
+
+
+/** Make one property optional */
+type OptProp<T, K extends keyof T> = Partial<Pick<T, K>> & T;
+/** Make one property required */
+type ReqProp<T, K extends keyof T> = Required<Pick<T, K>> & T;
+
+type NotNullable<T> = Exclude<T, null | undefined>;

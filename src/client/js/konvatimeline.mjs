@@ -3,8 +3,8 @@ import { milliseconds_to_hhmmssms_format, notnull } from "./util.mjs";
 
 const Konva = /** @type {import("konva").default} */ (window["Konva"]);
 
-/** @typedef {import("./script.mjs").MAHKeyframeFE} MAHKeyframeFE */
-/** @typedef {import("./script.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
+/** @typedef {import("./fe/keyframes/index.mjs").MAHKeyframeFE} MAHKeyframeFE */
+/** @typedef {import("./fe/patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
 /** @typedef {import("../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
 
@@ -279,10 +279,15 @@ class KonvaTimelineKeyframe {
 			shadowOffset: { x: 1, y: 1 } ,
 		};
 
+		const pause_config = {
+			stroke: getComputedStyle(document.body).getPropertyValue("--paused-keyframe-color"),
+			strokeWidth: 2,
+		};
 		this.flag = new Konva.Label({
 			x: -1,
 			y: this.ycoord,
 			draggable: true,
+			...pause_config,
 			dragBoundFunc: pos => {
 				return {
 					x: pos.x,
@@ -291,7 +296,6 @@ class KonvaTimelineKeyframe {
 			},
 		});
 		this.flag.add(new Konva.Tag({
-			fill: getComputedStyle(document.body).getPropertyValue("--keyframe-flag-fill"),
 			pointerDirection: "down",
 			pointerWidth: 10,
 			pointerHeight: 5,
@@ -327,17 +331,17 @@ class KonvaTimelineKeyframe {
 		});
 		this.flag.on("dragmove", _ev => {
 			//TODO: it would be nice if perfectly overlapping control points were more obvious to the user
-			this.update_control_point({ time: this.timeline_stage.raw_x_to_t({ raw_x: this.flag.x(), snap: this.timeline_stage.transformer.nodes().length<=1 }) });
+			this.update_time({ time: this.timeline_stage.raw_x_to_t({ raw_x: this.flag.x(), snap: this.timeline_stage.transformer.nodes().length<=1 }) });
 		});
 		this.flag.on("transform", _ev => {
 			this.flag.scale({ x: 1, y: 1 });
 			this.flag.skew({ x: 0, y: 0 });
 			this.flag.rotation(0);
-			this.update_control_point({ time: this.timeline_stage.raw_x_to_t({ raw_x: this.flag.x(), snap: false }) });
+			this.update_time({ time: this.timeline_stage.raw_x_to_t({ raw_x: this.flag.x(), snap: false }) });
 		});
 
 		this.flag.on("dragend transformend", _ev => {
-			this.update_control_point({ time: this.timeline_stage.raw_x_to_t({ raw_x: this.flag.x(), snap: true }) });
+			this.update_time({ time: this.timeline_stage.raw_x_to_t({ raw_x: this.flag.x(), snap: true }) });
 		});
 
 		this.line = new Konva.Line({
@@ -357,7 +361,7 @@ class KonvaTimelineKeyframe {
 
 		timeline_stage.current_design.state_change_events.addEventListener("kf_update", ev => {
 			if (ev.detail.keyframe != keyframe) return;
-			this.update_control_point({ time: keyframe.time });
+			this.update_time({ time: keyframe.time });
 		}, { signal: this.listener_abort.signal });
 
 		timeline_stage.current_design.state_change_events.addEventListener("kf_select", ev => {
@@ -374,7 +378,7 @@ class KonvaTimelineKeyframe {
 
 		keyframe[KonvaTimelineKeyframeSymbol] = this;
 
-		this.update_control_point({ time: keyframe.time });
+		this.update_time({ time: keyframe.time });
 		this.update_select(timeline_stage.current_design.is_keyframe_selected(keyframe));
 	}
 
@@ -411,7 +415,7 @@ class KonvaTimelineKeyframe {
 		else this.timeline_stage.transformer.nodes(this.timeline_stage.transformer.nodes().filter(n => n != this.flag));
 	}
 
-	update_control_point({ time }) {	
+	update_time({ time }) {	
 		const x = this.timeline_stage.milliseconds_to_x_coord(time);
 		this.flag.x(x);
 		this.flag.y(this.ycoord);

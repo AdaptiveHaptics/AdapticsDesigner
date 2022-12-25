@@ -1,6 +1,5 @@
-/** @typedef {import("./script.mjs").MAHKeyframeFE} MAHKeyframeFE */
-/** @typedef {import("./script.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
-/** @typedef {import("./script.mjs").MAHKeyframeStandardFE} MAHKeyframeStandardFE */
+/** @typedef {import("./fe/keyframes/index.mjs").MAHKeyframeFE} MAHKeyframeFE */
+/** @typedef {import("./fe/patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
 /** @typedef {import("../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
 
@@ -102,6 +101,7 @@ export class UnifiedKeyframeEditor {
 		}));
 		
 		this.pattern_design.commit_operation({ deleted_keyframes, new_keyframes });
+		this.pattern_design.select_keyframes(new_keyframes);
 	}
 	on_coords_change() {
 		this.pattern_design.save_state();

@@ -1,14 +1,17 @@
+import { filter_by_coords } from "./fe/keyframes/index.mjs";
 import { KonvaResizeStage } from "./konvashared.mjs";
-import { MAHKeyframeBaseFE } from "./script.mjs";
 import { notnull } from "./util.mjs";
 
 const Konva = /** @type {import("konva").default} */ (window["Konva"]);
 
-/** @typedef {import("./script.mjs").MAHKeyframeFE} MAHKeyframeFE */
-/** @typedef {import("./script.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
-/** @typedef {import("./script.mjs").MAHKeyframeStandardFE} MAHKeyframeStandardFE */
+/** @typedef {import("./fe/keyframes/index.mjs").MAHKeyframeFE} MAHKeyframeFE */
+/** @typedef {import("./fe/patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
 /** @typedef {import("../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
+/** 
+ * @template T
+ * @typedef {import("../../shared/util").NotNullable<T>} NotNullable
+ */
 
 const KonvaPatternControlPointSymbol = Symbol("KonvaPatternControlPoint");
 
@@ -116,40 +119,29 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		current_design.state_change_events.addEventListener("kf_new", ev => {
 			if ("coords" in ev.detail.keyframe) {
 				const curr_cp = new KonvaPatternControlPoint(ev.detail.keyframe, this);
-				/** @type {KonvaPatternControlPoint} */
-				const prev_cp = this.current_design.get_nearest_neighbor_matching_pred(
-					ev.detail.keyframe, MAHKeyframeBaseFE.filter_by_coords, true)?.[KonvaPatternControlPointSymbol];
-				/** @type {KonvaPatternControlPoint} */
-				const next_cp = this.current_design.get_next_of_type(ev.detail.keyframe, "standard")?.[KonvaPatternControlPointSymbol];
+				const prev_cp = KonvaPatternControlPoint.get_control_point_from_keyframe(
+					this.current_design.get_nearest_neighbor_keyframe_matching_pred(ev.detail.keyframe, filter_by_coords, "prev"));
+				const next_cp = KonvaPatternControlPoint.get_control_point_from_keyframe(
+					this.current_design.get_nearest_neighbor_keyframe_matching_pred(ev.detail.keyframe, filter_by_coords, "next"));
 				if (prev_cp) new KonvaPatternControlPointLine(prev_cp, curr_cp, this);
 				if (next_cp) new KonvaPatternControlPointLine(curr_cp, next_cp, this);
+				if (prev_cp?.is_paused()) {
+					this.update_pause();
+				}
 			} else if (ev.detail.keyframe.type == "pause") {
-				const prev_cp = this.current_design.get_prev_of_type(ev.detail.keyframe, "standard")?.[KonvaPatternControlPointSymbol];
-				if (prev_cp) prev_cp.show_pause();
+				const prev_cp = KonvaPatternControlPoint.get_control_point_from_keyframe(
+					this.current_design.get_nearest_neighbor_keyframe_matching_pred(ev.detail.keyframe, filter_by_coords, "prev"));
+				if (prev_cp) prev_cp.update_pause(true);
 			}
 		});
 		current_design.state_change_events.addEventListener("kf_delete", ev => { 
-			if (ev.detail.keyframe.type == "pause") {
-
-				let last_cp = null;
-				for (const kf of this.current_design.get_sorted_keyframes()) {
-					if ("coords" in kf) {
-						
-					}
-				}
-				//just take the easy route
-				this.render_design();
-
-				//this wont work cause the pause keyframe has already been removed
-				// this.current_design.get_prev_of_type(ev.detail.keyframe);
-			}
+			this.update_pause();
 		});
 		current_design.state_change_events.addEventListener("rerender", _ev => {
 			this.render_design();
 		});
 		current_design.state_change_events.addEventListener("kf_reorder", _ev => {
-			//just take the easy route
-			this.render_design();
+			this.update_order();
 		});
 
 
@@ -158,7 +150,9 @@ export class KonvaPatternStage extends KonvaResizeStage {
 
 	render_design() {
 		for (const kf of this.current_design.filedata.keyframes) {
-			kf[KonvaPatternControlPointSymbol]?.destroy();
+			if ("coords" in kf) {
+				KonvaPatternControlPoint.get_control_point_from_keyframe(kf)?.destroy();
+			}
 		}
 		this.k_control_points_layer.destroyChildren();
 
@@ -209,13 +203,43 @@ export class KonvaPatternStage extends KonvaResizeStage {
 			control_points.push(cp);
 		}
 
+		this.update_paths();
+		this.update_pause();
+	}
+
+	update_order() {
+		this.update_paths();
+		this.update_pause();
+	}
+
+	update_paths() {
 		// render path interp
+		const keyframes = this.current_design.get_sorted_keyframes();
+		/** @type {(KonvaPatternControlPoint | null)[]} */
+		const control_points = [];
+		for (const kf of keyframes) { // render control points
+			if (!("coords" in kf)) continue;
+			control_points.push(KonvaPatternControlPoint.get_control_point_from_keyframe(kf));
+		}
+
 		for (let i = 0; i < control_points.length && i + 1 < control_points.length; i++) {
 			const curr_cp = control_points[i];
 			const next_cp = control_points[i + 1];
-			const _kpcpl = new KonvaPatternControlPointLine(curr_cp, next_cp, this);
+			if (curr_cp && next_cp) new KonvaPatternControlPointLine(curr_cp, next_cp, this);
 		}
+	}
 
+	update_pause() {
+		let last_cp = null;
+		for (const kf of this.current_design.get_sorted_keyframes()) {
+			if ("coords" in kf) {
+				const curr_cp = KonvaPatternControlPoint.get_control_point_from_keyframe(kf);
+				curr_cp?.update_pause(false);
+				last_cp = curr_cp;
+			} else if (kf.type == "pause") {
+				last_cp?.update_pause(true);
+			}
+		}
 	}
 
 	/**
@@ -254,12 +278,20 @@ export class KonvaPatternStage extends KonvaResizeStage {
 	}
 }
 
+const pausex = 4;
+const pausey = 8;
+const pause_style = {
+	stroke: getComputedStyle(document.body).getPropertyValue("--control-point-pause-stroke"),
+	strokeWidth: 3,
+};
+
 class KonvaPatternControlPoint {
 	/** @type {{ in: KonvaPatternControlPointLine | null, out: KonvaPatternControlPointLine | null }} */
 	lines = { in: null, out: null };
+	
 	/**
 	 * 
-	 * @param {MAHKeyframeStandardFE} keyframe 
+	 * @param {NotNullable<ReturnType<import("./fe/keyframes/index.mjs").filter_by_coords>>} keyframe 
 	 * @param {KonvaPatternStage} pattern_stage 
 	 */
 	constructor(keyframe, pattern_stage) {
@@ -302,15 +334,29 @@ class KonvaPatternControlPoint {
 			this.select_this(ev.evt.ctrlKey, true);
 		});
 		this.k_cp_circle.on("dragmove", _ev => {
-			this.update_control_point(this.pattern_stage.raw_coords_to_pattern_coords({ raw_x: this.k_cp_circle.x(), raw_y: this.k_cp_circle.y() }));
+			this.update_position(this.pattern_stage.raw_coords_to_pattern_coords({ raw_x: this.k_cp_circle.x(), raw_y: this.k_cp_circle.y() }));
 		});
 		this.k_cp_circle.on("transform", _ev => {
 			// console.log("transform "+this.keyframe.time);
 			this.k_cp_circle.scale({ x: 1, y: 1 });
 			this.k_cp_circle.skew({ x: 0, y: 0 });
 			this.k_cp_circle.rotation(0);
-			this.update_control_point(this.pattern_stage.raw_coords_to_pattern_coords({ raw_x: this.k_cp_circle.x(), raw_y: this.k_cp_circle.y() }));
+			this.update_position(this.pattern_stage.raw_coords_to_pattern_coords({ raw_x: this.k_cp_circle.x(), raw_y: this.k_cp_circle.y() }));
 		});
+
+		this.paused_group = new Konva.Group({
+			visible: false,
+			listening: false,
+		});
+		this.paused_group.add(new Konva.Line({
+			points: [-pausex, -pausey, -pausex, pausey],
+			...pause_style
+		}));
+		this.paused_group.add(new Konva.Line({
+			points: [pausex, -pausey, pausex, pausey],
+			...pause_style
+		}));
+		pattern_stage.k_control_points_layer.add(this.paused_group);
 
 		this.listener_abort = new AbortController();
 		pattern_stage.current_design.state_change_events.addEventListener("kf_delete", ev => {
@@ -330,7 +376,7 @@ class KonvaPatternControlPoint {
 
 		pattern_stage.current_design.state_change_events.addEventListener("kf_update", ev => {
 			if (ev.detail.keyframe != keyframe) return;
-			this.update_control_point();
+			this.update_position(keyframe.coords);
 		}, { signal: this.listener_abort.signal });
 
 		pattern_stage.current_design.state_change_events.addEventListener("kf_select", ev => {
@@ -347,8 +393,9 @@ class KonvaPatternControlPoint {
 
 		keyframe[KonvaPatternControlPointSymbol] = this;
 
-		this.update_control_point();
+		this.update_position(keyframe.coords);
 		this.update_select(pattern_stage.current_design.is_keyframe_selected(keyframe));
+		// this.update_pause();
 	}
 
 	destroy() {
@@ -371,6 +418,19 @@ class KonvaPatternControlPoint {
 		this.pattern_stage.current_design.select_keyframes([this.keyframe]);
 	}
 
+	is_paused() {
+		return this.paused_group.visible();
+	}
+
+	/**
+	 * 
+	 * @param {boolean} paused 
+	 */
+	update_pause(paused) {
+		this.paused_group.visible(paused);
+		this.paused_group.setZIndex(999);
+	}
+
 	/**
 	 * 
 	 * @param {boolean} selected 
@@ -382,11 +442,17 @@ class KonvaPatternControlPoint {
 		else this.pattern_stage.transformer.nodes(this.pattern_stage.transformer.nodes().filter(n => n != this.k_cp_circle));
 	}
 
-	update_control_point(pattern_coords = { x: this.keyframe.coords.x, y: this.keyframe.coords.y }) {
+	/**
+	 * 
+	 * @param {{ x: number, y: number }} pattern_coords 
+	 */
+	update_position(pattern_coords) {
 		const layer_coords = this.pattern_stage.pattern_coords_to_layer_coords(pattern_coords);
 		
 		this.k_cp_circle.x(layer_coords.x);
 		this.k_cp_circle.y(layer_coords.y);
+		this.paused_group.x(layer_coords.x);
+		this.paused_group.y(layer_coords.y);
 		this.keyframe.coords.x = pattern_coords.x;
 		this.keyframe.coords.y = pattern_coords.y;
 
@@ -402,6 +468,16 @@ class KonvaPatternControlPoint {
 			points[1] = layer_coords.y;
 			this.lines.out.line.points(points);
 		}
+	}
+
+
+	/**
+	 * 
+	 * @param {typeof KonvaPatternControlPoint.prototype.keyframe | null | undefined} keyframe 
+	 * @returns {KonvaPatternControlPoint | null}
+	 */
+	static get_control_point_from_keyframe(keyframe) {
+		return keyframe?.[KonvaPatternControlPointSymbol];
 	}
 }
 

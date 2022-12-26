@@ -32,19 +32,18 @@
 				<div class="unifiedkeyframeeditor betterscroll">
 					<div class="help">
 						<h1>Help</h1>
-						(maybe get rid of this or keep it minimal and move more to a "tips" section)
 						<p>
-							<h4><code>Double Click</code> to create a new keyframe</h4>
+							<h4>To create a new keyframe, <code>Double Click</code></h4>
 							<ul>
-								<li>In background of the Pattern Pane</li>
-								<li>WIthin the keyframe track of the Timeline Pane</li>
+								<li>in background of the Pattern Pane</li>
+								<li>within the Keyframe Track of the Timeline Pane</li>
 							</ul>
 						</p>
 						<p>
-							<h4><code>Ctrl+a</code> to select all</h4>
+							<h4>To select all, <code>Ctrl+a</code></h4>
 							<ul>
-								<li>With Pattern Pane selected, only select keyframes with coordinates</li>
-								<li>Otherwise, select all keyframes</li>
+								<li>with Pattern Pane focused, only select keyframes with coordinates</li>
+								<li>otherwise, select all keyframes</li>
 							</ul>
 						</p>
 						<p>
@@ -59,6 +58,7 @@
 							<ul>
 								<li><code>Ctrl</code> is union/addition to selection</li>
 								<li><code>Ctrl+Shift</code> is subtraction from selection</li>
+								<li><code>Alt</code> includes linked keyframes</li>
 							</ul>
 						</p>
 					</div>
@@ -67,7 +67,7 @@
 						<div class="typecontainer">
 							<label>Type: </label>
 							<select name="type" class="type">
-								<option disabled selected value="multipletypes">multiple types</option>
+								<option hidden disabled selected value="multipletypes">multiple types</option>
 								<option value="standard">standard</option>
 								<option value="pause">pause</option>
 							</select>
@@ -85,7 +85,7 @@
 							<div class="brushconfig">
 								<label>Brush Type: </label>
 								<select name="type" class="type">
-									<option disabled selected value="multipletypes">multiple types</option>
+									<option hidden disabled selected value="multipletypes">multiple types</option>
 									<option value="standard">standard</option>
 									<option value="pause">pause</option>
 								</select>

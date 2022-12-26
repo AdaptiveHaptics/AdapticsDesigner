@@ -111,16 +111,26 @@ export class KonvaPatternStage extends KonvaResizeStage {
 				// const box = this.selection_rect.getSelfRect();
 				const low_coords = this.layer_coords_to_pattern_coords({ raw_x: Math.min(x1, x2), raw_y: Math.min(y1, y2) });
 				const high_coords = this.layer_coords_to_pattern_coords({ raw_x: Math.max(x1, x2), raw_y: Math.max(y1, y2) });
-				const keyframes_in_box = current_design.filedata.keyframes.filter(kf => {
+				let keyframes_in_box = current_design.filedata.keyframes.filter(has_coords).filter(kf => {
 					return (
-						"coords" in kf &&
 						low_coords.x <= kf.coords.x && kf.coords.x <= high_coords.x &&
 						low_coords.y <= kf.coords.y && kf.coords.y <= high_coords.y
 					);
 				});
+				let selected_keyframes;
+				if (ev.altKey) {
+					let linked_keyframes = [];
+					for (const kf of keyframes_in_box) {
+						const cp = KonvaPatternControlPoint.get_control_point_from_keyframe(kf);
+						if (cp?.pause_keyframe) linked_keyframes.push(cp?.pause_keyframe);
+					}
+					selected_keyframes = [...keyframes_in_box, ...linked_keyframes];
+				} else {
+					selected_keyframes = keyframes_in_box;
+				}
 				if (!ev.ctrlKey) current_design.deselect_all_keyframes();
-				if (ev.ctrlKey && ev.shiftKey) current_design.deselect_keyframes(keyframes_in_box);
-				else current_design.select_keyframes(keyframes_in_box);
+				if (ev.ctrlKey && ev.shiftKey) current_design.deselect_keyframes(selected_keyframes);
+				else current_design.select_keyframes(selected_keyframes);
 			});
 		}
 

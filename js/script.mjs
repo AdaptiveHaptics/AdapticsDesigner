@@ -2,6 +2,7 @@ import Split from "../thirdparty/split-grid.mjs";
 import { MAHPatternDesignFE } from "./fe/patterndesign.mjs";
 import { KonvaPatternStage } from "./konvapanes/patternstage.mjs";
 import { KonvaTimelineStage } from "./konvapanes/timelinestage.mjs";
+import { PatternEvaluator } from "./patternevaluator.mjs";
 import { UnifiedKeyframeEditor } from "./unifiedkeyframeeditor.mjs";
 import { notnull } from "./util.mjs";
 
@@ -61,7 +62,7 @@ let primary_design;
 try {
 	primary_design = MAHPatternDesignFE.load_from_localstorage() || new MAHPatternDesignFE(...MAHPatternDesignFE.DEFAULT);
 } catch (e) {
-	alert("loading design from local storage failed.\nProbably due to the format changing, and migration not being implemented during initial development (version<1.0.0)). loading default pattern...");
+	alert("loading design from local storage failed.\nProbably due to the format changing, and migration not being implemented during initial development (version<1.0.0).\n\nloading default pattern...");
 	primary_design = new MAHPatternDesignFE(...MAHPatternDesignFE.DEFAULT);
 	console.error(e);
 }

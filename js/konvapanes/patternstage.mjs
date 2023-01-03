@@ -22,6 +22,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 	
 	transformer = new Konva.Transformer();
 	selection_rect = new Konva.Rect();
+	playback_vis = new Konva.Circle();
 
 
 	/**
@@ -164,6 +165,11 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		});
 
 
+		current_design.state_change_events.addEventListener("playback_update", ev => {
+			this.update_playback_vis();
+		});
+
+
 		this.render_design();
 	}
 
@@ -186,6 +192,14 @@ export class KonvaPatternStage extends KonvaResizeStage {
 			listening: false,
 		}));
 
+		{ //init playback
+			this.playback_vis = new Konva.Circle({
+				radius: 5,
+			});
+			this.update_playback_vis();
+			this.k_control_points_layer.add(this.playback_vis);
+		}
+
 		{ //init transformer
 			this.transformer = new Konva.Transformer({
 				// boundBoxFunc: (oldBoundBox, newBoundBox) => {
@@ -197,13 +211,17 @@ export class KonvaPatternStage extends KonvaResizeStage {
 				this.current_design.save_state();
 			});
 			this.transformer.on("dragend", _ev => {
-				this.current_design.commit_operation({ updated_keyframes: [...this.current_design.selected_keyframes] });
+				requestAnimationFrame(() => { //wait for child dragend events to snap/etc
+					this.current_design.commit_operation({ updated_keyframes: [...this.current_design.selected_keyframes] });
+				});
 			});
 			this.transformer.on("transformstart", _ev => {
 				this.current_design.save_state();
 			});
 			this.transformer.on("transformend", _ev => {
-				this.current_design.commit_operation({ updated_keyframes: [...this.current_design.selected_keyframes] });
+				requestAnimationFrame(() => { //wait for child dragend events to snap/etc
+					this.current_design.commit_operation({ updated_keyframes: [...this.current_design.selected_keyframes] });
+				});
 			});
 			this.k_control_points_layer.add(this.transformer);
 		}
@@ -259,6 +277,15 @@ export class KonvaPatternStage extends KonvaResizeStage {
 				last_cp?.update_pause(kf);
 			}
 		}
+	}
+
+	update_playback_vis() {
+		const last_eval = this.current_design.last_eval;
+		const last_eval_layer_coords = this.pattern_coords_to_layer_coords(last_eval.coords);
+		this.playback_vis.x(last_eval_layer_coords.x);
+		this.playback_vis.y(last_eval_layer_coords.y);
+		this.playback_vis.opacity();
+		this.playback_vis.fill(getComputedStyle(document.body).getPropertyValue("--pattern-playback-vis"));
 	}
 
 	/**

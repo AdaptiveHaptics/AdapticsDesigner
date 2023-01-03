@@ -38,6 +38,7 @@ export interface MAHKeyframeBase {
     /** Time in milliseconds */
     time: number,
 }
+/** standard keyframe with coords, brush, intensity, and transitions */
 export interface MAHKeyframeStandard extends MAHKeyframeBase {
     type: "standard",
     brush: MAHBrush,
@@ -50,6 +51,7 @@ export interface MAHKeyframeStandard extends MAHKeyframeBase {
     /** Describes the transition to the next keyframe */
     transition: MAHTransition,
 }
+/** pauses the previous standard keyframe until timestamp reached */
 export interface MAHKeyframePause extends MAHKeyframeBase {
     type: "pause"
 }

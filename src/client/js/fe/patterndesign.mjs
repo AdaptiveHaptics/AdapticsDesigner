@@ -2,12 +2,14 @@
 /** @typedef {import("../../../shared/types").MAHKeyframe} MAHKeyframe */
 /** @typedef {import("../../../shared/types").MidAirHapticsClipboardFormat} MidAirHapticsClipboardFormat */
 /** @typedef {import("./keyframes/index.mjs").MAHKeyframeFE} MAHKeyframeFE */
+/** @typedef {import("../patternevaluator.mjs").PatternEvaluatorParameters} PatternEvaluatorParameters */
 /** 
  * @template T
  * @template K
  * @typedef {import("../../../shared/util").ReqProp<T, K>} ReqProp
  */
 
+import { PatternEvaluator } from "../patternevaluator.mjs";
 import { create_correct_keyframefe_wrapper, MAHKeyframePauseFE, MAHKeyframeStandardFE } from "./keyframes/index.mjs";
 
 /**
@@ -20,6 +22,8 @@ import { create_correct_keyframefe_wrapper, MAHKeyframePauseFE, MAHKeyframeStand
  * @property {{ keyframe: MAHKeyframeFE }} kf_deselect
  * @property {{ keyframe: MAHKeyframeFE }} kf_reorder
  * @property {{ committed: boolean }} commit_update
+ * @property {{ }} playback_update
+ * @property {{ }} parameters_update
  */
 
 /**
@@ -72,7 +76,18 @@ export class MAHPatternDesignFE {
 
 
 		this.state_change_events = new StateChangeEventTarget();
-		this.state_change_events.addEventListener("rerender", ev => console.log(ev));
+		this.state_change_events.addEventListener("rerender", ev => console.info(ev));
+
+		/** @type {PatternEvaluatorParameters}  */
+		this.evaluator_params = { time: 0 };
+		this.pattern_evaluator = new PatternEvaluator(this.filedata);
+		this.state_change_events.addEventListener("commit_update", ev => {
+			if (ev.detail.committed) this.pattern_evaluator = new PatternEvaluator(this.filedata);
+		});
+		this.state_change_events.addEventListener("parameters_update", _ev => {
+			this.eval_pattern();
+		});
+		this.last_eval = this.eval_pattern(); //set in constructor for typecheck
 	}
 
 
@@ -338,6 +353,26 @@ export class MAHPatternDesignFE {
 			const change_event = new StateChangeEvent("kf_reorder", { detail: { keyframe } });
 			this.state_change_events.dispatchEvent(change_event);
 		}
+	}
+
+
+	/**
+	 * @template {keyof PatternEvaluatorParameters} K
+	 * @param {K} param 
+	 * @param {PatternEvaluatorParameters[K]} value 
+	 */
+	update_evaluator_params(param, value) {
+		this.evaluator_params[param] = value;
+		const ce = new StateChangeEvent("parameters_update", { detail: {} });
+		this.state_change_events.dispatchEvent(ce);
+	}
+
+	eval_pattern() {
+		const eval_result = this.pattern_evaluator.eval_stream_at_anim_local_time(this.evaluator_params);
+		const sce = new StateChangeEvent("playback_update", { detail: {} });
+		this.state_change_events.dispatchEvent(sce);
+		this.last_eval = eval_result;
+		return eval_result;
 	}
 
 

@@ -10,11 +10,11 @@ const Konva = /** @type {import("konva").default} */ (window["Konva"]);
 
 const KonvaTimelineKeyframeSymbol = Symbol("KonvaTimelineKeyframe");
 
-const major_gridline_timestamp_rect_height = 26;
+const timestamp_rect_height = 26;
 const major_gridline_start = 0;
 const keyframe_flag_size = 28;
-const keyframe_rect_padding_top = 0;
-const keyframe_rect_y = major_gridline_timestamp_rect_height - keyframe_rect_padding_top;
+const keyframe_rect_padding_top = 2;
+const keyframe_rect_y = timestamp_rect_height - keyframe_rect_padding_top;
 const keyframe_rect_height = keyframe_flag_size + keyframe_rect_padding_top;
 const minor_gridline_start = keyframe_rect_y + keyframe_rect_height;
 
@@ -48,6 +48,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 	selection_rect = new Konva.Rect();
 	timestamp_rect = new Konva.Rect();
 	keyframe_rect = new Konva.Rect();
+	playback_head = new Konva.Line();
 
 	/**
 	 * 
@@ -145,7 +146,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 		const keyframes = this.current_design.filedata.keyframes;
 
 		this.timestamp_rect = new Konva.Rect({
-			x: 0, y: 0, width: this.fullWidth, height: major_gridline_timestamp_rect_height,
+			x: 0, y: 0, width: this.fullWidth, height: timestamp_rect_height,
 			fill: getComputedStyle(document.body).getPropertyValue("--background-tertiary")
 		});
 		this.scrolling_layer.add(this.timestamp_rect);
@@ -175,13 +176,17 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 				this.current_design.save_state();
 			});
 			this.transformer.on("dragend", _ev => {
-				this.current_design.commit_operation({ updated_keyframes: [...this.current_design.selected_keyframes] });
+				requestAnimationFrame(() => { //wait for child dragend events to snap/etc
+					this.current_design.commit_operation({ updated_keyframes: [...this.current_design.selected_keyframes] });
+				});
 			});
 			this.transformer.on("transformstart", _ev => {
 				this.current_design.save_state();
 			});
 			this.transformer.on("transformend", _ev => {
-				this.current_design.commit_operation({ updated_keyframes: [...this.current_design.selected_keyframes] });
+				requestAnimationFrame(() => { //wait for child dragend events to snap/etc
+					this.current_design.commit_operation({ updated_keyframes: [...this.current_design.selected_keyframes] });
+				});
 			});
 			this.scrolling_layer.add(this.transformer);
 		}
@@ -229,6 +234,40 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 				this.scrolling_layer.add(gridline);
 			}
 		}
+
+
+		{ //initialize playback head
+			this.playback_head = new Konva.Line({
+				x: this.milliseconds_to_x_coord(this.current_design.evaluator_params.time),
+				y: 0,
+				points: [
+					-timestamp_rect_height/3,timestamp_rect_height/2,
+					timestamp_rect_height/3,timestamp_rect_height/2,
+					0,timestamp_rect_height
+				],
+				opacity: 0.5,
+				closed: true,
+				fill: getComputedStyle(document.body).getPropertyValue("--timeline-playback-head-color"),
+				draggable: true,
+			});
+			this.scrolling_layer.add(this.playback_head);
+			this.playback_head.on("dragmove", _ev => {
+				this.playback_head.x(Math.max(this.playback_head.x(), this.x_axis_left_padding_pixels));
+				this.playback_head.y(0);
+				const time = this.x_coord_to_milliseconds(this.playback_head.x());
+				this.current_design.update_evaluator_params("time", time);
+			});
+			this.current_design.state_change_events.addEventListener("parameters_update", _ev => {
+				this.playback_head.x(this.milliseconds_to_x_coord(this.current_design.evaluator_params.time));
+			});
+			this.playback_head.on("mouseenter", _ev => {
+				document.body.style.cursor = "ew-resize";
+			});
+			this.playback_head.on("mouseleave", _ev => {
+				document.body.style.cursor = "";
+			});
+		}
+
 
 		// render control points
 		const _timelinekeyframes = keyframes.map(keyframe => new KonvaTimelineKeyframe(keyframe, this));

@@ -30,6 +30,8 @@
     --control-point-pause: var(--paused-keyframe-color);
     --control-point-pause-selected: var(--selected-keyframe-color);
 
+    --pattern-playback-vis: #74d4ec;
+
     --pattern-boundary: var(--background-tertiary);
     --pattern-background: var(--background-tertiary-alt);
 
@@ -42,6 +44,8 @@
     --timeline-major-gridline-stroke: hsl(var(--bg-hue), var(--bg-sat), 12%);
     --timeline-major-gridline-text: hsl(var(--bg-hue), var(--bg-sat), 2%);
     --timeline-minor-gridline-stroke: hsl(var(--bg-hue), var(--bg-sat), 16%);
+
+    --timeline-playback-head-color: var(--control-point-stroke);
 
     --scrollbar-track-color: var(--background-titlebar);
     --scrollbar-thumb-color: var(--background-primary);

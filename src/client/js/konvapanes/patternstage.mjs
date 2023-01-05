@@ -54,7 +54,9 @@ export class KonvaPatternStage extends KonvaResizeStage {
 			const { x, y } = this.raw_coords_to_pattern_coords({ raw_x, raw_y });
 			const new_keyframe = this.current_design.insert_new_keyframe({ type: "standard", coords: { x, y, z: 0 } });
 			current_design.commit_operation({ new_keyframes: [new_keyframe] });
-			if (ev.evt.ctrlKey) current_design.select_keyframes([new_keyframe]);
+
+			this.selection_rect.visible(false);
+			this.current_design.select_keyframes([ new_keyframe ]);
 		});
 		resize_container.addEventListener("keydown", ev => {
 			if (ev.key == "a" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
@@ -64,9 +66,6 @@ export class KonvaPatternStage extends KonvaResizeStage {
 				this.current_design.select_keyframes(this.current_design.filedata.keyframes.filter(has_coords));
 			}
 		});
-		// this.k_stage.on("click", ev => {
-		// 	if (ev.target == this.k_stage && !ev.evt.ctrlKey) current_design.deselect_all_keyframes();
-		// });
 
 		{ //initialize selection_rect
 			let x1, y1, x2, y2;
@@ -112,26 +111,18 @@ export class KonvaPatternStage extends KonvaResizeStage {
 				// const box = this.selection_rect.getSelfRect();
 				const low_coords = this.layer_coords_to_pattern_coords({ raw_x: Math.min(x1, x2), raw_y: Math.min(y1, y2) });
 				const high_coords = this.layer_coords_to_pattern_coords({ raw_x: Math.max(x1, x2), raw_y: Math.max(y1, y2) });
-				let keyframes_in_box = current_design.filedata.keyframes.filter(has_coords).filter(kf => {
+				const keyframes_in_box = this.current_design.filedata.keyframes.filter(has_coords).filter(kf => {
 					return (
 						low_coords.x <= kf.coords.x && kf.coords.x <= high_coords.x &&
 						low_coords.y <= kf.coords.y && kf.coords.y <= high_coords.y
 					);
 				});
-				let selected_keyframes;
-				if (ev.altKey) {
-					let linked_keyframes = [];
-					for (const kf of keyframes_in_box) {
-						const cp = KonvaPatternControlPoint.get_control_point_from_keyframe(kf);
-						if (cp?.pause_keyframe) linked_keyframes.push(cp?.pause_keyframe);
-					}
-					selected_keyframes = [...keyframes_in_box, ...linked_keyframes];
-				} else {
-					selected_keyframes = keyframes_in_box;
+				const linked_keyframes = [];
+				for (const kf of keyframes_in_box) {
+					const cp = KonvaPatternControlPoint.get_control_point_from_keyframe(kf);
+					if (cp?.pause_keyframe) linked_keyframes.push(cp?.pause_keyframe);
 				}
-				if (!ev.ctrlKey) current_design.deselect_all_keyframes();
-				if (ev.ctrlKey && ev.shiftKey) current_design.deselect_keyframes(selected_keyframes);
-				else current_design.select_keyframes(selected_keyframes);
+				this.current_design.group_select_logic(keyframes_in_box, linked_keyframes, { shiftKey: ev.shiftKey, ctrlKey: ev.ctrlKey, altKey: ev.altKey });
 			});
 		}
 
@@ -167,6 +158,9 @@ export class KonvaPatternStage extends KonvaResizeStage {
 
 		current_design.state_change_events.addEventListener("playback_update", ev => {
 			this.update_playback_vis();
+		});
+		current_design.state_change_events.addEventListener("commit_update", ev => {
+			this.playback_vis.visible(ev.detail.committed);
 		});
 
 
@@ -454,6 +448,7 @@ class KonvaPatternControlPoint {
 	destroy() {
 		this.k_cp_circle.destroy();
 		this.listener_abort.abort();
+		this.paused_group.destroy();
 	}
 
 	/**

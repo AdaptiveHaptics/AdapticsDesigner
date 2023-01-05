@@ -79,15 +79,18 @@ export class MAHPatternDesignFE {
 		this.state_change_events.addEventListener("rerender", ev => console.info(ev));
 
 		/** @type {PatternEvaluatorParameters}  */
-		this.evaluator_params = { time: 0 };
+		this.evaluator_params = Object.assign(Object.create(null), { time: 0 });
 		this.pattern_evaluator = new PatternEvaluator(this.filedata);
 		this.state_change_events.addEventListener("commit_update", ev => {
-			if (ev.detail.committed) this.pattern_evaluator = new PatternEvaluator(this.filedata);
+			if (ev.detail.committed) {
+				this.pattern_evaluator = new PatternEvaluator(this.filedata);
+				this.#eval_pattern();
+			}
 		});
 		this.state_change_events.addEventListener("parameters_update", _ev => {
-			this.eval_pattern();
+			this.#eval_pattern();
 		});
-		this.last_eval = this.eval_pattern(); //set in constructor for typecheck
+		this.last_eval = this.#eval_pattern(); //set in constructor for typecheck
 	}
 
 
@@ -260,6 +263,17 @@ export class MAHPatternDesignFE {
 		return this.selected_keyframes.has(keyframe);
 	}
 
+	group_select_logic(selected_keyframes, linked_keyframes, { shiftKey = false, ctrlKey = false, altKey = false }) {
+		let keyframes = [];
+		
+		if (altKey) { keyframes = [...selected_keyframes, ...linked_keyframes]; }
+		else keyframes = [...selected_keyframes];
+
+		if (!ctrlKey) this.deselect_all_keyframes();
+		if (ctrlKey && shiftKey) this.deselect_keyframes(keyframes);
+		else this.select_keyframes(keyframes);
+	}
+
 
 	/**
 	 * 
@@ -367,11 +381,11 @@ export class MAHPatternDesignFE {
 		this.state_change_events.dispatchEvent(ce);
 	}
 
-	eval_pattern() {
+	#eval_pattern() {
 		const eval_result = this.pattern_evaluator.eval_stream_at_anim_local_time(this.evaluator_params);
+		this.last_eval = eval_result;
 		const sce = new StateChangeEvent("playback_update", { detail: {} });
 		this.state_change_events.dispatchEvent(sce);
-		this.last_eval = eval_result;
 		return eval_result;
 	}
 

@@ -23,6 +23,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 	transformer = new Konva.Transformer();
 	selection_rect = new Konva.Rect();
 	playback_vis = new Konva.Circle();
+	pattern_area = new Konva.Rect();
 
 
 	/**
@@ -47,17 +48,6 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		this.k_control_points_layer = new Konva.Layer();
 		this.k_stage.add(this.k_control_points_layer);
 
-		this.k_stage.on("pointerdblclick", ev => {
-			if (ev.target != this.k_stage) return;
-			current_design.save_state();
-			const { x: raw_x, y: raw_y } = this.k_control_points_layer.getRelativePointerPosition();
-			const { x, y } = this.raw_coords_to_pattern_coords({ raw_x, raw_y });
-			const new_keyframe = this.current_design.insert_new_keyframe({ type: "standard", coords: { x, y, z: 0 } });
-			current_design.commit_operation({ new_keyframes: [new_keyframe] });
-
-			this.selection_rect.visible(false);
-			this.current_design.select_keyframes([ new_keyframe ]);
-		});
 		resize_container.addEventListener("keydown", ev => {
 			if (ev.key == "a" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
 				ev.preventDefault();
@@ -176,15 +166,29 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		this.k_control_points_layer.destroyChildren();
 
 
-		this.k_control_points_layer.add(new Konva.Rect({
-			x: this.pattern_padding,
-			y: this.pattern_padding,
-			width: this.pattern_square_size,
-			height: this.pattern_square_size,
-			stroke: getComputedStyle(document.body).getPropertyValue("--pattern-boundary"),
-			strokeWidth: 4,
-			listening: false,
-		}));
+		{ //init pattern_area
+			this.pattern_area = new Konva.Rect({
+				x: this.pattern_padding,
+				y: this.pattern_padding,
+				width: this.pattern_square_size,
+				height: this.pattern_square_size,
+				stroke: getComputedStyle(document.body).getPropertyValue("--pattern-boundary"),
+				strokeWidth: 4,
+			});
+			this.pattern_area.on("pointerdblclick", ev => {
+				if (ev.target != this.pattern_area) return;
+				this.current_design.save_state();
+				const { x: raw_x, y: raw_y } = this.k_control_points_layer.getRelativePointerPosition();
+				const { x, y } = this.raw_coords_to_pattern_coords({ raw_x, raw_y });
+				const new_keyframe = this.current_design.insert_new_keyframe({ type: "standard", coords: { x, y, z: 0 } });
+				this.current_design.commit_operation({ new_keyframes: [new_keyframe] });
+	
+				this.selection_rect.visible(false);
+				if (!ev.evt.ctrlKey) this.current_design.deselect_all_keyframes();
+				this.current_design.select_keyframes([ new_keyframe ]);
+			});
+			this.k_control_points_layer.add(this.pattern_area);
+		}
 
 		{ //init playback
 			this.playback_vis = new Konva.Circle({

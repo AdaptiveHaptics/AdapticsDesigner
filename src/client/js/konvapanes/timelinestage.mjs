@@ -163,6 +163,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 			this.current_design.commit_operation({ new_keyframes: [new_keyframe] });
 
 			this.selection_rect.visible(false);
+			if (!ev.evt.ctrlKey) this.current_design.deselect_all_keyframes();
 			this.current_design.select_keyframes([ new_keyframe ]);
 		});
 

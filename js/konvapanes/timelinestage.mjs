@@ -119,9 +119,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 					const time_high = this.x_coord_to_milliseconds(Math.max(x1, x2));
 					return time_low <= kf.time && kf.time <= time_high;
 				});
-				if (!ev.ctrlKey) this.current_design.deselect_all_keyframes();
-				if (ev.ctrlKey && ev.shiftKey) this.current_design.deselect_keyframes(keyframes_in_box);
-				else this.current_design.select_keyframes(keyframes_in_box);
+				this.current_design.group_select_logic(keyframes_in_box, [], { shiftKey: ev.shiftKey, ctrlKey: ev.ctrlKey, altKey: ev.altKey });
 			});
 		}
 
@@ -157,11 +155,16 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 		this.scrolling_layer.add(this.keyframe_rect);
 		this.keyframe_rect.on("pointerdblclick", ev => {
 			if (ev.target != this.keyframe_rect) return;
+			ev.evt.preventDefault();
 			this.current_design.save_state();
 			const { x } = this.keyframe_rect.getRelativePointerPosition();
 			const t = this.raw_x_to_t({ raw_x: x, snap: true });
 			const new_keyframe = this.current_design.insert_new_keyframe({ type: "standard", time: t });
 			this.current_design.commit_operation({ new_keyframes: [new_keyframe] });
+
+			this.selection_rect.visible(false);
+			if (!ev.evt.ctrlKey) this.current_design.deselect_all_keyframes();
+			this.current_design.select_keyframes([ new_keyframe ]);
 		});
 
 		{ //init transformer
@@ -365,7 +368,7 @@ class KonvaTimelineKeyframe {
 
 			if (ev.evt.altKey) {
 				timeline_stage.current_design.save_state();
-				const deleted_keyframes = timeline_stage.current_design.delete_keyframes([keyframe]);
+				const deleted_keyframes = timeline_stage.current_design.delete_keyframes([...timeline_stage.current_design.selected_keyframes]);
 				timeline_stage.current_design.commit_operation({ deleted_keyframes });
 				return;
 			}

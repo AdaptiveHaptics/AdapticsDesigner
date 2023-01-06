@@ -74,7 +74,7 @@ export class MAHKeyframeStandardFE extends MAHKeyframeBaseFE {
 		}
 
 
-		console.log(set);
+		// console.log(set);
 		const keyframe = new MAHKeyframeStandardFE(window.structuredClone({ ...MAHKeyframeStandardFE.DEFAULT, ...next_keyframe, ...prev_keyframe, ...set, time, coords }), pattern_design);
 		
 		return keyframe;

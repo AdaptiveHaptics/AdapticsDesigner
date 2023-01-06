@@ -7,7 +7,7 @@
  */
 
 
-/** @typedef {{ time: number, [x: string]: number }} PatternEvaluatorParameters */
+/** @typedef {{ time: number, user_parameters: Map<string, number> }} PatternEvaluatorParameters */
 
 export class PatternEvaluator {
 	/**

@@ -15,19 +15,22 @@
 
     --text-normal: rgb(250, 250, 255);
     --text-low-priority: rgb(210, 210, 213);
+    --text-dark: hsl(240, 20%, 20%);
     --error: #cd5c5c;
 
     --selected-konva-stage: hsl(204, 40%, 75%);
 
-    --paused-keyframe-color: #ecb474;
+    --play-color: #74ecb0;
+    --pause-color: #ecb474;
     --selected-keyframe-color: hwb(204 55% 5%);
+    --paused-keyframe-color: var(--pause-color);
 
     
     --control-point-select-rect-fill: #8cc9f230;
     --control-point-stroke: #f5fffa;
     --control-point-stroke-selected: var(--selected-keyframe-color);
-    --control-point-line-stroke: #74ecb0;
-    --control-point-pause: var(--paused-keyframe-color);
+    --control-point-line-stroke: var(--play-color);
+    --control-point-pause: var(--pause-color);
     --control-point-pause-selected: var(--selected-keyframe-color);
 
     --pattern-playback-vis: #74d4ec;
@@ -230,7 +233,7 @@ div.typecontainer {
     border: 1px solid var(--background-titlebar);
 }
 
-div.unifiedkeyframeeditor select, div.unifiedkeyframeeditor option, div.unifiedkeyframeeditor input {
+div.unifiedkeyframeeditor select, div.unifiedkeyframeeditor option, input {
     color: var(--text-normal);
     background-color: var(--background-primary);
     padding: 1ex;
@@ -272,4 +275,44 @@ div.labelinputgrid {
 
 div.labelinputgrid > label {
     display: contents;
+}
+
+div.parametereditor {
+    display: flex;
+    flex-direction: column;
+    padding: 1ex;
+    gap: 1ex;
+    background-color: var(--background-tertiary);
+}
+
+div.parametereditor div.timecontrol {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 1ex;
+    align-items: center;
+}
+div.parametereditor div.timecontrol label {
+    display: contents;
+}
+
+div.parametereditor div.timecontrol button {
+    font-size: 1.2em;
+}
+div.parametereditor div.timecontrol button.play {
+    background-color: var(--play-color);
+    color: var(--text-dark);
+}
+div.parametereditor div.timecontrol button.pause {
+    background-color: var(--pause-color);
+    color: var(--text-dark);
+}
+
+button {
+    font-size: 1em;
+    padding: 0.25ex 1ex;
+    border: none;
+    cursor: pointer;
+    background-color: var(--background-primary);
+    color: var(--text-normal);
 }

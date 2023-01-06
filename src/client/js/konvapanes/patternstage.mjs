@@ -60,7 +60,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		{ //initialize selection_rect
 			let x1, y1, x2, y2;
 			this.k_stage.on("pointerdown", ev => {
-				if (ev.target != this.k_stage) return;
+				if (ev.target != this.k_stage && ev.target != this.pattern_area) return;
 				// ev.evt.preventDefault();
 				x1 = notnull(this.k_control_points_layer.getRelativePointerPosition()).x;
 				y1 = notnull(this.k_control_points_layer.getRelativePointerPosition()).y;

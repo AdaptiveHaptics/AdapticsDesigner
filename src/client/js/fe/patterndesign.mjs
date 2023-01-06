@@ -79,7 +79,7 @@ export class MAHPatternDesignFE {
 		this.state_change_events.addEventListener("rerender", ev => console.info(ev));
 
 		/** @type {PatternEvaluatorParameters}  */
-		this.evaluator_params = Object.assign(Object.create(null), { time: 0 });
+		this.evaluator_params = { time: 0, user_parameters: new Map() };
 		this.pattern_evaluator = new PatternEvaluator(this.filedata);
 		this.state_change_events.addEventListener("commit_update", ev => {
 			if (ev.detail.committed) {

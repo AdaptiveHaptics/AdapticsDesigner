@@ -109,7 +109,15 @@
 			</div>
 			<div class="gutter row topbottom"></div>
 			<div class="bottom">
-				<div class="keyframeeditor"></div>
+				<div class="parametereditor betterscroll">
+					<h1>Parameter Editor</h1>
+					<div class="timecontrol">
+						<label>Time (ms): <input type="number" name="time" min="0" step="1"></label>
+						<button class="reset">⏮</button>
+						<button class="play">⏵</button>
+						<button class="pause" style="display: none;">⏸</button>
+					</div>
+				</div>
 				<div class="gutter column"></div>
 				<div class="timeline konvastagecontainer" tabindex="2">
 					<div id="timelinestage" class="konvastage"></div>

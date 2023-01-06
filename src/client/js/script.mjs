@@ -2,6 +2,7 @@ import Split from "../thirdparty/split-grid.mjs";
 import { MAHPatternDesignFE } from "./fe/patterndesign.mjs";
 import { KonvaPatternStage } from "./konvapanes/patternstage.mjs";
 import { KonvaTimelineStage } from "./konvapanes/timelinestage.mjs";
+import { ParameterEditor } from "./parameter-editor.mjs";
 import { PatternEvaluator } from "./patternevaluator.mjs";
 import { UnifiedKeyframeEditor } from "./unifiedkeyframeeditor.mjs";
 import { notnull } from "./util.mjs";
@@ -125,12 +126,12 @@ primary_design.commit_operation({});
 const konva_pattern_stage = new KonvaPatternStage(primary_design, "patternstage", centerDiv);
 const konva_timeline_stage = new KonvaTimelineStage(primary_design, "timelinestage", timelineDiv);
 const unified_keyframe_editor = new UnifiedKeyframeEditor(primary_design, notnull(document.querySelector("div.unifiedkeyframeeditor")));
+const parameter_editor = new ParameterEditor(primary_design, notnull(document.querySelector("div.parametereditor")));
 
-// @ts-ignore
-window.konva_pattern_stage = konva_pattern_stage;
-// @ts-ignore
-window.konva_timeline_stage = konva_timeline_stage;
-// @ts-ignore
-window.unified_keyframe_editor = unified_keyframe_editor;
-// @ts-ignore
-window.primary_design = primary_design;
+Object.assign(window, {
+	primary_design,
+	konva_pattern_stage,
+	konva_timeline_stage,
+	unified_keyframe_editor,
+	parameter_editor,
+});

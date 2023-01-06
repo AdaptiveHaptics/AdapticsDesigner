@@ -32,29 +32,28 @@ export class ParameterEditor {
 			this.timecontrol_reset = notnull(this.timecontrol_div.querySelector("button.reset"));
 	
 			this.timecontrol_playstart = 0;
+			const tickplayback = () => {
+				if (!this.timecontrol_playstart) return;
+				const time = Date.now()-this.timecontrol_playstart;
+				this.pattern_design.update_evaluator_params("time", time);
+				requestAnimationFrame(tickplayback);
+			};
 			this.timecontrol_play.addEventListener("click", ev => {
 				this.timecontrol_play.style.display = "none";
 				this.timecontrol_pause.style.display = "";
 				this.timecontrol_playstart = Date.now() - this.pattern_design.evaluator_params.time;
-				const tickplayback = () => {
-					if (!this.timecontrol_playstart) return;
-					const time = Date.now()-this.timecontrol_playstart;
-					this.pattern_design.update_evaluator_params("time", time);
-					requestAnimationFrame(tickplayback);
-				};
 				tickplayback();
 			});
 			this.timecontrol_pause.addEventListener("click", ev => {
-				this.timecontrol_pause.style.display = "none";
 				this.timecontrol_play.style.display = "";
+				this.timecontrol_pause.style.display = "none";
 				this.timecontrol_playstart = 0;
 			});
 			this.timecontrol_reset.addEventListener("click", ev => {
-				this.timecontrol_pause.style.display = "";
-				this.timecontrol_play.style.display = "none";
-				this.timecontrol_playstart = Date.now();
-				const time = Date.now()-this.timecontrol_playstart;
-				this.pattern_design.update_evaluator_params("time", time);
+				this.timecontrol_play.style.display = "";
+				this.timecontrol_pause.style.display = "none";
+				this.timecontrol_playstart = 0;
+				this.pattern_design.update_evaluator_params("time", 0);
 			});
 		}
 

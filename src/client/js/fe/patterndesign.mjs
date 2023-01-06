@@ -2,14 +2,14 @@
 /** @typedef {import("../../../shared/types").MAHKeyframe} MAHKeyframe */
 /** @typedef {import("../../../shared/types").MidAirHapticsClipboardFormat} MidAirHapticsClipboardFormat */
 /** @typedef {import("./keyframes/index.mjs").MAHKeyframeFE} MAHKeyframeFE */
-/** @typedef {import("../patternevaluator.mjs").PatternEvaluatorParameters} PatternEvaluatorParameters */
+/** @typedef {import("../pattern-evaluator.mjs").PatternEvaluatorParameters} PatternEvaluatorParameters */
 /** 
  * @template T
  * @template K
  * @typedef {import("../../../shared/util").ReqProp<T, K>} ReqProp
  */
 
-import { PatternEvaluator } from "../patternevaluator.mjs";
+import { PatternEvaluator } from "../pattern-evaluator.mjs";
 import { create_correct_keyframefe_wrapper, MAHKeyframePauseFE, MAHKeyframeStandardFE } from "./keyframes/index.mjs";
 
 /**

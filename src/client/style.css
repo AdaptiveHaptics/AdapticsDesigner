@@ -108,7 +108,7 @@ div.bottom {
     background-color: var(--background-primary);
 
     display: grid;
-    grid-template-columns: 25% 1px 75%;
+    grid-template-columns: 22% 1px 78%;
 }
 
 div.left,

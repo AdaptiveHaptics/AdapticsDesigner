@@ -3,7 +3,7 @@
 /** @typedef {import("../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
 
-import { has_coords } from "./fe/keyframes/index.mjs";
+import { has_brush, has_coords } from "./fe/keyframes/index.mjs";
 import { notnull } from "./util.mjs";
 
 export class UnifiedKeyframeEditor {
@@ -16,13 +16,13 @@ export class UnifiedKeyframeEditor {
 		this.pattern_design = pattern_design;
 		this.unifiedkeyframeeditorDiv = unifiedkeyframeeditorDiv;
 
-		this.pattern_design.state_change_events.addEventListener("rerender", ev => this.select_update());
-		this.pattern_design.state_change_events.addEventListener("kf_reorder", ev => this.select_update());
-		this.pattern_design.state_change_events.addEventListener("kf_select", ev => this.select_update());
+		this.pattern_design.state_change_events.addEventListener("rerender", _ev => this.select_update());
+		this.pattern_design.state_change_events.addEventListener("kf_reorder", _ev => this.select_update());
+		this.pattern_design.state_change_events.addEventListener("kf_select", _ev => this.select_update());
 		this.pattern_design.state_change_events.addEventListener("kf_update", ev => {
 			if (this.pattern_design.selected_keyframes.has(ev.detail.keyframe)) this.select_update();
 		});
-		this.pattern_design.state_change_events.addEventListener("kf_deselect", ev => this.select_update());
+		this.pattern_design.state_change_events.addEventListener("kf_deselect", _ev => this.select_update());
 
 		this.ukfeForm = notnull(this.unifiedkeyframeeditorDiv.querySelector("form"));
 		this.ukfeForm.addEventListener("submit", ev => {
@@ -30,21 +30,21 @@ export class UnifiedKeyframeEditor {
 		});
 		// this.ukfeForm.addEventListener("focusin", ev => {
 		// this.ukfeForm.addEventListener("focusout", ev => {
-		notnull(this.ukfeForm.querySelector("div.typecontainer")).addEventListener("change", ev => {
+		notnull(this.ukfeForm.querySelector("div.typecontainer")).addEventListener("change", _ev => {
 			this.on_type_change();
 		});
 		/** @type {HTMLDetailsElement} */
 		this.coords_details = notnull(this.ukfeForm.querySelector("details.coords"));
-		this.coords_details.addEventListener("change", ev => {
+		this.coords_details.addEventListener("change", _ev => {
 			this.on_coords_change();
 		});
-		notnull(this.ukfeForm.querySelector("details.brush")).addEventListener("change", ev => {
+		notnull(this.ukfeForm.querySelector("details.brush")).addEventListener("change", _ev => {
 			this.on_brush_change();
 		});
-		notnull(this.ukfeForm.querySelector("details.intensity")).addEventListener("change", ev => {
+		notnull(this.ukfeForm.querySelector("details.intensity")).addEventListener("change", _ev => {
 			this.on_intensity_change();
 		});
-		notnull(this.ukfeForm.querySelector("details.transition")).addEventListener("change", ev => {
+		notnull(this.ukfeForm.querySelector("details.transition")).addEventListener("change", _ev => {
 			this.on_transition_change();
 		});
 		
@@ -106,7 +106,14 @@ export class UnifiedKeyframeEditor {
 		if (common_fields.has("brush")) {
 			/** @type {HTMLDetailsElement} */
 			const brush_details = notnull(this.ukfeForm.querySelector("details.brush"));
+			
+			const for_type_check = selected.filter(has_brush);
+			
+			const brush_type = this.get_if_field_identical(for_type_check, kf => kf.brush.name);
+			notnull(brush_details.querySelector("select")).value = brush_type || "multipletypes";
+			
 			brush_details.style.display = "";
+			brush_details.querySelectorAll("input").forEach(i => i.value = this.get_if_field_identical(for_type_check, kf => kf.coords[i.name]));
 		}
 		if (common_fields.has("intensity")) {
 			/** @type {HTMLDetailsElement} */
@@ -121,7 +128,7 @@ export class UnifiedKeyframeEditor {
 	}
 
 
-	on_type_change(ev) {
+	on_type_change() {
 		this.pattern_design.save_state();
 		
 		const new_type = this.type_select.value;

@@ -17,6 +17,9 @@ export class MAHKeyframePauseFE extends MAHKeyframeBaseFE {
 		if (keyframe.type != "pause") throw new TypeError(`keyframe is not of type 'pause' found '${keyframe.type}'`);
 		super(keyframe, pattern_design);
 		this.type = /** @type {"pause"} */ ("pause"); //for type check
+		this.brush = keyframe.brush;
+		this.intensity = keyframe.intensity;
+		this.transition = keyframe.transition;
 	}
 
 	/**
@@ -32,6 +35,6 @@ export class MAHKeyframePauseFE extends MAHKeyframeBaseFE {
 			time = pattern_design.linterp_next_timestamp();
 		}
 		
-		return new MAHKeyframePauseFE({ type: "pause", time: time }, pattern_design);
+		return new MAHKeyframePauseFE({ type: "pause", time: time, brush, intensity, transition }, pattern_design);
 	}
 }

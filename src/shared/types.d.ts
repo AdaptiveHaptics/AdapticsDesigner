@@ -1,4 +1,4 @@
-type REVISION_STRING = "0.0.1-alpha.3";
+type REVISION_STRING = "0.0.2-alpha.1";
 
 export interface MidAirHapticsAnimationFileFormat {
     $DATA_FORMAT: "MidAirHapticsAnimationFileFormat",
@@ -38,23 +38,38 @@ export interface MAHKeyframeBase {
     /** Time in milliseconds */
     time: number,
 }
-/** standard keyframe with coords, brush, intensity, and transitions */
-export interface MAHKeyframeStandard extends MAHKeyframeBase {
-    type: "standard",
+export interface MAHKeyframeBrush {
     brush: MAHBrush,
+}
+export interface MAHKeyframeIntensity {
     intensity: MAHIntensity,
+}
+export interface MAHKeyframeTransition {
+    /** Describes the transition to the next keyframe */
+    transition: MAHTransition,
+}
+export interface MAHKeyframeCoords {
     coords: {
         x: number,
         y: number,
         z: number,
     },
-    /** Describes the transition to the next keyframe */
-    transition: MAHTransition,
 }
+export interface MAHKeyframeBasic
+    extends MAHKeyframeBase, MAHKeyframeBrush, MAHKeyframeIntensity, MAHKeyframeTransition {};
+
+/** standard keyframe with coords, brush, intensity, and transitions */
+export interface MAHKeyframeStandard
+    extends MAHKeyframeBasic, MAHKeyframeCoords {
+    type: "standard",
+}
+
 /** pauses the previous standard keyframe until timestamp reached */
-export interface MAHKeyframePause extends MAHKeyframeBase {
+export interface MAHKeyframePause
+    extends MAHKeyframeBasic {
     type: "pause"
 }
+
 export type MAHKeyframe = MAHKeyframeStandard | MAHKeyframePause;
 
 
@@ -64,19 +79,19 @@ type Variant<Key extends string, Value = undefined> = {
 };
 const make_variant = <Key extends string, Value = undefined>(key: Key) => (value: Value): Variant<Key, Value> => ({ key, value });
 
-const BrushPoint = make_variant<"Point", { size: number }>("Point");
-const BrushLine = make_variant<"Line", { thickness: number, rotation: number }>("Line");
+const BrushPoint = make_variant<"point", { size: number }>("point");
+const BrushLine = make_variant<"line", { thickness: number, rotation: number }>("line");
 type MAHBrush = ReturnType<typeof BrushPoint> | ReturnType<typeof BrushLine>;
 
-const IntensityConstant = make_variant<"Constant", { value: number }>("Constant");
-const IntensityRandom = make_variant<"Random", { min: number, max: number }>("Random");
+const IntensityConstant = make_variant<"constant", { value: number }>("constant");
+const IntensityRandom = make_variant<"random", { min: number, max: number }>("random");
 type MAHIntensity = ReturnType<typeof IntensityConstant> | ReturnType<typeof IntensityRandom>;
 
 
 /** Linear interpolation between the control points */
-const TransitionLinear = make_variant<"Linear", {}>("Linear");
+const TransitionLinear = make_variant<"linear", {}>("linear");
 /** Step/Jump between the control points */
-const TransitionStep = make_variant<"Step", {}>("Step");
+const TransitionStep = make_variant<"step", {}>("step");
 type MAHTransition = ReturnType<typeof TransitionLinear> | ReturnType<typeof TransitionStep>;
 
 

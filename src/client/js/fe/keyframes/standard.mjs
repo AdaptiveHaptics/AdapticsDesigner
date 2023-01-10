@@ -19,8 +19,8 @@ export class MAHKeyframeStandardFE extends MAHKeyframeBaseFE {
 		this.type = /** @type {"standard"} */ ("standard"); //for type check
 		this.brush = keyframe.brush;
 		this.intensity = keyframe.intensity;
-		this.coords = keyframe.coords;
 		this.transition = keyframe.transition;
+		this.coords = keyframe.coords;
 	}
 	
 	/**
@@ -73,6 +73,8 @@ export class MAHKeyframeStandardFE extends MAHKeyframeBaseFE {
 			Object.keys(coords).forEach(k => coords[k] = Math.min(Math.max(coords[k], 0), 500));
 		}
 
+		todo("redo if time can also have brush intensity transitions");
+
 
 		// console.log(set);
 		const keyframe = new MAHKeyframeStandardFE(window.structuredClone({ ...MAHKeyframeStandardFE.DEFAULT, ...next_keyframe, ...prev_keyframe, ...set, time, coords }), pattern_design);
@@ -87,19 +89,19 @@ export class MAHKeyframeStandardFE extends MAHKeyframeBaseFE {
 		time: 0.000,
 		coords: { x: 0, y: 0, z: 0, },
 		intensity: {
-			name: "Constant",
+			name: "constant",
 			params: {
 				value: 1.00
 			}
 		},
 		brush: {
-			name: "Point",
+			name: "point",
 			params: {
 				size: 1.00
 			}
 		},
 		transition: {
-			name: "Linear",
+			name: "linear",
 			params: {}
 		}
 	};

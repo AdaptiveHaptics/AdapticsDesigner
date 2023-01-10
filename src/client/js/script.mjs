@@ -3,7 +3,6 @@ import { MAHPatternDesignFE } from "./fe/patterndesign.mjs";
 import { KonvaPatternStage } from "./konvapanes/pattern-stage.mjs";
 import { KonvaTimelineStage } from "./konvapanes/timeline-stage.mjs";
 import { ParameterEditor } from "./parameter-editor.mjs";
-import { PatternEvaluator } from "./pattern-evaluator.mjs";
 import { UnifiedKeyframeEditor } from "./unified-keyframe-editor.mjs";
 import { notnull } from "./util.mjs";
 

@@ -544,19 +544,19 @@ MAHPatternDesignFE.DEFAULT = ["test.json", {
 				z: 0,
 			},
 			intensity: {
-				name: "Constant",
+				name: "constant",
 				params: {
 					value: 1.00
 				}
 			},
 			brush: {
-				name: "Point",
+				name: "point",
 				params: {
 					size: 1.00
 				}
 			},
 			transition: {
-				name: "Linear",
+				name: "linear",
 				params: {}
 			}
 		}

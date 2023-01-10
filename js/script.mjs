@@ -1,10 +1,10 @@
 import Split from "../thirdparty/split-grid.mjs";
 import { MAHPatternDesignFE } from "./fe/patterndesign.mjs";
-import { KonvaPatternStage } from "./konvapanes/patternstage.mjs";
-import { KonvaTimelineStage } from "./konvapanes/timelinestage.mjs";
+import { KonvaPatternStage } from "./konvapanes/pattern-stage.mjs";
+import { KonvaTimelineStage } from "./konvapanes/timeline-stage.mjs";
 import { ParameterEditor } from "./parameter-editor.mjs";
-import { PatternEvaluator } from "./patternevaluator.mjs";
-import { UnifiedKeyframeEditor } from "./unifiedkeyframeeditor.mjs";
+import { PatternEvaluator } from "./pattern-evaluator.mjs";
+import { UnifiedKeyframeEditor } from "./unified-keyframe-editor.mjs";
 import { notnull } from "./util.mjs";
 
 const ignoreErrorsContaining = [

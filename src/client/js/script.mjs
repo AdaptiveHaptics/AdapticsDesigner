@@ -7,7 +7,6 @@ import { UnifiedKeyframeEditor } from "./unified-keyframe-editor.mjs";
 import { notnull } from "./util.mjs";
 
 const ignoreErrorsContaining = [
-	"The play() request was interrupted by a new load request"
 ];
 window.addEventListener("unhandledrejection", event => {
 	// console.error(event.reason);
@@ -28,7 +27,6 @@ const SplitGrid = /** @type {import("split-grid").default} */(/** @type {unknown
 
 /** @typedef {import("../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
-/** @typedef {import("../../shared/types").MAHKeyframeBase} MAHKeyframeBase */
 /** @typedef {import("../../shared/types").MAHKeyframeStandard} MAHKeyframeStandard */
 /** @typedef {import("../../shared/types").MAHKeyframePause} MAHKeyframePause */
 /** @typedef {import("../../shared/types").MidAirHapticsClipboardFormat} MidAirHapticsClipboardFormat */

@@ -21,3 +21,12 @@ export function milliseconds_to_hhmmssms_format(t) {
 	const hrs = t;
 	return `${pad(hrs)}:${pad(mins)}:${pad(secs)}.${pad(ms, 3)}`;
 }
+
+/**
+ * @template T
+ * @param {T} o 
+ * @returns {T}
+ */
+export function structured_clone(o) {
+	return window.structuredClone(o);
+}

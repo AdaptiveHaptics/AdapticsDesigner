@@ -1,13 +1,16 @@
+/** @typedef {import("../../../../shared/types").MAHKeyframe} MAHKeyframe */
 /** @typedef {import("../../../../shared/types").MAHKeyframePause} MAHKeyframePause */
 /** @typedef {import("../patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
 /** @typedef {import("./index.mjs").MAHKeyframeFE} MAHKeyframeFE */
 
-import { MAHKeyframeBaseFE } from "./base.mjs";
+import { structured_clone } from "../../util.mjs";
+import { MAHKeyframeBasicFE } from "./basic.mjs";
+import { NewKeyframeCommon } from "./index.mjs";
 
 /**
  * @implements {MAHKeyframePause}
  */
-export class MAHKeyframePauseFE extends MAHKeyframeBaseFE {
+export class MAHKeyframePauseFE extends MAHKeyframeBasicFE {
 	/**
 	 * 
 	 * @param {MAHKeyframePause} keyframe 
@@ -25,16 +28,38 @@ export class MAHKeyframePauseFE extends MAHKeyframeBaseFE {
 	/**
 	 * 
 	 * @param {MAHPatternDesignFE} pattern_design 
-	 * @param {{} | MAHKeyframeFE} set 
+	 * @param {Partial<MAHKeyframe>} set 
 	 */
 	static from_current_keyframes(pattern_design, set) {
-		let time;
-		if ("time" in set) {
-			time = set.time;
-		} else {
-			time = pattern_design.linterp_next_timestamp();
-		}
-		
-		return new MAHKeyframePauseFE({ type: "pause", time: time, brush, intensity, transition }, pattern_design);
+		const {
+			time,
+			brush = MAHKeyframePauseFE.DEFAULT.brush,
+			intensity = MAHKeyframePauseFE.DEFAULT.intensity,
+			transition = MAHKeyframePauseFE.DEFAULT.transition,
+		} = new NewKeyframeCommon(pattern_design, set.time || null);
+		const keyframe = new MAHKeyframePauseFE(structured_clone({ time, brush, intensity, transition, ...set, type: MAHKeyframePauseFE.DEFAULT.type }), pattern_design);
+		return keyframe;
 	}
+
+	/** @type {MAHKeyframePause} */
+	static DEFAULT = {
+		type: "pause",
+		time: 0.000,
+		intensity: {
+			name: "constant",
+			params: {
+				value: 1.00
+			}
+		},
+		brush: {
+			name: "point",
+			params: {
+				size: 1.00
+			}
+		},
+		transition: {
+			name: "linear",
+			params: {}
+		}
+	};
 }

@@ -8,9 +8,16 @@
  * @template K
  * @typedef {import("../../../shared/util").ReqProp<T, K>} ReqProp
  */
+/** 
+ * @template T
+ * @template K
+ * @typedef {import("../../../shared/util").OptExceptProp<T, K>} OptExceptProp
+ */
+
+const MAH_$REVISION = "0.0.2-alpha.1";
 
 import { PatternEvaluator } from "../pattern-evaluator.mjs";
-import { create_correct_keyframefe_wrapper, MAHKeyframePauseFE, MAHKeyframeStandardFE } from "./keyframes/index.mjs";
+import { create_correct_keyframefe_wrapper, MAHKeyframePauseFE, MAHKeyframeStandardFE, NewKeyframeCommon } from "./keyframes/index.mjs";
 
 /**
  * @typedef {Object} StateEventMap
@@ -206,7 +213,7 @@ export class MAHPatternDesignFE {
 
 	/**
 	 * 
-	 * @param {Partial<MAHKeyframe> & Pick<MAHKeyframe, "type">} set
+	 * @param {OptExceptProp<MAHKeyframe, "type">} set
 	 * @returns 
 	 */
 	insert_new_keyframe(set) {
@@ -394,7 +401,7 @@ export class MAHPatternDesignFE {
 		/** @type {MidAirHapticsClipboardFormat} */
 		const clipboard_data = {
 			$DATA_FORMAT: "MidAirHapticsClipboardFormat",
-			$REVISION: "0.0.1-alpha.3",
+			$REVISION: MAH_$REVISION,
 			keyframes: [...this.selected_keyframes]
 		};
 		// const ci = new ClipboardItem({
@@ -418,17 +425,18 @@ export class MAHPatternDesignFE {
 				throw new Error("Could not find MidAirHapticsClipboardFormat data in clipboard.");
 			}
 			if (clipboard_parsed.$DATA_FORMAT != "MidAirHapticsClipboardFormat") throw new Error(`incorrect $DATA_FORMAT ${clipboard_parsed.$DATA_FORMAT} expected ${"MidAirHapticsClipboardFormat"}`);
-			if (clipboard_parsed.$REVISION != "0.0.1-alpha.3") throw new Error(`incorrect revision ${clipboard_parsed.$REVISION} expected ${"0.0.1-alpha.2"}`);
+			if (clipboard_parsed.$REVISION != MAH_$REVISION) throw new Error(`incorrect revision ${clipboard_parsed.$REVISION} expected ${"0.0.1-alpha.2"}`);
 
 
 			// I was gonna do a more complicated "ghost" behaviour
 			// but google slides just drops the new objects at an offset
+			// and adds them to selected
 			this.deselect_all_keyframes();
 			this.save_state();
 			clipboard_parsed.keyframes.sort();
 
-			const paste_time_offset = this.linterp_next_timestamp() - (clipboard_parsed.keyframes[0]?.time || 0);
-			console.log(paste_time_offset);
+			const paste_time_offset = NewKeyframeCommon.next_timestamp(this) - (clipboard_parsed.keyframes[0]?.time || 0);
+			// console.log(paste_time_offset);
 
 			const new_keyframes = clipboard_parsed.keyframes.map(kf => {
 				console.log(kf.time);
@@ -448,24 +456,6 @@ export class MAHPatternDesignFE {
 		}
 	}
 
-	/**
-	 * 
-	 * @returns {number} timestamp for next keyframe
-	 */
-	linterp_next_timestamp() {
-		const last_keyframe = this.get_last_keyframe();
-		const secondlast_keyframe = this.get_secondlast_keyframe();
-		if (last_keyframe) { // linterp
-			if (secondlast_keyframe) {
-				return 2 * last_keyframe.time - secondlast_keyframe.time;
-			} else {
-				return last_keyframe.time + 500;
-			}
-		} else {
-			return 0;
-		}
-	}
-
 
 	/**
 	 * @param {MidAirHapticsAnimationFileFormat} filedata 
@@ -482,14 +472,14 @@ export class MAHPatternDesignFE {
 		/** @type {MidAirHapticsAnimationFileFormat} */
 		const filedata = JSON.parse(JSON.stringify(this.filedata));
 		filedata.$DATA_FORMAT = "MidAirHapticsAnimationFileFormat";
-		filedata.$REVISION = "0.0.1-alpha.3";
+		filedata.$REVISION = MAH_$REVISION;
 		return filedata;
 	}
 
 	serialize() {
 		const { filename, filedata, undo_states, redo_states, undo_states_size, redo_states_size } = this;
 		filedata.$DATA_FORMAT = "MidAirHapticsAnimationFileFormat";
-		filedata.$REVISION = "0.0.1-alpha.3";
+		filedata.$REVISION = MAH_$REVISION;
 		const serializable_obj = { filename, filedata, undo_states, redo_states, undo_states_size, redo_states_size };
 		return JSON.stringify(serializable_obj);
 	}
@@ -523,7 +513,7 @@ export class MAHPatternDesignFE {
 /** @type {[string, MidAirHapticsAnimationFileFormat]} */
 MAHPatternDesignFE.DEFAULT = ["test.json", {
 	$DATA_FORMAT: "MidAirHapticsAnimationFileFormat",
-	$REVISION: "0.0.1-alpha.3",
+	$REVISION: MAH_$REVISION,
 
 	name: "test",
 

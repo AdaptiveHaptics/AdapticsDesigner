@@ -22,6 +22,8 @@ export type ImmutableObject<T> = { readonly [K in keyof T]: Immutable<T[K]> };
 type OptProp<T, K extends keyof T> = Partial<Pick<T, K>> & T;
 /** Make one property required */
 type ReqProp<T, K extends keyof T> = Required<Pick<T, K>> & T;
+/** Make optional except property K */
+type OptExceptProp<T, K extends keyof T> = Partial<T> & Pick<T, K>;
 
 type NotNullable<T> = Exclude<T, null | undefined>;
 

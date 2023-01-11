@@ -33,8 +33,16 @@ export interface MidAirHapticsAnimationFileFormat {
     // /** sets how an animation progresses through the duration of each cycle */
     // timing-function: MAHTimingFunction,
 }
-
-export interface MAHKeyframeBase {
+/**
+ * x and y are used for the xy coordinate system in the 2d designer.
+ * z is intended to be orthogonal to the phased array
+ */
+export interface MAHCoords {
+    x: number,
+    y: number,
+    z: number,
+}
+export interface MAHKeyframeTime {
     /** Time in milliseconds */
     time: number,
 }
@@ -49,14 +57,10 @@ export interface MAHKeyframeTransition {
     transition: MAHTransition,
 }
 export interface MAHKeyframeCoords {
-    coords: {
-        x: number,
-        y: number,
-        z: number,
-    },
+    coords: MAHCoords,
 }
 export interface MAHKeyframeBasic
-    extends MAHKeyframeBase, MAHKeyframeBrush, MAHKeyframeIntensity, MAHKeyframeTransition {};
+    extends MAHKeyframeTime, MAHKeyframeBrush, MAHKeyframeIntensity, MAHKeyframeTransition {};
 
 /** standard keyframe with coords, brush, intensity, and transitions */
 export interface MAHKeyframeStandard

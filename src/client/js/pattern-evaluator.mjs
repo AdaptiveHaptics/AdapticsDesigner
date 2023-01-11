@@ -119,6 +119,7 @@ export class PatternEvaluator {
 	 * @returns {{ coords: { x: number, y: number, z: number }, intensity: number }}
 	 */
 	eval_stream_at_anim_local_time(p) {
+		todo("this needs to be redone for the new frame types. need to figure out if we can assume all frames are basicframes or need to make a per-property keyframe map state for transitions");
 		const prev_std_keyframe = this.get_prev_standard_keyframe(p.time);
 		const prev_keyframe = this.get_prev_keyframe(p.time);
 		const next_keyframe = this.get_next_keyframe(p.time);

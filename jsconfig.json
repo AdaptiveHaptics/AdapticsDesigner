@@ -6,5 +6,5 @@
         "lib": [ "ES2017", "DOM" ],
         "strictNullChecks": true
     },
-    "exclude": ["node_modules", "dist", "src/**/thirdparty/*"]
+    "exclude": ["node_modules", "dist", "src/**/thirdparty"]
 }

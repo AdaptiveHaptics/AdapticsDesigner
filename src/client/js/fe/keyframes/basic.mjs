@@ -12,10 +12,10 @@ export class MAHKeyframeBasicFE {
 	#_pattern_design;
 	/** @readonly */
 	time;
-	
+
 	/**
-	 * 
-	 * @param {MAHKeyframe} keyframe 
+	 *
+	 * @param {MAHKeyframe} keyframe
 	 * @param {MAHPatternDesignFE} pattern_design
 	 */
 	constructor(keyframe, pattern_design) {
@@ -29,8 +29,8 @@ export class MAHKeyframeBasicFE {
 	}
 
 	/**
-	 * 
-	 * @param {number} t 
+	 *
+	 * @param {number} t
 	 */
 	set_time(t) {
 		if (this.time == t) return;

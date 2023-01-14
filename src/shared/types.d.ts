@@ -59,7 +59,7 @@ export interface MAHKeyframeIntensity {
     }
 }
 export interface MAHKeyframeBasic
-    extends 
+    extends
         MAHKeyframeTime,
         Partial<MAHKeyframeBrush>,
         Partial<MAHKeyframeIntensity>,

@@ -113,7 +113,7 @@ document.addEventListener("copy", _ev => {
 	primary_design.copy_selected_to_clipboard();
 });
 document.addEventListener("paste", _ev => {
-	primary_design.paste_clipboard(); 
+	primary_design.paste_clipboard();
 });
 
 primary_design.state_change_events.addEventListener("commit_update", ev => {

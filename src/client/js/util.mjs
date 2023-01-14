@@ -1,7 +1,7 @@
 /**
  * Assert Not Null
  * @template T
- * @param {T | null} t 
+ * @param {T | null} t
  * @returns {T}
  */
 export function notnull(t) {
@@ -9,8 +9,8 @@ export function notnull(t) {
 	else throw new TypeError("Unexpected null");
 }
 /**
- * 
- * @param {never} _x 
+ *
+ * @param {never} _x
  * @returns {never}
  */
 export function assert_unreachable(_x) {
@@ -32,7 +32,7 @@ export function milliseconds_to_hhmmssms_format(t) {
 
 /**
  * @template T
- * @param {T} o 
+ * @param {T} o
  * @returns {T}
  */
 export function structured_clone(o) {

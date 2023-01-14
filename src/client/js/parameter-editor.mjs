@@ -5,9 +5,9 @@ import { notnull } from "./util.mjs";
 
 export class ParameterEditor {
 	/**
-	 * 
-	 * @param {MAHPatternDesignFE} pattern_design 
-	 * @param {HTMLDivElement} patterneditor_div 
+	 *
+	 * @param {MAHPatternDesignFE} pattern_design
+	 * @param {HTMLDivElement} patterneditor_div
 	 */
 	constructor(pattern_design, patterneditor_div) {
 		this.pattern_design = pattern_design;
@@ -30,7 +30,7 @@ export class ParameterEditor {
 			this.timecontrol_pause = notnull(this.timecontrol_div.querySelector("button.pause"));
 			/** @type {HTMLButtonElement} */
 			this.timecontrol_reset = notnull(this.timecontrol_div.querySelector("button.reset"));
-	
+
 			this.timecontrol_playstart = 0;
 			const tickplayback = () => {
 				if (!this.timecontrol_playstart) return;

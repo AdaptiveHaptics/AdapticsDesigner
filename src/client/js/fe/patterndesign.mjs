@@ -3,12 +3,12 @@
 /** @typedef {import("../../../shared/types").MidAirHapticsClipboardFormat} MidAirHapticsClipboardFormat */
 /** @typedef {import("./keyframes/index.mjs").MAHKeyframeFE} MAHKeyframeFE */
 /** @typedef {import("../pattern-evaluator.mjs").PatternEvaluatorParameters} PatternEvaluatorParameters */
-/** 
+/**
  * @template T
  * @template K
  * @typedef {import("../../../shared/util").ReqProp<T, K>} ReqProp
  */
-/** 
+/**
  * @template T
  * @template K
  * @typedef {import("../../../shared/util").OptExceptProp<T, K>} OptExceptProp
@@ -42,8 +42,8 @@ import { create_correct_keyframefe_wrapper, MAHKeyframePauseFE, MAHKeyframeStand
  */
 export class StateChangeEvent extends CustomEvent {
 	/**
-	 * 
-	 * @param {K} event 
+	 *
+	 * @param {K} event
 	 * @param {ReqProp<CustomEventInit<StateEventMap[K]>, "detail">} eventInitDict
 	 */
 	constructor(event, eventInitDict) {
@@ -53,11 +53,11 @@ export class StateChangeEvent extends CustomEvent {
 
 class StateChangeEventTarget extends EventTarget {
 	/**
-	 * 
+	 *
 	 * @template {keyof StateEventMap} K
-	 * @param {K} type 
-	 * @param {(ev: CustomEvent<StateEventMap[K]>) => void} listener 
-	 * @param {boolean | AddEventListenerOptions=} options 
+	 * @param {K} type
+	 * @param {(ev: CustomEvent<StateEventMap[K]>) => void} listener
+	 * @param {boolean | AddEventListenerOptions=} options
 	 */
 	addEventListener(type, listener, options) {
 		super.addEventListener(type, listener, options);
@@ -66,13 +66,13 @@ class StateChangeEventTarget extends EventTarget {
 
 export class MAHPatternDesignFE {
 	/**
-	 * 
-	 * @param {string} filename 
-	 * @param {MidAirHapticsAnimationFileFormat} filedata 
+	 *
+	 * @param {string} filename
+	 * @param {MidAirHapticsAnimationFileFormat} filedata
 	 */
 	constructor(filename, filedata, undo_states = [], redo_states = [], undo_states_size = 50, redo_states_size = 50) {
 		this.filename = filename;
-		
+
 		/** @type {MAHAnimationFileFormatFE} */
 		this.filedata = this.load_filedata_into_fe_format(filedata);
 
@@ -136,7 +136,7 @@ export class MAHPatternDesignFE {
 		// setTimeout(() => this.save_to_localstorage(), 1800);
 	}
 	/**
-	 * 
+	 *
 	 * @param {{
 	 * 	rerender?: boolean,
 	 * 	new_keyframes?: MAHKeyframeFE[]
@@ -212,9 +212,9 @@ export class MAHPatternDesignFE {
 
 
 	/**
-	 * 
+	 *
 	 * @param {OptExceptProp<MAHKeyframe, "type">} set
-	 * @returns 
+	 * @returns
 	 */
 	insert_new_keyframe(set) {
 		let keyframe;
@@ -229,13 +229,13 @@ export class MAHPatternDesignFE {
 		return keyframe;
 	}
 
-	
+
 	/** @type {Set<MAHKeyframeFE>} */
 	selected_keyframes = new Set();
 
 	/**
-	 * 
-	 * @param {MAHKeyframeFE[]} selected_keyframes 
+	 *
+	 * @param {MAHKeyframeFE[]} selected_keyframes
 	 */
 	select_keyframes(selected_keyframes) {
 		for (const keyframe of selected_keyframes) {
@@ -245,8 +245,8 @@ export class MAHPatternDesignFE {
 		}
 	}
 	/**
-	 * 
-	 * @param {MAHKeyframeFE[]} deselected_keyframes 
+	 *
+	 * @param {MAHKeyframeFE[]} deselected_keyframes
 	 */
 	deselect_keyframes(deselected_keyframes) {
 		for (const keyframe of deselected_keyframes) {
@@ -262,8 +262,8 @@ export class MAHPatternDesignFE {
 		this.deselect_keyframes([...this.selected_keyframes]);
 	}
 	/**
-	 * 
-	 * @param {MAHKeyframeFE} keyframe 
+	 *
+	 * @param {MAHKeyframeFE} keyframe
 	 * @returns {boolean}
 	 */
 	is_keyframe_selected(keyframe) {
@@ -272,7 +272,7 @@ export class MAHPatternDesignFE {
 
 	group_select_logic(selected_keyframes, linked_keyframes, { shiftKey = false, ctrlKey = false, altKey = false }) {
 		let keyframes = [];
-		
+
 		if (altKey) { keyframes = [...selected_keyframes, ...linked_keyframes]; }
 		else keyframes = [...selected_keyframes];
 
@@ -283,7 +283,7 @@ export class MAHPatternDesignFE {
 
 
 	/**
-	 * 
+	 *
 	 * @returns {MAHKeyframeFE[]}
 	 */
 	get_sorted_keyframes() {
@@ -291,22 +291,22 @@ export class MAHPatternDesignFE {
 		return this.filedata.keyframes;
 	}
 	/**
-	 * 
+	 *
 	 * @returns {MAHKeyframeFE | undefined}
 	 */
 	get_last_keyframe() {
 		return this.get_sorted_keyframes()[this.filedata.keyframes.length - 1];
 	}
 	/**
-	 * 
+	 *
 	 * @returns {MAHKeyframeFE | undefined}
 	 */
 	get_secondlast_keyframe() {
 		return this.get_sorted_keyframes()[this.filedata.keyframes.length - 2];
 	}
 	/**
-	 * 
-	 * @param {MAHKeyframeFE} keyframe 
+	 *
+	 * @param {MAHKeyframeFE} keyframe
 	 */
 	get_sorted_keyframe_index(keyframe) {
 		const index = this.get_sorted_keyframes().indexOf(keyframe);
@@ -319,7 +319,7 @@ export class MAHPatternDesignFE {
 	/**
 	 * @template R
 	 * @param {(keyframe: MAHKeyframeFE) => (R | null)} pred
-	 * @param {MAHKeyframeFE} keyframe 
+	 * @param {MAHKeyframeFE} keyframe
 	 * @param {"next" | "prev"} prevornext
 	 * @returns {R | null}
 	 */
@@ -345,8 +345,8 @@ export class MAHPatternDesignFE {
 	}
 
 	/**
-	 * 
-	 * @param {MAHKeyframeFE[]} keyframes 
+	 *
+	 * @param {MAHKeyframeFE[]} keyframes
 	 */
 	delete_keyframes(keyframes) {
 		this.deselect_all_keyframes();
@@ -356,9 +356,9 @@ export class MAHPatternDesignFE {
 		}
 		return keyframes;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param {MAHKeyframeFE} keyframe
 	 */
 	check_for_reorder(keyframe) {
@@ -379,8 +379,8 @@ export class MAHPatternDesignFE {
 
 	/**
 	 * @template {keyof PatternEvaluatorParameters} K
-	 * @param {K} param 
-	 * @param {PatternEvaluatorParameters[K]} value 
+	 * @param {K} param
+	 * @param {PatternEvaluatorParameters[K]} value
 	 */
 	update_evaluator_params(param, value) {
 		this.evaluator_params[param] = value;
@@ -458,7 +458,7 @@ export class MAHPatternDesignFE {
 
 
 	/**
-	 * @param {MidAirHapticsAnimationFileFormat} filedata 
+	 * @param {MidAirHapticsAnimationFileFormat} filedata
 	 */
 	load_filedata_into_fe_format(filedata) {
 		const keyframesFE = filedata.keyframes.map(kf => create_correct_keyframefe_wrapper(kf, this));
@@ -484,8 +484,8 @@ export class MAHPatternDesignFE {
 		return JSON.stringify(serializable_obj);
 	}
 	/**
-	 * 
-	 * @param {string} json_str 
+	 *
+	 * @param {string} json_str
 	 * @returns {MAHPatternDesignFE}
 	 */
 	static deserialize(json_str) {

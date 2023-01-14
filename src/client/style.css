@@ -9,7 +9,7 @@
     --background-titlebar: hsl(var(--bg-hue), var(--bg-sat), 14%);
     --background-accent: hsl(var(--bg-hue), var(--bg-sat), 50%);
     --background-gutter: hsl(var(--bg-hue), var(--bg-sat), 60%);
-    
+
     --hitbox: green;
     --hitbox: none;
 
@@ -25,7 +25,7 @@
     --selected-keyframe-color: hwb(204 55% 5%);
     --paused-keyframe-color: var(--pause-color);
 
-    
+
     --control-point-select-rect-fill: #8cc9f230;
     --control-point-stroke: #f5fffa;
     --control-point-stroke-selected: var(--selected-keyframe-color);

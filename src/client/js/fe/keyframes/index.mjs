@@ -1,6 +1,6 @@
 /** @typedef {import("../../../../shared/types").MAHKeyframe} MAHKeyframe */
 /** @typedef {import("../patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
-/** 
+/**
  * @template T
  * @typedef {import("../../../../shared/util").NotNullable<T>} NotNullable
  */
@@ -14,8 +14,8 @@ export { MAHKeyframePauseFE , MAHKeyframeStandardFE };
 
 
 /**
- * 
- * @param {MAHKeyframeFE} keyframe 
+ *
+ * @param {MAHKeyframeFE} keyframe
  */
 export function filter_by_coords(keyframe) {
 	if ("coords" in keyframe) return keyframe;
@@ -26,8 +26,8 @@ export function has_coords(keyframe) {
 	return "coords" in keyframe;
 }
 /**
- * 
- * @param {MAHKeyframeFE} keyframe 
+ *
+ * @param {MAHKeyframeFE} keyframe
  */
 export function filter_by_brush(keyframe) {
 	if ("brush" in keyframe) return keyframe;
@@ -38,8 +38,8 @@ export function has_brush(keyframe) {
 	return "brush" in keyframe;
 }
 /**
- * 
- * @param {MAHKeyframeFE} keyframe 
+ *
+ * @param {MAHKeyframeFE} keyframe
  */
 export function filter_by_intensity(keyframe) {
 	if ("intensity" in keyframe) return keyframe;
@@ -50,8 +50,8 @@ export function has_intensity(keyframe) {
 	return "intensity" in keyframe;
 }
 /**
- * 
- * @param {MAHKeyframeFE} keyframe 
+ *
+ * @param {MAHKeyframeFE} keyframe
  */
 export function filter_by_transition(keyframe) {
 	if ("transition" in keyframe) return keyframe;
@@ -63,8 +63,8 @@ export function has_transition(keyframe) {
 }
 
 /**
- * 
- * @param {MAHKeyframe} keyframe 
+ *
+ * @param {MAHKeyframe} keyframe
  * @param {MAHPatternDesignFE} pattern_design
  * @returns {MAHKeyframeFE}
  */
@@ -80,7 +80,7 @@ export function create_correct_keyframefe_wrapper(keyframe, pattern_design) {
 
 export class NewKeyframeCommon {
 	/**
-	 * 
+	 *
 	 * @param {MAHPatternDesignFE} pattern_design
 	 * @param {number | null} time
 	 */

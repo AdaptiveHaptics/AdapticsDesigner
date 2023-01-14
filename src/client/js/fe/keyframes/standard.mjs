@@ -11,8 +11,8 @@ import { NewKeyframeCommon } from "./index.mjs";
  */
 export class MAHKeyframeStandardFE extends MAHKeyframeBasicFE {
 	/**
-	 * 
-	 * @param {MAHKeyframeStandard} keyframe 
+	 *
+	 * @param {MAHKeyframeStandard} keyframe
 	 * @param {MAHPatternDesignFE} pattern_design
 	 */
 	constructor(keyframe, pattern_design) {
@@ -23,11 +23,11 @@ export class MAHKeyframeStandardFE extends MAHKeyframeBasicFE {
 		this.intensity = keyframe.intensity;
 		this.coords = keyframe.coords;
 	}
-	
+
 	/**
-	 * 
-	 * @param {MAHPatternDesignFE} pattern_design 
-	 * @param {Partial<MAHKeyframeFE>} set 
+	 *
+	 * @param {MAHPatternDesignFE} pattern_design
+	 * @param {Partial<MAHKeyframeFE>} set
 	 */
 	static from_current_keyframes(pattern_design, set) {
 		const { time, coords, brush, intensity, } = new NewKeyframeCommon(pattern_design, set.time || null);

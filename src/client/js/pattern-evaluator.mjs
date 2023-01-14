@@ -15,8 +15,8 @@
 
 export class PatternEvaluator {
 	/**
-	 * 
-	 * @param {MidAirHapticsAnimationFileFormat} mah_animation 
+	 *
+	 * @param {MidAirHapticsAnimationFileFormat} mah_animation
 	 */
 	constructor(mah_animation) {
 		mah_animation.keyframes.sort();
@@ -26,8 +26,8 @@ export class PatternEvaluator {
 
 
 	/**
-	 * 
-	 * @param {number} t 
+	 *
+	 * @param {number} t
 	 * @param {boolean} prev
 	 * @private
 	 */
@@ -45,21 +45,21 @@ export class PatternEvaluator {
 		}
 		return kfc;
 	}
-	/** 
+	/**
 	 * @typedef {OptExceptProp<ReturnType<typeof PatternEvaluator.prototype.get_kf_config_type>, "keyframe_type">} kf_config
 	 */
 
 	/**
-	 * 
-	 * @param {number} t 
+	 *
+	 * @param {number} t
 	 * @returns {kf_config}
 	 */
 	get_prev_config(t) {
 		return this.get_kf_config_type(t, true);
 	}
 	/**
-	 * 
-	 * @param {number} t 
+	 *
+	 * @param {number} t
 	 * @returns {kf_config}
 	 */
 	get_next_config(t) {
@@ -68,11 +68,11 @@ export class PatternEvaluator {
 
 
 	/**
-	 * 
-	 * @p {PatternEvaluatorParameters} p 
-	 * @param {number} prev_time 
-	 * @param {number} next_time 
-	 * @param {import("../../shared/types").MAHTransition} transition 
+	 *
+	 * @p {PatternEvaluatorParameters} p
+	 * @param {number} prev_time
+	 * @param {number} next_time
+	 * @param {import("../../shared/types").MAHTransition} transition
 	 * @returns {{ pf: number, nf: number }}
 	 */
 	perform_transition_interp(p, prev_time, next_time, transition) {
@@ -87,19 +87,19 @@ export class PatternEvaluator {
 
 
 	/**
-	 * 
-	 * @param {PatternEvaluatorParameters} p 
-	 * @param {kf_config} prev_kfc 
-	 * @param {kf_config} next_kfc 
+	 *
+	 * @param {PatternEvaluatorParameters} p
+	 * @param {kf_config} prev_kfc
+	 * @param {kf_config} next_kfc
 	 * @returns {number}
 	 */
 	eval_intensity(p, prev_kfc, next_kfc) {
 		const prev_intensity = prev_kfc.intensity;
 		const next_intensity = next_kfc.intensity;
-		
+
 		/**
-		 * 
-		 * @param {import("../../shared/types").MAHIntensity} intensity 
+		 *
+		 * @param {import("../../shared/types").MAHIntensity} intensity
 		 * @returns {number}
 		 */
 		function get_intensity_value(intensity) {
@@ -123,10 +123,10 @@ export class PatternEvaluator {
 		}
 	}
 	/**
-	 * 
-	 * @param {PatternEvaluatorParameters} p 
-	 * @param {kf_config} prev_kfc 
-	 * @param {kf_config} next_kfc 
+	 *
+	 * @param {PatternEvaluatorParameters} p
+	 * @param {kf_config} prev_kfc
+	 * @param {kf_config} next_kfc
 	 * @returns {{ x: number, y: number, z: number }}
 	 */
 	eval_coords(p, prev_kfc, next_kfc) {
@@ -149,7 +149,7 @@ export class PatternEvaluator {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param {PatternEvaluatorParameters} p
 	 * @returns {{ coords: { x: number, y: number, z: number }, intensity: number }}
 	 */

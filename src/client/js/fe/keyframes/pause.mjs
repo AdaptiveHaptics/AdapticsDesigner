@@ -12,8 +12,8 @@ import { NewKeyframeCommon } from "./index.mjs";
  */
 export class MAHKeyframePauseFE extends MAHKeyframeBasicFE {
 	/**
-	 * 
-	 * @param {MAHKeyframePause} keyframe 
+	 *
+	 * @param {MAHKeyframePause} keyframe
 	 * @param {MAHPatternDesignFE} pattern_design
 	 */
 	constructor(keyframe, pattern_design) {
@@ -25,9 +25,9 @@ export class MAHKeyframePauseFE extends MAHKeyframeBasicFE {
 	}
 
 	/**
-	 * 
-	 * @param {MAHPatternDesignFE} pattern_design 
-	 * @param {Partial<MAHKeyframe>} set 
+	 *
+	 * @param {MAHPatternDesignFE} pattern_design
+	 * @param {Partial<MAHKeyframe>} set
 	 */
 	static from_current_keyframes(pattern_design, set) {
 		const {

@@ -9,7 +9,7 @@ const Konva = /** @type {import("konva").default} */ (window["Konva"]);
 /** @typedef {import("../fe/patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
 /** @typedef {import("../../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../../shared/types").MAHKeyframe} MAHKeyframe */
-/** 
+/**
  * @template T
  * @typedef {import("../../../shared/util").NotNullable<T>} NotNullable
  */
@@ -19,7 +19,7 @@ const KonvaPatternControlPointSymbol = Symbol("KonvaPatternControlPoint");
 export class KonvaPatternStage extends KonvaResizeStage {
 	static pattern_square_size = 500;
 	static pattern_padding = 30;
-	
+
 	transformer = new Konva.Transformer();
 	selection_rect = new Konva.Rect();
 	playback_vis = new Konva.Circle();
@@ -27,10 +27,10 @@ export class KonvaPatternStage extends KonvaResizeStage {
 
 
 	/**
-	 * 
-	 * @param {MAHPatternDesignFE} current_design 
-	 * @param {string} direct_container_id 
-	 * @param {HTMLElement} resize_container 
+	 *
+	 * @param {MAHPatternDesignFE} current_design
+	 * @param {string} direct_container_id
+	 * @param {HTMLElement} resize_container
 	 */
 	constructor(current_design, direct_container_id, resize_container, {
 		pattern_square_size = KonvaPatternStage.pattern_square_size,
@@ -135,7 +135,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 				if (prev_cp) prev_cp.update_pause(ev.detail.keyframe);
 			}
 		});
-		current_design.state_change_events.addEventListener("kf_delete", _ev => { 
+		current_design.state_change_events.addEventListener("kf_delete", _ev => {
 			this.update_all_pause();
 		});
 		current_design.state_change_events.addEventListener("rerender", _ev => {
@@ -146,7 +146,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		});
 
 
-		current_design.state_change_events.addEventListener("playback_update", ev => {
+		current_design.state_change_events.addEventListener("playback_update", _ev => {
 			this.update_playback_vis();
 		});
 		current_design.state_change_events.addEventListener("commit_update", ev => {
@@ -188,7 +188,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 					}
 				});
 				this.current_design.commit_operation({ new_keyframes: [new_keyframe] });
-	
+
 				this.selection_rect.visible(false);
 				if (!ev.evt.ctrlKey) this.current_design.deselect_all_keyframes();
 				this.current_design.select_keyframes([ new_keyframe ]);
@@ -293,8 +293,8 @@ export class KonvaPatternStage extends KonvaResizeStage {
 	}
 
 	/**
-	 * 
-	 * @param {{ x: number, y: number }} coords 
+	 *
+	 * @param {{ x: number, y: number }} coords
 	 */
 	pattern_coords_to_layer_coords({ x, y }) {
 		return {
@@ -304,8 +304,8 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		};
 	}
 	/**
-	 * 
-	 * @param {{ raw_x: number, raw_y: number }} coords 
+	 *
+	 * @param {{ raw_x: number, raw_y: number }} coords
 	 */
 	layer_coords_to_pattern_coords({ raw_x, raw_y }) {
 		return {
@@ -335,11 +335,11 @@ const pausewidth = 3;
 class KonvaPatternControlPoint {
 	/** @type {{ in: KonvaPatternControlPointLine | null, out: KonvaPatternControlPointLine | null }} */
 	lines = { in: null, out: null };
-	
+
 	/**
-	 * 
-	 * @param {NotNullable<ReturnType<import("../fe/keyframes/index.mjs").filter_by_coords>>} keyframe 
-	 * @param {KonvaPatternStage} pattern_stage 
+	 *
+	 * @param {NotNullable<ReturnType<import("../fe/keyframes/index.mjs").filter_by_coords>>} keyframe
+	 * @param {KonvaPatternStage} pattern_stage
 	 */
 	constructor(keyframe, pattern_stage) {
 		this.keyframe = keyframe;
@@ -356,7 +356,7 @@ class KonvaPatternControlPoint {
 		});
 		this.k_cp_circle.on("click", ev => {
 			this.select_this(ev.evt.ctrlKey, false);
-			
+
 			if (ev.evt.altKey) {
 				pattern_stage.current_design.save_state();
 				const deleted_keyframes = pattern_stage.current_design.delete_keyframes([...pattern_stage.current_design.selected_keyframes]);
@@ -462,8 +462,8 @@ class KonvaPatternControlPoint {
 	}
 
 	/**
-	 * 
-	 * @param {boolean} ctrlKey 
+	 *
+	 * @param {boolean} ctrlKey
 	 * @param {boolean} dont_deselect
 	 */
 	select_this(ctrlKey, dont_deselect) {
@@ -481,8 +481,8 @@ class KonvaPatternControlPoint {
 	}
 
 	/**
-	 * 
-	 * @param {MAHKeyframePauseFE | null} pause_keyframe 
+	 *
+	 * @param {MAHKeyframePauseFE | null} pause_keyframe
 	 */
 	update_pause(pause_keyframe) {
 		this.pause_keyframe = pause_keyframe;
@@ -496,8 +496,8 @@ class KonvaPatternControlPoint {
 	}
 
 	/**
-	 * 
-	 * @param {boolean} selected 
+	 *
+	 * @param {boolean} selected
 	 */
 	update_select(selected) {
 		const stroke = selected? "--control-point-stroke-selected" : "--control-point-stroke";
@@ -507,12 +507,12 @@ class KonvaPatternControlPoint {
 	}
 
 	/**
-	 * 
-	 * @param {{ x: number, y: number }} pattern_coords 
+	 *
+	 * @param {{ x: number, y: number }} pattern_coords
 	 */
 	update_position(pattern_coords) {
 		const layer_coords = this.pattern_stage.pattern_coords_to_layer_coords(pattern_coords);
-		
+
 		this.k_cp_circle.x(layer_coords.x);
 		this.k_cp_circle.y(layer_coords.y);
 		this.paused_group.x(layer_coords.x);
@@ -536,8 +536,8 @@ class KonvaPatternControlPoint {
 
 
 	/**
-	 * 
-	 * @param {typeof KonvaPatternControlPoint.prototype.keyframe | null | undefined} keyframe 
+	 *
+	 * @param {typeof KonvaPatternControlPoint.prototype.keyframe | null | undefined} keyframe
 	 * @returns {KonvaPatternControlPoint | null}
 	 */
 	static get_control_point_from_keyframe(keyframe) {
@@ -547,10 +547,10 @@ class KonvaPatternControlPoint {
 
 class KonvaPatternControlPointLine {
 	/**
-	 * 
-	 * @param {KonvaPatternControlPoint} curr_cp 
-	 * @param {KonvaPatternControlPoint} next_cp 
-	 * @param {KonvaPatternStage} pattern_stage 
+	 *
+	 * @param {KonvaPatternControlPoint} curr_cp
+	 * @param {KonvaPatternControlPoint} next_cp
+	 * @param {KonvaPatternStage} pattern_stage
 	 */
 	constructor(curr_cp, next_cp, pattern_stage) {
 		this.line = new Konva.Line({
@@ -564,7 +564,7 @@ class KonvaPatternControlPointLine {
 		if (old_out) old_out.line.destroy();
 		const old_in = next_cp.lines.in;
 		if (old_in) old_in.line.destroy();
-		
+
 		curr_cp.lines.out = this;
 		next_cp.lines.in = this;
 

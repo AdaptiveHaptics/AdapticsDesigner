@@ -1,6 +1,9 @@
 /** @typedef {import("../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
 /** @typedef {import("../../shared/types").MAHKeyframeStandard} MAHKeyframeStandard */
+/** @typedef {import("../../shared/types").MAHBrush} MAHBrush */
+/** @typedef {import("../../shared/types").MAHCoords} MAHCoords */
+/** @typedef {import("../../shared/types").MAHIntensity} MAHIntensity */
 /**
  * @template T
  * @typedef {import("../../shared/util").DeepImmutable<T>} DeepImmutable
@@ -12,6 +15,7 @@
 
 
 /** @typedef {{ time: number, user_parameters: Map<string, number> }} PatternEvaluatorParameters */
+/** @typedef {{ A: number, B: number, a: number, b: number, d: number, k: number, max_t: number, draw_frequency: number }} HapeV2PrimitiveParams */
 
 export class PatternEvaluator {
 	/**
@@ -81,7 +85,8 @@ export class PatternEvaluator {
 			case "linear":
 				return { pf: (1 - dt), nf: dt };
 			case "step":
-				return { pf: dt < 0.5 ? 1 : 0, nf: dt < 0.5 ? 0 : 1 };
+				// return { pf: dt < 0.5 ? 1 : 0, nf: dt < 0.5 ? 0 : 1 }; //step at 50%
+				return { pf: dt < 1 ? 1 : 0, nf: dt < 1 ? 0 : 1 }; //step at 100%
 		}
 	}
 
@@ -99,7 +104,7 @@ export class PatternEvaluator {
 
 		/**
 		 *
-		 * @param {import("../../shared/types").MAHIntensity} intensity
+		 * @param {MAHIntensity} intensity
 		 * @returns {number}
 		 */
 		function get_intensity_value(intensity) {
@@ -146,6 +151,61 @@ export class PatternEvaluator {
 		} else {
 			return { x: 0, y: 0, z: 0 };
 		}
+	}
+
+
+	/**
+	 *
+	 * @param {{ x: number, y: number, z: number }} coords
+	 * @returns {{ x: number, y: number, z: number }}
+	 */
+	unit_convert_to_hapev2(coords) {
+		return {
+			x: (coords.x-250)/1000,
+			y: (coords.y-250)/1000,
+			z: (coords.z)/1000,
+		};
+	}
+
+	/**
+	 *
+	 * @param {PatternEvaluatorParameters} p
+	 * @param {kf_config} prev_kfc
+	 * @param {kf_config} next_kfc
+	 * @returns {HapeV2PrimitiveParams}
+	 */
+	eval_brush_hapev2(p, prev_kfc, next_kfc) {
+		const prev_brush = prev_kfc.brush;
+		const next_brush = next_kfc.brush;
+		if (prev_brush) {
+			// const brush = {
+			// 	name: prev_brush.brush,
+			// }
+			// const { pf, nf } = this.perform_transition_interp(p, prev_brush.time, next_brush.time, prev_brush.transition);
+			// Object.keys(prev_brush.brush.params).map(k => brush.params[k] = prev_brush.brush[k] * pf + nf * next_brush.brush[k]);
+			// return brush;
+			unit_convert_to_hapev2();
+			switch (prev_brush.brush.name) {
+				case "point":
+					return { A: 1, B: 1, a: 1, b: 1, d: Math.PI/2, k: 0, max_t: 2*Math.PI, draw_frequency: 100 };
+			}
+		} else {
+			return { A: 1, B: 1, a: 1, b: 1, d: Math.PI/2, k: 0, max_t: 2*Math.PI, draw_frequency: 100 };
+		}
+	}
+
+
+	/**
+	 *
+	 * @param {HapeV2PrimitiveParams} s
+	 * @param {number} t
+	 */
+	eval_hapev2_primitive_equation(s, t) {
+		//im not sure how they incorporate the rose curve
+		return {
+			x: s.A * Math.sin(s.a*t + s.d),
+			y: s.B * Math.sin(s.b*t),
+		};
 	}
 
 	/**

@@ -238,6 +238,7 @@ div.unifiedkeyframeeditor select, div.unifiedkeyframeeditor option, input {
     background-color: var(--background-primary);
     padding: 1ex;
     border: none;
+    min-width: 4ex;
 }
 
 div.unifiedkeyframeeditor summary, div.typecontainer select, div.typecontainer option {

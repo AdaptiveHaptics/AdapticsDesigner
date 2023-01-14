@@ -191,7 +191,10 @@ export class UnifiedKeyframeEditor {
 		this.pattern_design.save_state();
 
 		const keyframes = [...this.pattern_design.selected_keyframes].filter(has_coords); //filter for type check (redundant since GUI restricts to correct types)
-		this.coords_inputs.forEach(i => keyframes.forEach(kf => kf.coords[i.name] = Math.min(Math.max(parseFloat(i.value), 0), 500)));
+		this.coords_inputs.forEach(i => {
+			const val = Math.min(Math.max(parseFloat(i.value), 0), 500);
+			if (Number.isFinite(val)) keyframes.forEach(kf => kf.coords.coords[i.name] = val);
+		});
 		// @ts-ignore
 		keyframes.forEach(kf => kf.coords.transition.name = this.coords_transition_select.value);
 

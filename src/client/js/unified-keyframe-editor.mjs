@@ -46,6 +46,9 @@ export class UnifiedKeyframeEditor {
 
 		/** @type {HTMLDetailsElement} */
 		this.intensity_details = notnull(this.ukfeForm.querySelector("details.intensity"));
+		this.intensity_type_select = notnull(this.intensity_details.querySelector("select"));
+		this.intensity_inputs = notnull(this.intensity_details.querySelector(".intensityconfig")).querySelectorAll("input");
+		this.intensity_transition_select = /** @type {HTMLSelectElement} */(this.intensity_details.querySelector("div.transitionconfig select"));
 
 		this.coords_details.addEventListener("change", _ev => {
 			this.on_coords_change();
@@ -144,6 +147,27 @@ export class UnifiedKeyframeEditor {
 			this.intensity_details.style.display = "";
 			const for_type_check = selected.filter(has_intensity);
 
+			const intensity_type = this.get_if_field_identical(for_type_check, kf => kf.intensity?.intensity.name || "omitted");
+			this.intensity_type_select.value = intensity_type || "multipletypes";
+
+			this.intensity_inputs.forEach(i => {
+				const parent_label = notnull(i.parentElement);
+				if (for_type_check.find(kf => kf.intensity?.intensity.params[i.name] == undefined)) parent_label.style.display = "none";
+				else {
+					parent_label.style.display = "";
+					const val = this.get_if_field_identical(for_type_check, kf => kf.intensity?.intensity.params[i.name]);
+					i.value = val;
+				}
+			});
+
+			const transition_div = /** @type {HTMLDivElement} */ (this.intensity_details.querySelector("div.transition"));
+			if (for_type_check.find(kf => kf.intensity == undefined)) transition_div.style.display = "none";
+			else {
+				transition_div.style.display = "";
+				const selected_transition = this.get_if_field_identical(for_type_check, kf => kf.intensity?.transition.name);
+				this.intensity_transition_select.value = selected_transition || "multipletypes";
+			}
+
 		}
 	}
 
@@ -166,7 +190,7 @@ export class UnifiedKeyframeEditor {
 	on_coords_change() {
 		this.pattern_design.save_state();
 
-		const keyframes = [...this.pattern_design.selected_keyframes].filter(has_coords); //filter for type_check;
+		const keyframes = [...this.pattern_design.selected_keyframes].filter(has_coords); //filter for type check (redundant since GUI restricts to correct types)
 		this.coords_inputs.forEach(i => keyframes.forEach(kf => kf.coords[i.name] = Math.min(Math.max(parseFloat(i.value), 0), 500)));
 		// @ts-ignore
 		keyframes.forEach(kf => kf.coords.transition.name = this.coords_transition_select.value);
@@ -176,25 +200,86 @@ export class UnifiedKeyframeEditor {
 	on_brush_change() {
 		this.pattern_design.save_state();
 
-		const keyframes = [...this.pattern_design.selected_keyframes].filter(has_brush); //filter for type_check;
-		// keyframes.forEach(kf => kf.brush.brush.name = this.brush_type_select.value);
+		const keyframes = [...this.pattern_design.selected_keyframes].filter(has_brush); //filter for type check (redundant since GUI restricts to correct types)
 
-		const kf = keyframes[0];
-		if (kf.brush) {
-			kf.brush.brush.name = "point";
-			kf.brush.brush.params
-		}
+		this.brush_inputs.forEach(i => {
+			const parent_label = notnull(i.parentElement);
+			if (parent_label.style.display == "none") return;
+			keyframes.forEach(kf => {
+				if (!kf.brush) return;
+				kf.brush.brush.params[i.name] = parseFloat(i.value);
+			});
+		});
+
+		keyframes.forEach(kf => {
+			if (!kf.brush) return;
+			if (kf.brush.brush.name == this.brush_type_select.value) return;
+			switch (this.brush_type_select.value) {
+				case "point":
+					kf.brush.brush = {
+						name: this.brush_type_select.value,
+						params: { size: 1 }
+					};
+					break;
+				case "line":
+					kf.brush.brush = {
+						name: this.brush_type_select.value,
+						params: {
+							thickness: 1,
+							rotation: 0
+						}
+					};
+					break;
+				default: throw new Error(`unexpected intensity type: ${this.brush_type_select.value}`);
+			}
+		});
 
 		// @ts-ignore
 		keyframes.forEach(kf => { if (kf.brush) kf.brush.transition.name = this.brush_transition_select.value; });
 
-
-		this.pattern_design.commit_operation();
+		this.pattern_design.commit_operation({ updated_keyframes: keyframes });
 	}
 	on_intensity_change() {
 		this.pattern_design.save_state();
 
-		this.pattern_design.commit_operation();
+		const keyframes = [...this.pattern_design.selected_keyframes].filter(has_intensity); //filter for type check (redundant since GUI restricts to correct types)
+
+		this.intensity_inputs.forEach(i => {
+			const parent_label = notnull(i.parentElement);
+			if (parent_label.style.display == "none") return;
+			keyframes.forEach(kf => {
+				if (!kf.intensity) return;
+				kf.intensity.intensity.params[i.name] = parseFloat(i.value);
+			});
+		});
+
+		keyframes.forEach(kf => {
+			if (!kf.intensity) return;
+			if (kf.intensity.intensity.name == this.intensity_type_select.value) return;
+			switch (this.intensity_type_select.value) {
+				case "constant":
+					kf.intensity.intensity = {
+						name: this.intensity_type_select.value,
+						params: { value: 1 }
+					};
+					break;
+				case "random":
+					kf.intensity.intensity = {
+						name: this.intensity_type_select.value,
+						params: {
+							min: 0,
+							max: 1,
+						}
+					};
+					break;
+				default: throw new Error(`unexpected intensity type: ${this.intensity_type_select.value}`);
+			}
+		});
+
+		// @ts-ignore
+		keyframes.forEach(kf => { if (kf.intensity) kf.intensity.transition.name = this.intensity_transition_select.value; });
+
+		this.pattern_design.commit_operation({ updated_keyframes: keyframes });
 	}
 
 }

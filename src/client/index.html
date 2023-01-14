@@ -120,7 +120,16 @@
 						<details class="intensity">
 							<summary>Intensity</summary>
 							<div class="intensityconfig">
-								TODO
+								<label>Intensity Type: </label>
+								<select name="intensitytype" class="intensity type">
+									<option hidden disabled selected value="multipletypes">multiple types</option>
+									<option disabled value="omitted">omitted</option>
+									<option value="constant">constant</option>
+									<option value="random">random</option>
+								</select>
+								<label>value: <input type="number" name="value" min="0" max="1" step="0.05"></label>
+								<label>min: <input type="number" name="min" min="0" max="1" step="0.05"></label>
+								<label>max: <input type="number" name="max" min="0" max="1" step="0.05"></label>
 							</div>
 							<div class="transition">
 								<span>Transition</span>

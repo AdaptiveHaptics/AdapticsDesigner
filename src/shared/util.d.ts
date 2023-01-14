@@ -8,14 +8,14 @@ type Immutable<T> =
 
 export type DeepImmutable<T> =
     T extends ImmutablePrimitive ? T :
-    T extends Array<infer U> ? ImmutableArray<U> :
-    T extends Map<infer K, infer V> ? ImmutableMap<K, V> :
-    T extends Set<infer M> ? ImmutableSet<M> : ImmutableObject<T>;
+    T extends Array<infer U> ? DeepImmutableArray<U> :
+    T extends Map<infer K, infer V> ? DeepImmutableMap<K, V> :
+    T extends Set<infer M> ? DeepImmutableSet<M> : DeepImmutableObject<T>;
 
-export type ImmutableArray<T> = ReadonlyArray<Immutable<T>>;
-export type ImmutableMap<K, V> = ReadonlyMap<Immutable<K>, Immutable<V>>;
-export type ImmutableSet<T> = ReadonlySet<Immutable<T>>;
-export type ImmutableObject<T> = { readonly [K in keyof T]: Immutable<T[K]> };
+export type DeepImmutableArray<T> = ReadonlyArray<DeepImmutable<T>>;
+export type DeepImmutableMap<K, V> = ReadonlyMap<DeepImmutable<K>, DeepImmutable<V>>;
+export type DeepImmutableSet<T> = ReadonlySet<DeepImmutable<T>>;
+export type DeepImmutableObject<T> = { readonly [K in keyof T]: DeepImmutable<T[K]> };
 
 
 /** Make one property optional */

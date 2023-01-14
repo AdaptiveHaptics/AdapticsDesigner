@@ -103,8 +103,8 @@ export class KonvaPatternStage extends KonvaResizeStage {
 				const high_coords = this.layer_coords_to_pattern_coords({ raw_x: Math.max(x1, x2), raw_y: Math.max(y1, y2) });
 				const keyframes_in_box = this.current_design.filedata.keyframes.filter(has_coords).filter(kf => {
 					return (
-						low_coords.x <= kf.coords.x && kf.coords.x <= high_coords.x &&
-						low_coords.y <= kf.coords.y && kf.coords.y <= high_coords.y
+						low_coords.x <= kf.coords.coords.x && kf.coords.coords.x <= high_coords.x &&
+						low_coords.y <= kf.coords.coords.y && kf.coords.coords.y <= high_coords.y
 					);
 				});
 				const linked_keyframes = [];
@@ -180,7 +180,13 @@ export class KonvaPatternStage extends KonvaResizeStage {
 				this.current_design.save_state();
 				const { x: raw_x, y: raw_y } = this.k_control_points_layer.getRelativePointerPosition();
 				const { x, y } = this.raw_coords_to_pattern_coords({ raw_x, raw_y });
-				const new_keyframe = this.current_design.insert_new_keyframe({ type: "standard", coords: { x, y, z: 0 } });
+				const new_keyframe = this.current_design.insert_new_keyframe({
+					type: "standard",
+					coords: {
+						coords: { x, y, z: 0 },
+						transition: { name: "linear", params: {} }
+					}
+				});
 				this.current_design.commit_operation({ new_keyframes: [new_keyframe] });
 	
 				this.selection_rect.visible(false);
@@ -421,7 +427,7 @@ class KonvaPatternControlPoint {
 
 		pattern_stage.current_design.state_change_events.addEventListener("kf_update", ev => {
 			if (ev.detail.keyframe != keyframe) return;
-			this.update_position(keyframe.coords);
+			this.update_position(keyframe.coords.coords);
 		}, { signal: this.listener_abort.signal });
 
 		pattern_stage.current_design.state_change_events.addEventListener("kf_select", ev => {
@@ -444,7 +450,7 @@ class KonvaPatternControlPoint {
 
 		keyframe[KonvaPatternControlPointSymbol] = this;
 
-		this.update_position(keyframe.coords);
+		this.update_position(keyframe.coords.coords);
 		this.update_select(pattern_stage.current_design.is_keyframe_selected(keyframe));
 		// this.update_pause();
 	}
@@ -511,8 +517,8 @@ class KonvaPatternControlPoint {
 		this.k_cp_circle.y(layer_coords.y);
 		this.paused_group.x(layer_coords.x);
 		this.paused_group.y(layer_coords.y);
-		this.keyframe.coords.x = pattern_coords.x;
-		this.keyframe.coords.y = pattern_coords.y;
+		this.keyframe.coords.coords.x = pattern_coords.x;
+		this.keyframe.coords.coords.y = pattern_coords.y;
 
 		if (this.lines.in) {
 			const points = this.lines.in.line.points();

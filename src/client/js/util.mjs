@@ -8,6 +8,14 @@ export function notnull(t) {
 	if (t) return t;
 	else throw new TypeError("Unexpected null");
 }
+/**
+ * 
+ * @param {never} _x 
+ * @returns {never}
+ */
+export function assert_unreachable(_x) {
+	throw new Error("Didn't expect to get here");
+}
 
 export function milliseconds_to_hhmmssms_format(t) {
 	const pad = (n, z = 2) => ("00" + n).slice(-z);

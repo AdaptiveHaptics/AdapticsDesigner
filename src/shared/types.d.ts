@@ -1,4 +1,4 @@
-type REVISION_STRING = "0.0.2-alpha.1";
+type REVISION_STRING = "0.0.3-alpha.1";
 
 export interface MidAirHapticsAnimationFileFormat {
     $DATA_FORMAT: "MidAirHapticsAnimationFileFormat",
@@ -20,14 +20,14 @@ export interface MidAirHapticsAnimationFileFormat {
     // /** Specifies the delay before start of animation sequence */
     // delay: number,
 
-    /** Direction to play animation (Similar to CSS animation-direction) */
-    direction: "normal" | "reverse" | "alternate" | "alternate-reverse",
+    // /** Direction to play animation (Similar to CSS animation-direction) */
+    // direction: "normal" | "reverse" | "alternate" | "alternate-reverse",
 
-    /** Specifies the length of time in which an animation completes one cycle in milliseconds */
-    duration: number,
+    // /** Specifies the length of time in which an animation completes one cycle in milliseconds */
+    // duration: number,
 
-    /** Specifies the number of times an animation should repeat. */
-    iteration_count: number,
+    // /** Specifies the number of times an animation should repeat. */
+    // iteration_count: number,
 
     // #not sure if useful
     // /** sets how an animation progresses through the duration of each cycle */
@@ -47,20 +47,30 @@ export interface MAHKeyframeTime {
     time: number,
 }
 export interface MAHKeyframeBrush {
-    brush: MAHBrush,
+    brush: {
+        brush: MAHBrush,
+        transition: ReturnType<typeof TransitionStep>
+    }
 }
 export interface MAHKeyframeIntensity {
-    intensity: MAHIntensity,
-}
-export interface MAHKeyframeTransition {
-    /** Describes the transition to the next keyframe */
-    transition: MAHTransition,
-}
-export interface MAHKeyframeCoords {
-    coords: MAHCoords,
+    intensity: {
+        intensity: MAHIntensity,
+        transition: MAHTransition
+    }
 }
 export interface MAHKeyframeBasic
-    extends MAHKeyframeTime, MAHKeyframeBrush, MAHKeyframeIntensity, MAHKeyframeTransition {};
+    extends 
+        MAHKeyframeTime,
+        Partial<MAHKeyframeBrush>,
+        Partial<MAHKeyframeIntensity>,
+{};
+
+export interface MAHKeyframeCoords {
+    coords: {
+        coords: MAHCoords,
+        transition: MAHTransition,
+    }
+}
 
 /** standard keyframe with coords, brush, intensity, and transitions */
 export interface MAHKeyframeStandard
@@ -92,9 +102,9 @@ const IntensityRandom = make_variant<"random", { min: number, max: number }>("ra
 type MAHIntensity = ReturnType<typeof IntensityConstant> | ReturnType<typeof IntensityRandom>;
 
 
-/** Linear interpolation between the control points */
+/** Linear interpolation between the keyframes */
 const TransitionLinear = make_variant<"linear", {}>("linear");
-/** Step/Jump between the control points */
+/** Step/Jump between the keyframes */
 const TransitionStep = make_variant<"step", {}>("step");
 type MAHTransition = ReturnType<typeof TransitionLinear> | ReturnType<typeof TransitionStep>;
 

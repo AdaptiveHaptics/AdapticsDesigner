@@ -19,10 +19,9 @@ export class MAHKeyframePauseFE extends MAHKeyframeBasicFE {
 	constructor(keyframe, pattern_design) {
 		if (keyframe.type != "pause") throw new TypeError(`keyframe is not of type 'pause' found '${keyframe.type}'`);
 		super(keyframe, pattern_design);
-		this.type = /** @type {"pause"} */ ("pause"); //for type check
+		this.type = keyframe.type;
 		this.brush = keyframe.brush;
 		this.intensity = keyframe.intensity;
-		this.transition = keyframe.transition;
 	}
 
 	/**
@@ -33,33 +32,10 @@ export class MAHKeyframePauseFE extends MAHKeyframeBasicFE {
 	static from_current_keyframes(pattern_design, set) {
 		const {
 			time,
-			brush = MAHKeyframePauseFE.DEFAULT.brush,
-			intensity = MAHKeyframePauseFE.DEFAULT.intensity,
-			transition = MAHKeyframePauseFE.DEFAULT.transition,
+			brush,
+			intensity,
 		} = new NewKeyframeCommon(pattern_design, set.time || null);
-		const keyframe = new MAHKeyframePauseFE(structured_clone({ time, brush, intensity, transition, ...set, type: MAHKeyframePauseFE.DEFAULT.type }), pattern_design);
+		const keyframe = new MAHKeyframePauseFE(structured_clone({ time, brush, intensity, ...set, type: "pause" }), pattern_design);
 		return keyframe;
 	}
-
-	/** @type {MAHKeyframePause} */
-	static DEFAULT = {
-		type: "pause",
-		time: 0.000,
-		intensity: {
-			name: "constant",
-			params: {
-				value: 1.00
-			}
-		},
-		brush: {
-			name: "point",
-			params: {
-				size: 1.00
-			}
-		},
-		transition: {
-			name: "linear",
-			params: {}
-		}
-	};
 }

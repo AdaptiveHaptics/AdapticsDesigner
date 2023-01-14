@@ -23,7 +23,6 @@ export class MAHKeyframeBasicFE {
 		this.time = keyframe.time;
 		this.brush = keyframe.brush;
 		this.intensity = keyframe.intensity;
-		this.transition = keyframe.transition;
 	}
 
 	/**

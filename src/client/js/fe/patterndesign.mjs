@@ -14,7 +14,7 @@
  * @typedef {import("../../../shared/util").OptExceptProp<T, K>} OptExceptProp
  */
 
-const MAH_$REVISION = "0.0.2-alpha.1";
+const MAH_$REVISION = "0.0.3-alpha.1";
 
 import { PatternEvaluator } from "../pattern-evaluator.mjs";
 import { create_correct_keyframefe_wrapper, MAHKeyframePauseFE, MAHKeyframeStandardFE, NewKeyframeCommon } from "./keyframes/index.mjs";
@@ -491,7 +491,7 @@ export class MAHPatternDesignFE {
 	static deserialize(json_str) {
 		const { filename, filedata, undo_states, redo_states, undo_states_size, redo_states_size } = JSON.parse(json_str);
 		if (filedata.$DATA_FORMAT != "MidAirHapticsAnimationFileFormat") throw new Error(`incorrect $DATA_FORMAT ${filedata.$DATA_FORMAT} expected ${"MidAirHapticsAnimationFileFormat"}`);
-		if (filedata.$REVISION != "0.0.1-alpha.3") throw new Error(`incorrect revision ${filedata.$REVISION} expected ${"0.0.1-alpha.3"}`);
+		if (filedata.$REVISION != MAH_$REVISION) throw new Error(`incorrect revision ${filedata.$REVISION} expected ${MAH_$REVISION}`);
 		return new MAHPatternDesignFE(filename, filedata, undo_states, redo_states, undo_states_size, redo_states_size);
 	}
 
@@ -517,10 +517,6 @@ MAHPatternDesignFE.DEFAULT = ["test.json", {
 
 	name: "test",
 
-	direction: "normal",
-	duration: 5 * 1000,
-	iteration_count: 1,
-
 	projection: "plane",
 	update_rate: 1,
 
@@ -529,25 +525,39 @@ MAHPatternDesignFE.DEFAULT = ["test.json", {
 			type: "standard",
 			time: 0.000,
 			coords: {
-				x: 250,
-				y: 250,
-				z: 0,
+				coords: {
+					x: 250,
+					y: 250,
+					z: 0,
+				},
+				transition: {
+					name: "linear",
+					params: {}
+				}
 			},
 			intensity: {
-				name: "constant",
-				params: {
-					value: 1.00
+				intensity: {
+					name: "constant",
+					params: {
+						value: 1.00
+					}
+				},
+				transition: {
+					name: "linear",
+					params: {}
 				}
 			},
 			brush: {
-				name: "point",
-				params: {
-					size: 1.00
+				brush: {
+					name: "point",
+					params: {
+						size: 1.00
+					}
+				},
+				transition: {
+					name: "step",
+					params: {}
 				}
-			},
-			transition: {
-				name: "linear",
-				params: {}
 			}
 		}
 	]

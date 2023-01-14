@@ -84,7 +84,7 @@ export class UnifiedKeyframeEditor {
 
 
 
-		const common_fields = new Set(["coords", "brush", "intensity", "transition"]);
+		const common_fields = new Set(["coords", "brush", "intensity"]);
 		for (const field of common_fields) {
 			/** @type {HTMLDetailsElement} */
 			const field_details = notnull(this.ukfeForm.querySelector(`details.${field}`));
@@ -101,7 +101,7 @@ export class UnifiedKeyframeEditor {
 			const for_type_check = selected.filter(has_coords);
 			
 			this.coords_details.style.display = "";
-			this.coords_details.querySelectorAll("input").forEach(i => i.value = this.get_if_field_identical(for_type_check, kf => kf.coords[i.name]));
+			this.coords_details.querySelectorAll("input").forEach(i => i.value = this.get_if_field_identical(for_type_check, kf => kf.coords.coords[i.name]));
 		}
 		if (common_fields.has("brush")) {
 			/** @type {HTMLDetailsElement} */
@@ -109,21 +109,16 @@ export class UnifiedKeyframeEditor {
 			
 			const for_type_check = selected.filter(has_brush);
 			
-			const brush_type = this.get_if_field_identical(for_type_check, kf => kf.brush.name);
+			const brush_type = this.get_if_field_identical(for_type_check, kf => kf.brush?.brush.name || "omitted");
 			notnull(brush_details.querySelector("select")).value = brush_type || "multipletypes";
 			
 			brush_details.style.display = "";
-			brush_details.querySelectorAll("input").forEach(i => i.value = this.get_if_field_identical(for_type_check, kf => kf.coords[i.name]));
+			brush_details.querySelectorAll("input").forEach(i => i.value = this.get_if_field_identical(for_type_check, kf => kf.brush ? kf.brush.brush.params[i.name] : "omitted"));
 		}
 		if (common_fields.has("intensity")) {
 			/** @type {HTMLDetailsElement} */
 			const intensity_details = notnull(this.ukfeForm.querySelector("details.intensity"));
 			intensity_details.style.display = "";
-		}
-		if (common_fields.has("transition")) {
-			/** @type {HTMLDetailsElement} */
-			const transition_details = notnull(this.ukfeForm.querySelector("details.transition"));
-			transition_details.style.display = "";
 		}
 	}
 

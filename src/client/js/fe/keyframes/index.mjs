@@ -106,13 +106,20 @@ export class NewKeyframeCommon {
 		}
 	}
 
+	/** @type {import("../../../../shared/types").MAHKeyframeCoords['coords']['transition']} */
+	static DEFAULT_COORDS_TRANSITION = {
+		name: "linear",
+		params: {}
+	};
+
 	/**
-	 * @returns {{ x: number, y: number, z: number }} timestamp for next keyframe
+	 * @returns {import("../../../../shared/types").MAHKeyframeCoords['coords']}
 	 */
 	get coords() {
 		const current_keyframes_sorted = this.pattern_design.get_sorted_keyframes();
 		let next_keyframe_index = current_keyframes_sorted.findIndex(kf => kf.time > this.time);
 		if (next_keyframe_index == -1) next_keyframe_index = current_keyframes_sorted.length;
+		/** @type {(MAHKeyframeStandardFE | undefined)[]} */
 		const next_neighbors = [];
 		for (let i=next_keyframe_index; i<current_keyframes_sorted.length; i++) {
 			const kf = current_keyframes_sorted[i];
@@ -120,6 +127,7 @@ export class NewKeyframeCommon {
 			if (next_neighbors.length == 2) break;
 			else continue;
 		}
+		/** @type {(MAHKeyframeStandardFE | undefined)[]} */
 		const prev_neighbors = [];
 		for (let i=next_keyframe_index; i--; ) {
 			const kf = current_keyframes_sorted[i];
@@ -132,16 +140,20 @@ export class NewKeyframeCommon {
 
 		let coords = { x: 0, y: 0, z: 0 };
 		if (prev_keyframe && next_keyframe) {
-			Object.keys(coords).forEach(k => coords[k] = (prev_keyframe.coords[k] + next_keyframe.coords[k])/2, 500);
+			Object.keys(coords).forEach(k => coords[k] = (prev_keyframe.coords.coords[k] + next_keyframe.coords.coords[k])/2, 500);
 		} else if (secondprev_keyframe && prev_keyframe) {
-			Object.keys(coords).forEach(k => coords[k] = 2*prev_keyframe.coords[k] - secondprev_keyframe.coords[k], 500);
+			Object.keys(coords).forEach(k => coords[k] = 2*prev_keyframe.coords.coords[k] - secondprev_keyframe.coords.coords[k], 500);
 		} else if (secondnext_keyframe && next_keyframe) {
-			Object.keys(coords).forEach(k => coords[k] = 2*next_keyframe.coords[k] - secondnext_keyframe.coords[k], 500);
+			Object.keys(coords).forEach(k => coords[k] = 2*next_keyframe.coords.coords[k] - secondnext_keyframe.coords.coords[k], 500);
 		} else if (prev_keyframe) {
-			Object.keys(coords).forEach(k => coords[k] = prev_keyframe.coords[k] + 5, 500);
+			Object.keys(coords).forEach(k => coords[k] = prev_keyframe.coords.coords[k] + 5, 500);
 		}
 		Object.keys(coords).forEach(k => coords[k] = Math.min(Math.max(coords[k], 0), 500));
-		return coords;
+		Object.keys(coords).forEach(k => { if (!Number.isFinite(coords[k])) throw new Error(`coords are not finite!, ${coords}`); });
+		return {
+			coords,
+			transition: prev_keyframe?.coords.transition || NewKeyframeCommon.DEFAULT_COORDS_TRANSITION
+		};
 	}
 
 	#find_neighbors() {
@@ -152,16 +164,47 @@ export class NewKeyframeCommon {
 		return { next_keyframe, prev_keyframe };
 	}
 
+
+	/** @type {typeof NewKeyframeCommon.prototype.brush} */
+	static DEFAULT_BRUSH = {
+		brush: {
+			name: "point",
+			params: {
+				size: 1.00
+			}
+		},
+		transition: {
+			name: "step",
+			params: {}
+		}
+	};
+	/**
+	 * @returns {import("../../../../shared/types").MAHKeyframeBrush['brush']}
+	 */
 	get brush() {
 		const { next_keyframe, prev_keyframe } = this.#find_neighbors();
-		return prev_keyframe?.brush || next_keyframe?.brush;
+		return prev_keyframe?.brush || next_keyframe?.brush || NewKeyframeCommon.DEFAULT_BRUSH;
 	}
+
+
+	/** @type {typeof NewKeyframeCommon.prototype.intensity} */
+	static DEFAULT_INTENSITY = {
+		intensity: {
+			name: "constant",
+			params: {
+				value: 1.00
+			}
+		},
+		transition: {
+			name: "step",
+			params: {}
+		}
+	};
+	/**
+	 * @returns {import("../../../../shared/types").MAHKeyframeIntensity['intensity']}
+	 */
 	get intensity() {
 		const { next_keyframe, prev_keyframe } = this.#find_neighbors();
-		return prev_keyframe?.intensity || next_keyframe?.intensity;
-	}
-	get transition() {
-		const { next_keyframe, prev_keyframe } = this.#find_neighbors();
-		return prev_keyframe?.transition || next_keyframe?.transition;
+		return prev_keyframe?.intensity || next_keyframe?.intensity || NewKeyframeCommon.DEFAULT_INTENSITY;
 	}
 }

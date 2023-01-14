@@ -21,7 +21,6 @@ export class MAHKeyframeStandardFE extends MAHKeyframeBasicFE {
 		this.type = /** @type {"standard"} */ ("standard"); //for type check
 		this.brush = keyframe.brush;
 		this.intensity = keyframe.intensity;
-		this.transition = keyframe.transition;
 		this.coords = keyframe.coords;
 	}
 	
@@ -31,37 +30,8 @@ export class MAHKeyframeStandardFE extends MAHKeyframeBasicFE {
 	 * @param {Partial<MAHKeyframeFE>} set 
 	 */
 	static from_current_keyframes(pattern_design, set) {
-		const {
-			time, coords,
-			brush = MAHKeyframeStandardFE.DEFAULT.brush,
-			intensity = MAHKeyframeStandardFE.DEFAULT.intensity,
-			transition = MAHKeyframeStandardFE.DEFAULT.transition,
-		} = new NewKeyframeCommon(pattern_design, set.time || null);
-		const keyframe = new MAHKeyframeStandardFE(structured_clone({ time, coords, brush, intensity, transition, ...set, type: MAHKeyframeStandardFE.DEFAULT.type }), pattern_design);
+		const { time, coords, brush, intensity, } = new NewKeyframeCommon(pattern_design, set.time || null);
+		const keyframe = new MAHKeyframeStandardFE(structured_clone({ time, coords, brush, intensity, ...set, type: "standard" }), pattern_design);
 		return keyframe;
 	}
-
-
-	/** @type {MAHKeyframeStandard} */
-	static DEFAULT = {
-		type: "standard",
-		time: 0.000,
-		coords: { x: 0, y: 0, z: 0, },
-		intensity: {
-			name: "constant",
-			params: {
-				value: 1.00
-			}
-		},
-		brush: {
-			name: "point",
-			params: {
-				size: 1.00
-			}
-		},
-		transition: {
-			name: "linear",
-			params: {}
-		}
-	};
 }

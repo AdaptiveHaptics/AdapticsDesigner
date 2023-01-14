@@ -3,14 +3,14 @@
 /** @typedef {import("../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
 
-import { has_brush, has_coords } from "./fe/keyframes/index.mjs";
+import { has_brush, has_coords, has_intensity } from "./fe/keyframes/index.mjs";
 import { notnull } from "./util.mjs";
 
 export class UnifiedKeyframeEditor {
 	/**
-	 * 
-	 * @param {MAHPatternDesignFE} pattern_design 
-	 * @param {HTMLDivElement} unifiedkeyframeeditorDiv 
+	 *
+	 * @param {MAHPatternDesignFE} pattern_design
+	 * @param {HTMLDivElement} unifiedkeyframeeditorDiv
 	 */
 	constructor(pattern_design, unifiedkeyframeeditorDiv) {
 		this.pattern_design = pattern_design;
@@ -35,23 +35,32 @@ export class UnifiedKeyframeEditor {
 		});
 		/** @type {HTMLDetailsElement} */
 		this.coords_details = notnull(this.ukfeForm.querySelector("details.coords"));
+		this.coords_inputs = notnull(this.coords_details.querySelector(".coordsconfig")).querySelectorAll("input");
+		this.coords_transition_select = /** @type {HTMLSelectElement} */(this.coords_details.querySelector("div.transitionconfig select"));
+
+		/** @type {HTMLDetailsElement} */
+		this.brush_details = notnull(this.ukfeForm.querySelector("details.brush"));
+		this.brush_type_select = notnull(this.brush_details.querySelector("select"));
+		this.brush_inputs = notnull(this.brush_details.querySelector(".brushconfig")).querySelectorAll("input");
+		this.brush_transition_select = /** @type {HTMLSelectElement} */(this.brush_details.querySelector("div.transitionconfig select"));
+
+		/** @type {HTMLDetailsElement} */
+		this.intensity_details = notnull(this.ukfeForm.querySelector("details.intensity"));
+
 		this.coords_details.addEventListener("change", _ev => {
 			this.on_coords_change();
 		});
-		notnull(this.ukfeForm.querySelector("details.brush")).addEventListener("change", _ev => {
+		this.brush_details.addEventListener("change", _ev => {
 			this.on_brush_change();
 		});
-		notnull(this.ukfeForm.querySelector("details.intensity")).addEventListener("change", _ev => {
+		this.intensity_details.addEventListener("change", _ev => {
 			this.on_intensity_change();
 		});
-		notnull(this.ukfeForm.querySelector("details.transition")).addEventListener("change", _ev => {
-			this.on_transition_change();
-		});
-		
+
 
 
 		/** @type {HTMLSelectElement} */
-		this.type_select = notnull(this.unifiedkeyframeeditorDiv.querySelector("select.type"));
+		this.keyframe_type_select = notnull(this.unifiedkeyframeeditorDiv.querySelector("select.keyframe.type"));
 
 
 		this.select_update();
@@ -63,7 +72,7 @@ export class UnifiedKeyframeEditor {
 	 * @template T
 	 * @template F
 	 * @param {T[]} keyframes
-	 * @param {(arg0: T) => F} map_to_field 
+	 * @param {(arg0: T) => F} map_to_field
 	 * @returns {F | null}
 	 */
 	get_if_field_identical(keyframes, map_to_field) {
@@ -80,7 +89,7 @@ export class UnifiedKeyframeEditor {
 
 
 		const selected_type = this.get_if_field_identical(selected, kf => kf.type);
-		this.type_select.value = selected_type || "multipletypes";
+		this.keyframe_type_select.value = selected_type || "multipletypes";
 
 
 
@@ -98,35 +107,51 @@ export class UnifiedKeyframeEditor {
 		}
 
 		if (common_fields.has("coords")) {
-			const for_type_check = selected.filter(has_coords);
-			
 			this.coords_details.style.display = "";
-			this.coords_details.querySelectorAll("input").forEach(i => i.value = this.get_if_field_identical(for_type_check, kf => kf.coords.coords[i.name]));
+			const for_type_check = selected.filter(has_coords);
+
+			this.coords_inputs.forEach(i => i.value = this.get_if_field_identical(for_type_check, kf => kf.coords.coords[i.name]));
+
+			const selected_transition = this.get_if_field_identical(for_type_check, kf => kf.coords.transition.name);
+			this.coords_transition_select.value = selected_transition || "multipletypes";
 		}
 		if (common_fields.has("brush")) {
-			/** @type {HTMLDetailsElement} */
-			const brush_details = notnull(this.ukfeForm.querySelector("details.brush"));
-			
+			this.brush_details.style.display = "";
 			const for_type_check = selected.filter(has_brush);
-			
+
 			const brush_type = this.get_if_field_identical(for_type_check, kf => kf.brush?.brush.name || "omitted");
-			notnull(brush_details.querySelector("select")).value = brush_type || "multipletypes";
-			
-			brush_details.style.display = "";
-			brush_details.querySelectorAll("input").forEach(i => i.value = this.get_if_field_identical(for_type_check, kf => kf.brush ? kf.brush.brush.params[i.name] : "omitted"));
+			this.brush_type_select.value = brush_type || "multipletypes";
+
+			this.brush_inputs.forEach(i => {
+				const parent_label = notnull(i.parentElement);
+				if (for_type_check.find(kf => kf.brush?.brush.params[i.name] == undefined)) parent_label.style.display = "none";
+				else {
+					parent_label.style.display = "";
+					const val = this.get_if_field_identical(for_type_check, kf => kf.brush?.brush.params[i.name]);
+					i.value = val;
+				}
+			});
+
+			const transition_div = /** @type {HTMLDivElement} */ (this.brush_details.querySelector("div.transition"));
+			if (for_type_check.find(kf => kf.brush == undefined)) transition_div.style.display = "none";
+			else {
+				transition_div.style.display = "";
+				const selected_transition = this.get_if_field_identical(for_type_check, kf => kf.brush?.transition.name);
+				this.brush_transition_select.value = selected_transition || "multipletypes";
+			}
 		}
 		if (common_fields.has("intensity")) {
-			/** @type {HTMLDetailsElement} */
-			const intensity_details = notnull(this.ukfeForm.querySelector("details.intensity"));
-			intensity_details.style.display = "";
+			this.intensity_details.style.display = "";
+			const for_type_check = selected.filter(has_intensity);
+
 		}
 	}
 
 
 	on_type_change() {
 		this.pattern_design.save_state();
-		
-		const new_type = this.type_select.value;
+
+		const new_type = this.keyframe_type_select.value;
 		const selected = [...this.pattern_design.selected_keyframes];
 		const deleted_keyframes = this.pattern_design.delete_keyframes(selected);
 		const new_keyframes = deleted_keyframes.map(dkf => this.pattern_design.insert_new_keyframe({
@@ -134,7 +159,7 @@ export class UnifiedKeyframeEditor {
 			//@ts-ignore
 			type: new_type
 		}));
-		
+
 		this.pattern_design.commit_operation({ deleted_keyframes, new_keyframes });
 		this.pattern_design.select_keyframes(new_keyframes);
 	}
@@ -142,21 +167,31 @@ export class UnifiedKeyframeEditor {
 		this.pattern_design.save_state();
 
 		const keyframes = [...this.pattern_design.selected_keyframes].filter(has_coords); //filter for type_check;
-		this.coords_details.querySelectorAll("input").forEach(i => keyframes.forEach(kf => kf.coords[i.name] = Math.min(Math.max(parseFloat(i.value), 0), 500)));
+		this.coords_inputs.forEach(i => keyframes.forEach(kf => kf.coords[i.name] = Math.min(Math.max(parseFloat(i.value), 0), 500)));
+		// @ts-ignore
+		keyframes.forEach(kf => kf.coords.transition.name = this.coords_transition_select.value);
 
 		this.pattern_design.commit_operation({ updated_keyframes: keyframes });
 	}
 	on_brush_change() {
 		this.pattern_design.save_state();
 
-		this.pattern_design.commit_operation();
-	}
-	on_intensity_change() {
-		this.pattern_design.save_state();
+		const keyframes = [...this.pattern_design.selected_keyframes].filter(has_brush); //filter for type_check;
+		// keyframes.forEach(kf => kf.brush.brush.name = this.brush_type_select.value);
+
+		const kf = keyframes[0];
+		if (kf.brush) {
+			kf.brush.brush.name = "point";
+			kf.brush.brush.params
+		}
+
+		// @ts-ignore
+		keyframes.forEach(kf => { if (kf.brush) kf.brush.transition.name = this.brush_transition_select.value; });
+
 
 		this.pattern_design.commit_operation();
 	}
-	on_transition_change() {
+	on_intensity_change() {
 		this.pattern_design.save_state();
 
 		this.pattern_design.commit_operation();

@@ -255,6 +255,8 @@ div.unifiedkeyframeeditor details {
 
 div.unifiedkeyframeeditor summary {
     margin: -1ex -1ex 0;
+    background-color: var(--background-secondary);
+    user-select: none;
 }
 
 div.unifiedkeyframeeditor details[open] {

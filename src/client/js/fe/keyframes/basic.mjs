@@ -23,6 +23,9 @@ export class MAHKeyframeBasicFE {
 		this.time = keyframe.time;
 		this.brush = keyframe.brush;
 		this.intensity = keyframe.intensity;
+
+		// cant use this because of "duck-typing" like assumptions made in the evaluator/pattern pane and possibly more places
+		// // Object.assign(this, keyframe); //preserve properties if it used to be a different keyframe type
 	}
 
 	/**

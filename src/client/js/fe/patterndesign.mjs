@@ -390,7 +390,7 @@ export class MAHPatternDesignFE {
 	}
 
 	#eval_pattern() {
-		const eval_result = this.pattern_evaluator.eval_stream_at_anim_local_time(this.evaluator_params);
+		const eval_result = this.pattern_evaluator.eval_brush_at_anim_local_time(this.evaluator_params);
 		this.last_eval = eval_result;
 		const sce = new StateChangeEvent("playback_update", { detail: {} });
 		this.state_change_events.dispatchEvent(sce);

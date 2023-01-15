@@ -23,7 +23,6 @@ export class KonvaPatternStage extends KonvaResizeStage {
 
 	transformer = new Konva.Transformer();
 	selection_rect = new Konva.Rect();
-	playback_vis = new Konva.Circle();
 	pattern_area = new Konva.Rect();
 
 	xy_snapping() {
@@ -153,14 +152,6 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		});
 
 
-		current_design.state_change_events.addEventListener("playback_update", _ev => {
-			this.update_playback_vis();
-		});
-		current_design.state_change_events.addEventListener("commit_update", ev => {
-			this.playback_vis.visible(ev.detail.committed);
-		});
-
-
 		this.render_design();
 	}
 
@@ -170,6 +161,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 				KonvaPatternControlPoint.get_control_point_from_keyframe(kf)?.destroy();
 			}
 		}
+		this.playback_vis?.destroy();
 		this.k_control_points_layer.destroyChildren();
 
 
@@ -204,11 +196,8 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		}
 
 		{ //init playback
-			this.playback_vis = new Konva.Circle({
-				radius: 5,
-			});
-			this.update_playback_vis();
-			this.k_control_points_layer.add(this.playback_vis);
+			this.playback_vis = new KonvaPlaybackVis(this);
+			this.playback_vis.update();
 		}
 
 		{ //init transformer
@@ -290,15 +279,6 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		}
 	}
 
-	update_playback_vis() {
-		const last_eval = this.current_design.last_eval;
-		const last_eval_layer_coords = this.pattern_coords_to_layer_coords(last_eval.coords);
-		this.playback_vis.x(last_eval_layer_coords.x);
-		this.playback_vis.y(last_eval_layer_coords.y);
-		this.playback_vis.opacity();
-		this.playback_vis.fill(getComputedStyle(document.body).getPropertyValue("--pattern-playback-vis"));
-	}
-
 	/**
 	 *
 	 * @param {{ x: number, y: number }} coords
@@ -336,6 +316,44 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		if (snap) pattern_coords = this.snap_coords(pattern_coords);
 		const { x, y } = BoundsCheck.coords({ z: 0, ...pattern_coords });
 		return { x, y, };
+	}
+}
+
+class KonvaPlaybackVis {
+	/**
+	 *
+	 * @param {KonvaPatternStage} pattern_stage
+	 */
+	constructor(pattern_stage) {
+		this.pattern_stage = pattern_stage;
+		this.playback_vis = new Konva.Line({
+			lineCap: "round",
+			lineJoin: "round",
+		});
+
+		this.pattern_stage.k_control_points_layer.add(this.playback_vis);
+
+		this.listener_abort = new AbortController();
+		this.pattern_stage.current_design.state_change_events.addEventListener("playback_update", _ev => {
+			this.update();
+		});
+		this.pattern_stage.current_design.state_change_events.addEventListener("commit_update", ev => {
+			this.playback_vis.visible(ev.detail.committed);
+		});
+	}
+
+	destroy() {
+		this.playback_vis.destroy();
+		this.listener_abort.abort();
+	}
+
+	update() {
+		const last_eval = this.pattern_stage.current_design.last_eval;
+		const last_eval_layer_coords = this.pattern_stage.pattern_coords_to_layer_coords(last_eval.coords);
+		this.playback_vis.strokeWidth(10);
+		this.playback_vis.points([last_eval_layer_coords.x, last_eval_layer_coords.y, last_eval_layer_coords.x, last_eval_layer_coords.y]);
+		this.playback_vis.opacity();
+		this.playback_vis.stroke(getComputedStyle(document.body).getPropertyValue("--pattern-playback-vis"));
 	}
 }
 

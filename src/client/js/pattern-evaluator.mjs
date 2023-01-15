@@ -16,6 +16,7 @@
 
 /** @typedef {{ time: number, user_parameters: Map<string, number> }} PatternEvaluatorParameters */
 /** @typedef {{ A: number, B: number, a: number, b: number, d: number, k: number, max_t: number, draw_frequency: number }} HapeV2PrimitiveParams */
+/** @typedef {{ primitive_type: MAHBrush['name'], primitive: HapeV2PrimitiveParams, painter: { z_rot: number, x_scale: number, y_scale: number } }} BrushEvalParams */
 
 export class PatternEvaluator {
 	/**
@@ -107,14 +108,14 @@ export class PatternEvaluator {
 		 * @param {MAHIntensity} intensity
 		 * @returns {number}
 		 */
-		function get_intensity_value(intensity) {
+		const get_intensity_value = (intensity) => {
 			switch (intensity.name) {
 				case "constant":
 					return intensity.params.value;
 				case "random":
 					return Math.random()*(intensity.params.min - intensity.params.max)+intensity.params.min;
 			}
-		}
+		};
 
 		if (prev_intensity && next_intensity) {
 			const piv = get_intensity_value(prev_intensity.intensity);
@@ -193,7 +194,7 @@ export class PatternEvaluator {
 	 * @param {PatternEvaluatorParameters} p
 	 * @param {kf_config} prev_kfc
 	 * @param {kf_config} next_kfc
-	 * @returns {{ primitive_type: MAHBrush['name'], primitive: HapeV2PrimitiveParams, z_rot: number, x_scale: number, y_scale: number }}
+	 * @returns {BrushEvalParams}
 	 */
 	eval_brush_hapev2(p, prev_kfc, next_kfc) {
 		const prev_brush = prev_kfc.brush;
@@ -204,16 +205,18 @@ export class PatternEvaluator {
 		 * @param {MAHBrush} brush
 		 * @returns
 		 */
-		function eval_mahbrush(brush) {
+		const eval_mahbrush = (brush) => {
 			switch (brush.name) {
 				case "point": {
 					const amplitude = this.unit_convert_dist_to_hapev2(brush.params.size);
 					return {
 						primitive_type: brush.name,
 						primitive: PatternEvaluator.HAPEV2_BRUSH_PRIMITIVE_MAP.point,
-						z_rot: 0,
-						x_scale: amplitude,
-						y_scale: amplitude,
+						painter: {
+							z_rot: 0,
+							x_scale: amplitude,
+							y_scale: amplitude,
+						},
 					};
 				}
 				case "line": {
@@ -222,13 +225,15 @@ export class PatternEvaluator {
 					return {
 						primitive_type: brush.name,
 						primitive: PatternEvaluator.HAPEV2_BRUSH_PRIMITIVE_MAP.point,
-						z_rot: this.unit_convert_rot_to_hapev2(rotation),
-						x_scale: this.unit_convert_dist_to_hapev2(200),
-						y_scale: thickness,
+						painter: {
+							z_rot: this.unit_convert_rot_to_hapev2(rotation),
+							x_scale: this.unit_convert_dist_to_hapev2(200),
+							y_scale: thickness,
+						},
 					};
 				}
 			}
-		}
+		};
 
 		if (prev_brush && next_brush) {
 			const prev_brush_eval = eval_mahbrush(prev_brush.brush);
@@ -244,9 +249,11 @@ export class PatternEvaluator {
 			return {
 				primitive_type: "point",
 				primitive: PatternEvaluator.HAPEV2_BRUSH_PRIMITIVE_MAP.point,
-				z_rot: 0,
-				x_scale: 0,
-				y_scale: 0,
+				painter: {
+					z_rot: 0,
+					x_scale: 0,
+					y_scale: 0,
+				},
 			};
 		}
 	}
@@ -256,22 +263,65 @@ export class PatternEvaluator {
 	 * @param {PatternEvaluatorParameters} p
 	 * @returns {{ primitive: HapeV2PrimitiveParams }}
 	 */
-	get_hapev2_config_at_p_to_next_mahkeyframe(p) {
-		this.eval_coords
+	get_hapev2_configuration_for_p_to_next_mahkeyframe(p) {
+		throw new Error("TODO");
+	}
+
+	/**
+	 *
+	 * @param {HapeV2PrimitiveParams} bp
+	 * @param {number} time milliseconds
+	 */
+	#time_to_hapev2_brush_rads(bp, time) {
+		const brush_time = (time / 1000) * bp.draw_frequency;
+		// const brush_t_rads = (brush_time * bp.max_t) % bp.max_t; //may also be this
+		const brush_t_rads = (brush_time * 2 * Math.PI) % bp.max_t;
+		return brush_t_rads;
 	}
 
 
 	/**
 	 *
-	 * @param {HapeV2PrimitiveParams} s
-	 * @param {number} t
+	 * @param {HapeV2PrimitiveParams} bp
+	 * @param {number} time milliseconds
 	 */
-	eval_hapev2_primitive_equation(s, t) {
-		//im not sure how they incorporate the rose curve
+	eval_hapev2_primitive_equation_into_mah_units(bp, time) {
+		if (bp.k != 0) throw new Error("not yet implement"); //im not sure how they incorporate the rose curve
+		const brush_t_rads = this.#time_to_hapev2_brush_rads(bp, time);
 		return {
-			x: s.A * Math.sin(s.a*t + s.d),
-			y: s.B * Math.sin(s.b*t),
+			x: 1000 * bp.A * Math.sin(bp.a*brush_t_rads + bp.d),
+			y: 1000 * bp.B * Math.sin(bp.b*brush_t_rads),
 		};
+	}
+	/**
+	 *
+	 * @param {PatternEvaluatorParameters} p
+	 * @param {BrushEvalParams} brush_eval
+	 */
+	eval_hapev2_primitive_into_mah(p, brush_eval) {
+		const brush_coords = this.eval_hapev2_primitive_equation_into_mah_units(brush_eval.primitive, p.time);
+		const sx = brush_coords.x * brush_eval.painter.x_scale;
+		const sy = brush_coords.y * brush_eval.painter.y_scale;
+		const rx = sx * Math.cos(brush_eval.painter.z_rot) - sy * Math.sin(brush_eval.painter.z_rot);
+		const ry = sx * Math.sin(brush_eval.painter.z_rot) + sy * Math.cos(brush_eval.painter.z_rot);
+		return {
+			x: rx,
+			y: ry,
+		};
+	}
+
+	/**
+	 *
+	 * @param {PatternEvaluatorParameters} p
+	 */
+	eval_path_at_anim_local_time(p) {
+		const prev_kfc = this.get_prev_config(p.time);
+		const next_kfc = this.get_next_config(p.time);
+
+		const coords = this.eval_coords(p, prev_kfc, next_kfc);
+		const intensity = this.eval_intensity(p, prev_kfc, next_kfc);
+		const brush = this.eval_brush_hapev2(p, prev_kfc, next_kfc);
+		return { coords, intensity, brush };
 	}
 
 	/**
@@ -279,12 +329,43 @@ export class PatternEvaluator {
 	 * @param {PatternEvaluatorParameters} p
 	 * @returns {{ coords: { x: number, y: number, z: number }, intensity: number }}
 	 */
-	eval_stream_at_anim_local_time(p) {
-		const prev_kfc = this.get_prev_config(p.time);
-		const next_kfc = this.get_next_config(p.time);
+	eval_brush_at_anim_local_time(p) {
+		const path_eval = this.eval_path_at_anim_local_time(p);
 
-		const coords = this.eval_coords(p, prev_kfc, next_kfc);
-		const intensity = this.eval_intensity(p, prev_kfc, next_kfc);
-		return { coords, intensity };
+		const brush_coords_offset = this.eval_hapev2_primitive_into_mah(p, path_eval.brush);
+		return {
+			coords: {
+				x: path_eval.coords.x + brush_coords_offset.x,
+				y: path_eval.coords.y + brush_coords_offset.y,
+				z: path_eval.coords.z,
+			},
+			intensity: path_eval.intensity
+		};
+	}
+
+	/**
+	 *
+	 * @param {PatternEvaluatorParameters} p
+	 */
+	eval_brush_at_anim_local_time_for_max_t(p) {
+		const max_number_of_points = 50;
+		const device_frequency = 20000; //20khz
+
+		const path_eval_base = this.eval_path_at_anim_local_time(p);
+
+		const bp = path_eval_base.brush.primitive;
+		const max_t_in_ms = 1000 * bp.max_t / (bp.draw_frequency * 2 * Math.PI); //solve `time / 1000 * draw_frequency * 2Pi = max_t` equation for time
+
+		const device_step = (max_t_in_ms / 1000) * device_frequency;
+		const min_step = max_t_in_ms / max_number_of_points;
+		if (min_step > device_step) console.warn("min_step > device_step");
+
+		const evals = [];
+		for (let i = 0; i < max_t_in_ms; i += Math.min(device_step, min_step)) {
+			const step_p = Object.assign({ time: p.time + i }, p);
+			evals.push(this.eval_brush_at_anim_local_time(step_p));
+		}
+
+		return evals;
 	}
 }

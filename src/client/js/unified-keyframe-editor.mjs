@@ -3,7 +3,8 @@
 /** @typedef {import("../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
 
-import { has_brush, has_coords, has_intensity } from "./fe/keyframes/index.mjs";
+import { BoundsCheck } from "./fe/keyframes/bounds-check.mjs";
+import { has_brush, has_coords, has_intensity, NewKeyframeCommon } from "./fe/keyframes/index.mjs";
 import { notnull } from "./util.mjs";
 
 export class UnifiedKeyframeEditor {
@@ -191,10 +192,12 @@ export class UnifiedKeyframeEditor {
 		this.pattern_design.save_state();
 
 		const keyframes = [...this.pattern_design.selected_keyframes].filter(has_coords); //filter for type check (redundant since GUI restricts to correct types)
-		this.coords_inputs.forEach(i => {
-			const val = Math.min(Math.max(parseFloat(i.value), 0), 500);
-			if (Number.isFinite(val)) keyframes.forEach(kf => kf.coords.coords[i.name] = val);
-		});
+		const raw_coords = { x: 0, y: 0, z: 0 };
+		this.coords_inputs.forEach(i => raw_coords[i.name] = parseFloat(i.value));
+		try {
+			const new_coords = BoundsCheck.coords(raw_coords);
+			keyframes.forEach(kf => kf.coords.coords = new_coords);
+		} catch (e) { /* ignore !isFinite */ }
 		// @ts-ignore
 		keyframes.forEach(kf => kf.coords.transition.name = this.coords_transition_select.value);
 

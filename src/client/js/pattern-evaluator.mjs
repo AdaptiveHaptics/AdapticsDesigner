@@ -156,42 +156,108 @@ export class PatternEvaluator {
 
 	/**
 	 *
+	 * @param {number} mahunit in mm
+	 * @returns {number} in meters
+	 */
+	unit_convert_dist_to_hapev2(mahunit) {
+		return mahunit / 1000;
+	}
+	/**
+	 *
+	 * @param {number} mahunit in degrees
+	 * @returns {number} in radians
+	 */
+	unit_convert_rot_to_hapev2(mahunit) {
+		return mahunit * (Math.PI / 180); //for fun: https://herbie.uwplse.org/demo/3e400deedf2314de665bdf48b7879b1c658e61da.1.6/graph.html
+	}
+	/**
+	 *
 	 * @param {{ x: number, y: number, z: number }} coords
 	 * @returns {{ x: number, y: number, z: number }}
 	 */
-	unit_convert_to_hapev2(coords) {
+	coords_convert_to_hapev2(coords) {
 		return {
-			x: (coords.x-250)/1000,
-			y: (coords.y-250)/1000,
-			z: (coords.z)/1000,
+			x: this.unit_convert_dist_to_hapev2(coords.x), // mm -> m
+			y: this.unit_convert_dist_to_hapev2(coords.y),
+			z: this.unit_convert_dist_to_hapev2(coords.z),
 		};
 	}
 
+	/** @type {{ [x in MAHBrush['name']]: DeepImmutable<HapeV2PrimitiveParams> }} */
+	static HAPEV2_BRUSH_PRIMITIVE_MAP = {
+		"point": { A: 1, B: 1, a: 1, b: 1, d: Math.PI/2, k: 0, max_t: 2*Math.PI, draw_frequency: 100 },
+		"line": { A: 1, B: 0, a: 1, b: 1, d: Math.PI/2, k: 0, max_t: 2*Math.PI, draw_frequency: 100 },
+	};
 	/**
 	 *
 	 * @param {PatternEvaluatorParameters} p
 	 * @param {kf_config} prev_kfc
 	 * @param {kf_config} next_kfc
-	 * @returns {HapeV2PrimitiveParams}
+	 * @returns {{ primitive_type: MAHBrush['name'], primitive: HapeV2PrimitiveParams, z_rot: number, x_scale: number, y_scale: number }}
 	 */
 	eval_brush_hapev2(p, prev_kfc, next_kfc) {
 		const prev_brush = prev_kfc.brush;
 		const next_brush = next_kfc.brush;
-		if (prev_brush) {
-			// const brush = {
-			// 	name: prev_brush.brush,
-			// }
-			// const { pf, nf } = this.perform_transition_interp(p, prev_brush.time, next_brush.time, prev_brush.transition);
-			// Object.keys(prev_brush.brush.params).map(k => brush.params[k] = prev_brush.brush[k] * pf + nf * next_brush.brush[k]);
-			// return brush;
-			unit_convert_to_hapev2();
-			switch (prev_brush.brush.name) {
-				case "point":
-					return { A: 1, B: 1, a: 1, b: 1, d: Math.PI/2, k: 0, max_t: 2*Math.PI, draw_frequency: 100 };
+
+		/**
+		 *
+		 * @param {MAHBrush} brush
+		 * @returns
+		 */
+		function eval_mahbrush(brush) {
+			switch (brush.name) {
+				case "point": {
+					const amplitude = this.unit_convert_dist_to_hapev2(brush.params.size);
+					return {
+						primitive_type: brush.name,
+						primitive: PatternEvaluator.HAPEV2_BRUSH_PRIMITIVE_MAP.point,
+						z_rot: 0,
+						x_scale: amplitude,
+						y_scale: amplitude,
+					};
+				}
+				case "line": {
+					const thickness = this.unit_convert_dist_to_hapev2(brush.params.thickness);
+					const rotation = this.unit_convert_dist_to_hapev2(brush.params.rotation);
+					return {
+						primitive_type: brush.name,
+						primitive: PatternEvaluator.HAPEV2_BRUSH_PRIMITIVE_MAP.point,
+						z_rot: this.unit_convert_rot_to_hapev2(rotation),
+						x_scale: this.unit_convert_dist_to_hapev2(200),
+						y_scale: thickness,
+					};
+				}
 			}
-		} else {
-			return { A: 1, B: 1, a: 1, b: 1, d: Math.PI/2, k: 0, max_t: 2*Math.PI, draw_frequency: 100 };
 		}
+
+		if (prev_brush && next_brush) {
+			const prev_brush_eval = eval_mahbrush(prev_brush.brush);
+			const next_brush_eval = eval_mahbrush(prev_brush.brush);
+			if (prev_brush_eval.primitive_type == next_brush_eval.primitive_type) {
+				const { pf, nf } = this.perform_transition_interp(p, prev_brush.time, prev_brush.time, prev_brush.transition);
+				prev_brush_eval.z_rot = prev_brush_eval.z_rot * pf + nf * next_brush_eval.z_rot;
+				prev_brush_eval.x_scale = prev_brush_eval.x_scale * pf + nf * next_brush_eval.x_scale;
+				prev_brush_eval.y_scale = prev_brush_eval.y_scale * pf + nf * next_brush_eval.y_scale;
+			}
+			return prev_brush_eval;
+		} else {
+			return {
+				primitive_type: "point",
+				primitive: PatternEvaluator.HAPEV2_BRUSH_PRIMITIVE_MAP.point,
+				z_rot: 0,
+				x_scale: 0,
+				y_scale: 0,
+			};
+		}
+	}
+
+	/**
+	 *
+	 * @param {PatternEvaluatorParameters} p
+	 * @returns {{ primitive: HapeV2PrimitiveParams }}
+	 */
+	get_hapev2_config_at_p_to_next_mahkeyframe(p) {
+		this.eval_coords
 	}
 
 

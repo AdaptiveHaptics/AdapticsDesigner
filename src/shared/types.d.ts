@@ -1,4 +1,4 @@
-type REVISION_STRING = "0.0.3-alpha.1";
+type REVISION_STRING = "0.0.3-alpha.2";
 
 export interface MidAirHapticsAnimationFileFormat {
     $DATA_FORMAT: "MidAirHapticsAnimationFileFormat",
@@ -38,8 +38,11 @@ export interface MidAirHapticsAnimationFileFormat {
  * z is intended to be orthogonal to the phased array
  */
 export interface MAHCoords {
+    /** in millimeters, [-100, 100] */
     x: number,
+    /** in millimeters, [-100, 100] */
     y: number,
+    /** in millimeters, [0, 100] */
     z: number,
 }
 export interface MAHKeyframeTime {

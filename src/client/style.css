@@ -274,10 +274,19 @@ div.labelinputgrid {
     grid-template-columns: auto 1fr;
     gap: 0.5ex 1ex;
     align-items: center;
+    margin-bottom: 1ex;
 }
 
 div.labelinputgrid > label {
     display: contents;
+}
+div.labelinputgrid > label > .labeltext {
+    justify-self: end;
+}
+
+label span.unit {
+    font-family: monospace;
+    /* font-size: 1.1em; */
 }
 
 div.parametereditor {

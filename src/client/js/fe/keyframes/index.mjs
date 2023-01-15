@@ -5,6 +5,7 @@
  * @typedef {import("../../../../shared/util").NotNullable<T>} NotNullable
  */
 
+import { BoundsCheck } from "./bounds-check.mjs";
 import { MAHKeyframePauseFE } from "./pause.mjs";
 import { MAHKeyframeStandardFE } from "./standard.mjs";
 
@@ -140,16 +141,15 @@ export class NewKeyframeCommon {
 
 		let coords = { x: 0, y: 0, z: 0 };
 		if (prev_keyframe && next_keyframe) {
-			Object.keys(coords).forEach(k => coords[k] = (prev_keyframe.coords.coords[k] + next_keyframe.coords.coords[k])/2, 500);
+			Object.keys(coords).forEach(k => coords[k] = (prev_keyframe.coords.coords[k] + next_keyframe.coords.coords[k])/2);
 		} else if (secondprev_keyframe && prev_keyframe) {
-			Object.keys(coords).forEach(k => coords[k] = 2*prev_keyframe.coords.coords[k] - secondprev_keyframe.coords.coords[k], 500);
+			Object.keys(coords).forEach(k => coords[k] = 2*prev_keyframe.coords.coords[k] - secondprev_keyframe.coords.coords[k]);
 		} else if (secondnext_keyframe && next_keyframe) {
-			Object.keys(coords).forEach(k => coords[k] = 2*next_keyframe.coords.coords[k] - secondnext_keyframe.coords.coords[k], 500);
+			Object.keys(coords).forEach(k => coords[k] = 2*next_keyframe.coords.coords[k] - secondnext_keyframe.coords.coords[k]);
 		} else if (prev_keyframe) {
-			Object.keys(coords).forEach(k => coords[k] = prev_keyframe.coords.coords[k] + 5, 500);
+			Object.keys(coords).forEach(k => coords[k] = prev_keyframe.coords.coords[k] + 5);
 		}
-		Object.keys(coords).forEach(k => coords[k] = Math.min(Math.max(coords[k], 0), 500));
-		Object.keys(coords).forEach(k => { if (!Number.isFinite(coords[k])) throw new Error(`coords are not finite!, ${coords}`); });
+		coords = BoundsCheck.coords(coords);
 		return {
 			coords,
 			transition: prev_keyframe?.coords.transition || NewKeyframeCommon.DEFAULT_COORDS_TRANSITION

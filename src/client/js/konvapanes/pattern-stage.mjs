@@ -1,6 +1,7 @@
 import { filter_by_coords, has_coords } from "../fe/keyframes/index.mjs";
 import { KonvaResizeStage } from "./shared.mjs";
 import { notnull } from "../util.mjs";
+import { BoundsCheck } from "../fe/keyframes/bounds-check.mjs";
 
 const Konva = /** @type {import("konva").default} */ (window["Konva"]);
 
@@ -24,6 +25,10 @@ export class KonvaPatternStage extends KonvaResizeStage {
 	selection_rect = new Konva.Rect();
 	playback_vis = new Konva.Circle();
 	pattern_area = new Konva.Rect();
+
+	xy_snapping() {
+		return 5;
+	}
 
 
 	/**
@@ -99,8 +104,10 @@ export class KonvaPatternStage extends KonvaResizeStage {
 				this.selection_rect.visible(false);
 
 				// const box = this.selection_rect.getSelfRect();
-				const low_coords = this.layer_coords_to_pattern_coords({ raw_x: Math.min(x1, x2), raw_y: Math.min(y1, y2) });
-				const high_coords = this.layer_coords_to_pattern_coords({ raw_x: Math.max(x1, x2), raw_y: Math.max(y1, y2) });
+				const pat_c1 = this.layer_coords_to_pattern_coords({ raw_x: x1, raw_y: y1 });
+				const pat_c2 = this.layer_coords_to_pattern_coords({ raw_x: x2, raw_y: x2 });
+				const low_coords = { x: Math.min(pat_c1.x, pat_c2.x), y: Math.min(pat_c1.y, pat_c2.y) };
+				const high_coords = { x: Math.max(pat_c1.x, pat_c2.x), y: Math.max(pat_c1.y, pat_c2.y) };
 				const keyframes_in_box = this.current_design.filedata.keyframes.filter(has_coords).filter(kf => {
 					return (
 						low_coords.x <= kf.coords.coords.x && kf.coords.coords.x <= high_coords.x &&
@@ -179,7 +186,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 				if (ev.target != this.pattern_area) return;
 				this.current_design.save_state();
 				const { x: raw_x, y: raw_y } = this.k_control_points_layer.getRelativePointerPosition();
-				const { x, y } = this.raw_coords_to_pattern_coords({ raw_x, raw_y });
+				const { x, y } = this.raw_coords_to_pattern_coords({ raw_x, raw_y, snap: true });
 				const new_keyframe = this.current_design.insert_new_keyframe({
 					type: "standard",
 					coords: {
@@ -298,8 +305,8 @@ export class KonvaPatternStage extends KonvaResizeStage {
 	 */
 	pattern_coords_to_layer_coords({ x, y }) {
 		return {
-			x: x+this.pattern_padding,
-			y: y+this.pattern_padding,
+			x: ((x - BoundsCheck.raw.coords.x.min)/(BoundsCheck.raw.coords.x.max-BoundsCheck.raw.coords.x.min)*this.pattern_square_size) + this.pattern_padding,
+			y: (this.pattern_square_size - (y - BoundsCheck.raw.coords.y.min)/(BoundsCheck.raw.coords.y.max-BoundsCheck.raw.coords.y.min)*this.pattern_square_size) + this.pattern_padding,
 			// z: z+this.pattern_padding,
 		};
 	}
@@ -309,21 +316,25 @@ export class KonvaPatternStage extends KonvaResizeStage {
 	 */
 	layer_coords_to_pattern_coords({ raw_x, raw_y }) {
 		return {
-			x: raw_x-this.pattern_padding,
-			y: raw_y-this.pattern_padding,
+			x: (raw_x-this.pattern_padding)/this.pattern_square_size * (BoundsCheck.raw.coords.x.max-BoundsCheck.raw.coords.x.min) + BoundsCheck.raw.coords.x.min,
+			y: (this.pattern_square_size - (raw_y-this.pattern_padding))/this.pattern_square_size * (BoundsCheck.raw.coords.y.max-BoundsCheck.raw.coords.y.min) + BoundsCheck.raw.coords.y.min,
 			// z: z-this.pattern_padding,
 		};
 	}
 
+	snap_coords({ x, y }) {
+		const xy_snapping = this.xy_snapping();
+		return {
+			x: Math.round(x / xy_snapping) * xy_snapping,
+			y: Math.round(y / xy_snapping) * xy_snapping,
+		};
+	}
 
-	raw_coords_to_pattern_coords({ raw_x, raw_y }) {
-		const pattern_coords = this.layer_coords_to_pattern_coords({ raw_x, raw_y });
-		const x = Math.min(Math.max(pattern_coords.x, 0), this.pattern_square_size);
-		const y = Math.min(Math.max(pattern_coords.y, 0), this.pattern_square_size);
-		// if (snap) {
-		// 	const ms_snapping = this.timeline_stage.milliseconds_snapping();
-		// 	raw_xt = Math.round(raw_xt / ms_snapping) * ms_snapping;
-		// }
+
+	raw_coords_to_pattern_coords({ raw_x, raw_y, snap = false }) {
+		let pattern_coords = this.layer_coords_to_pattern_coords({ raw_x, raw_y });
+		if (snap) pattern_coords = this.snap_coords(pattern_coords);
+		const { x, y } = BoundsCheck.coords({ z: 0, ...pattern_coords });
 		return { x, y, };
 	}
 }
@@ -381,7 +392,7 @@ class KonvaPatternControlPoint {
 			this.select_this(ev.evt.ctrlKey, true);
 		});
 		this.k_cp_circle.on("dragmove", _ev => {
-			this.update_position(this.pattern_stage.raw_coords_to_pattern_coords({ raw_x: this.k_cp_circle.x(), raw_y: this.k_cp_circle.y() }));
+			this.update_position(this.pattern_stage.raw_coords_to_pattern_coords({ raw_x: this.k_cp_circle.x(), raw_y: this.k_cp_circle.y(), snap: this.pattern_stage.transformer.nodes().length<=1 }));
 		});
 		this.k_cp_circle.on("transform", _ev => {
 			// console.log("transform "+this.keyframe.time);
@@ -389,6 +400,9 @@ class KonvaPatternControlPoint {
 			this.k_cp_circle.skew({ x: 0, y: 0 });
 			this.k_cp_circle.rotation(0);
 			this.update_position(this.pattern_stage.raw_coords_to_pattern_coords({ raw_x: this.k_cp_circle.x(), raw_y: this.k_cp_circle.y() }));
+		});
+		this.k_cp_circle.on("dragend transformend", _ev => {
+			this.update_position(this.pattern_stage.raw_coords_to_pattern_coords({ raw_x: this.k_cp_circle.x(), raw_y: this.k_cp_circle.y(), snap: true }));
 		});
 
 		this.paused_group = new Konva.Group({

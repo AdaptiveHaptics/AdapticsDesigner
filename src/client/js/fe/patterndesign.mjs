@@ -14,9 +14,10 @@
  * @typedef {import("../../../shared/util").OptExceptProp<T, K>} OptExceptProp
  */
 
-const MAH_$REVISION = "0.0.3-alpha.1";
+const MAH_$REVISION = "0.0.3-alpha.2";
 
 import { PatternEvaluator } from "../pattern-evaluator.mjs";
+import { BoundsCheck } from "./keyframes/bounds-check.mjs";
 import { create_correct_keyframefe_wrapper, MAHKeyframePauseFE, MAHKeyframeStandardFE, NewKeyframeCommon } from "./keyframes/index.mjs";
 
 /**
@@ -443,8 +444,9 @@ export class MAHPatternDesignFE {
 				kf.time += paste_time_offset;
 				console.log(kf.time);
 				if ("coords" in kf) {
-					Object.keys(kf.coords).forEach(k => kf.coords[k] += 5);
-					Object.keys(kf.coords).forEach(k => kf.coords[k] = Math.min(Math.max(kf.coords[k], 0), 500));
+					kf.coords.coords.x += 5;
+					kf.coords.coords.y += 5;
+					kf.coords.coords = BoundsCheck.coords(kf.coords.coords);
 				}
 				return this.insert_new_keyframe(kf);
 			});
@@ -526,8 +528,8 @@ MAHPatternDesignFE.DEFAULT = ["test.json", {
 			time: 0.000,
 			coords: {
 				coords: {
-					x: 250,
-					y: 250,
+					x: 0,
+					y: 0,
 					z: 0,
 				},
 				transition: {

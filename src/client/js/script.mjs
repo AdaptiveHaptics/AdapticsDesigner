@@ -32,7 +32,7 @@ const SplitGrid = /** @type {import("split-grid").default} */(/** @type {unknown
 /** @typedef {import("../../shared/types").MidAirHapticsClipboardFormat} MidAirHapticsClipboardFormat */
 
 const mainsplitgridDiv = /** @type {HTMLDivElement} */ (document.querySelector("div.mainsplitgrid"));
-const centerDiv = /** @type {HTMLDivElement} */ (mainsplitgridDiv.querySelector("div.center"));
+const patternDiv = /** @type {HTMLDivElement} */ (mainsplitgridDiv.querySelector("div.center"));
 const timelineDiv = /** @type {HTMLDivElement} */ (document.querySelector("div.timeline"));
 const savedstateSpan = /** @type {HTMLSpanElement} */ (document.querySelector("span.savedstate"));
 
@@ -109,18 +109,24 @@ document.addEventListener("keydown", ev => {
 	}
 });
 
-document.addEventListener("copy", _ev => {
-	primary_design.copy_selected_to_clipboard();
+document.addEventListener("copy", ev => {
+	if (patternDiv.matches(":focus-within") || timelineDiv.matches(":focus-within")) {
+		primary_design.copy_selected_to_clipboard();
+		ev.preventDefault();
+	}
 });
-document.addEventListener("paste", _ev => {
-	primary_design.paste_clipboard();
+document.addEventListener("paste", ev => {
+	if (patternDiv.matches(":focus-within") || timelineDiv.matches(":focus-within")) {
+		primary_design.paste_clipboard();
+		ev.preventDefault();
+	}
 });
 
 primary_design.state_change_events.addEventListener("commit_update", ev => {
 	savedstateSpan.textContent = ev.detail.committed ? "saved to localstorage" : "pending change";
 });
 primary_design.commit_operation({});
-const konva_pattern_stage = new KonvaPatternStage(primary_design, "patternstage", centerDiv);
+const konva_pattern_stage = new KonvaPatternStage(primary_design, "patternstage", patternDiv);
 const konva_timeline_stage = new KonvaTimelineStage(primary_design, "timelinestage", timelineDiv);
 const unified_keyframe_editor = new UnifiedKeyframeEditor(primary_design, notnull(document.querySelector("div.unifiedkeyframeeditor")));
 const parameter_editor = new ParameterEditor(primary_design, notnull(document.querySelector("div.parametereditor")));

@@ -3,6 +3,7 @@
     --bg-hue: 210;
     --bg-sat: 13%;
     --background-primary: hsl(var(--bg-hue), var(--bg-sat), 40%);
+    --background-primary-disabled: hsl(var(--bg-hue), var(--bg-sat), 28%);
     --background-secondary: hsl(var(--bg-hue), var(--bg-sat), 30%);
     --background-tertiary: hsl(var(--bg-hue), var(--bg-sat), 20%);
     --background-tertiary-alt: hsl(var(--bg-hue), var(--bg-sat), 19%);
@@ -239,6 +240,10 @@ div.unifiedkeyframeeditor select, div.unifiedkeyframeeditor option, input {
     padding: 1ex;
     border: none;
     min-width: 4ex;
+}
+div.unifiedkeyframeeditor option:disabled, input:disabled {
+    background-color: var(--background-primary-disabled);
+    color: var(--text-low-priority);
 }
 
 div.unifiedkeyframeeditor summary, div.typecontainer select, div.typecontainer option {

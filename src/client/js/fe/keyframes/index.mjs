@@ -168,7 +168,7 @@ export class NewKeyframeCommon {
 	/** @type {typeof NewKeyframeCommon.prototype.brush} */
 	static DEFAULT_BRUSH = {
 		brush: {
-			name: "point",
+			name: "circle",
 			params: {
 				size: 1.00
 			}

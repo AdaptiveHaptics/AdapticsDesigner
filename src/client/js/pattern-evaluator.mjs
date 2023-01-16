@@ -186,7 +186,7 @@ export class PatternEvaluator {
 
 	/** @type {{ [x in MAHBrush['name']]: DeepImmutable<HapeV2PrimitiveParams> }} */
 	static HAPEV2_BRUSH_PRIMITIVE_MAP = {
-		"point": { A: 1, B: 1, a: 1, b: 1, d: Math.PI/2, k: 0, max_t: 2*Math.PI, draw_frequency: 100 },
+		"circle": { A: 1, B: 1, a: 1, b: 1, d: Math.PI/2, k: 0, max_t: 2*Math.PI, draw_frequency: 100 },
 		"line": { A: 1, B: 0, a: 1, b: 1, d: Math.PI/2, k: 0, max_t: 2*Math.PI, draw_frequency: 100 },
 	};
 	/**
@@ -207,11 +207,11 @@ export class PatternEvaluator {
 		 */
 		const eval_mahbrush = (brush) => {
 			switch (brush.name) {
-				case "point": {
+				case "circle": {
 					const amplitude = this.unit_convert_dist_to_hapev2(brush.params.size);
 					return {
 						primitive_type: brush.name,
-						primitive: PatternEvaluator.HAPEV2_BRUSH_PRIMITIVE_MAP.point,
+						primitive: PatternEvaluator.HAPEV2_BRUSH_PRIMITIVE_MAP[brush.name],
 						painter: {
 							z_rot: 0,
 							x_scale: amplitude,
@@ -224,7 +224,7 @@ export class PatternEvaluator {
 					const rotation = this.unit_convert_dist_to_hapev2(brush.params.rotation);
 					return {
 						primitive_type: brush.name,
-						primitive: PatternEvaluator.HAPEV2_BRUSH_PRIMITIVE_MAP.point,
+						primitive: PatternEvaluator.HAPEV2_BRUSH_PRIMITIVE_MAP[brush.name],
 						painter: {
 							z_rot: this.unit_convert_rot_to_hapev2(rotation),
 							x_scale: this.unit_convert_dist_to_hapev2(200),
@@ -245,10 +245,13 @@ export class PatternEvaluator {
 				prev_brush_eval.y_scale = prev_brush_eval.y_scale * pf + nf * next_brush_eval.y_scale;
 			}
 			return prev_brush_eval;
+		} else if (prev_brush) {
+			const prev_brush_eval = eval_mahbrush(prev_brush.brush);
+			return prev_brush_eval;
 		} else {
 			return {
-				primitive_type: "point",
-				primitive: PatternEvaluator.HAPEV2_BRUSH_PRIMITIVE_MAP.point,
+				primitive_type: "circle",
+				primitive: PatternEvaluator.HAPEV2_BRUSH_PRIMITIVE_MAP.circle,
 				painter: {
 					z_rot: 0,
 					x_scale: 0,
@@ -348,7 +351,7 @@ export class PatternEvaluator {
 	 * @param {PatternEvaluatorParameters} p
 	 */
 	eval_brush_at_anim_local_time_for_max_t(p) {
-		const max_number_of_points = 50;
+		const max_number_of_points = 200;
 		const device_frequency = 20000; //20khz
 
 		const path_eval_base = this.eval_path_at_anim_local_time(p);
@@ -356,13 +359,13 @@ export class PatternEvaluator {
 		const bp = path_eval_base.brush.primitive;
 		const max_t_in_ms = 1000 * bp.max_t / (bp.draw_frequency * 2 * Math.PI); //solve `time / 1000 * draw_frequency * 2Pi = max_t` equation for time
 
-		const device_step = (max_t_in_ms / 1000) * device_frequency;
+		const device_step = 1000 / device_frequency;
 		const min_step = max_t_in_ms / max_number_of_points;
-		if (min_step > device_step) console.warn("min_step > device_step");
+		// if (min_step > device_step) console.warn("min_step > device_step");
 
 		const evals = [];
-		for (let i = 0; i < max_t_in_ms; i += Math.min(device_step, min_step)) {
-			const step_p = Object.assign({ time: p.time + i }, p);
+		for (let i = 0; i < max_t_in_ms; i += Math.max(device_step, min_step)) {
+			const step_p = { ...p, time: p.time + i };
 			evals.push(this.eval_brush_at_anim_local_time(step_p));
 		}
 

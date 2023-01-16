@@ -1,4 +1,4 @@
-type REVISION_STRING = "0.0.3-alpha.2";
+type REVISION_STRING = "0.0.3-alpha.3";
 
 export interface MidAirHapticsAnimationFileFormat {
     $DATA_FORMAT: "MidAirHapticsAnimationFileFormat",
@@ -96,9 +96,9 @@ type Variant<Key extends string, Value = undefined> = {
 };
 const make_variant = <Key extends string, Value = undefined>(key: Key) => (value: Value): Variant<Key, Value> => ({ key, value });
 
-const BrushPoint = make_variant<"point", { size: number }>("point");
+const BrushCircle = make_variant<"circle", { size: number }>("circle");
 const BrushLine = make_variant<"line", { thickness: number, rotation: number }>("line");
-type MAHBrush = ReturnType<typeof BrushPoint> | ReturnType<typeof BrushLine>;
+type MAHBrush = ReturnType<typeof BrushCircle> | ReturnType<typeof BrushLine>;
 
 const IntensityConstant = make_variant<"constant", { value: number }>("constant");
 const IntensityRandom = make_variant<"random", { min: number, max: number }>("random");

@@ -4,7 +4,7 @@
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
 
 import { BoundsCheck } from "./fe/keyframes/bounds-check.mjs";
-import { has_brush, has_coords, has_intensity, NewKeyframeCommon } from "./fe/keyframes/index.mjs";
+import { has_brush, has_coords, has_intensity } from "./fe/keyframes/index.mjs";
 import { notnull } from "./util.mjs";
 
 export class UnifiedKeyframeEditor {
@@ -221,7 +221,7 @@ export class UnifiedKeyframeEditor {
 			if (!kf.brush) return;
 			if (kf.brush.brush.name == this.brush_type_select.value) return;
 			switch (this.brush_type_select.value) {
-				case "point":
+				case "circle":
 					kf.brush.brush = {
 						name: this.brush_type_select.value,
 						params: { size: 1 }
@@ -236,7 +236,7 @@ export class UnifiedKeyframeEditor {
 						}
 					};
 					break;
-				default: throw new Error(`unexpected intensity type: ${this.brush_type_select.value}`);
+				default: throw new Error(`unexpected brush type: ${this.brush_type_select.value}`);
 			}
 		});
 

@@ -14,7 +14,7 @@
  * @typedef {import("../../../shared/util").OptExceptProp<T, K>} OptExceptProp
  */
 
-const MAH_$REVISION = "0.0.3-alpha.2";
+const MAH_$REVISION = "0.0.3-alpha.3";
 
 import { PatternEvaluator } from "../pattern-evaluator.mjs";
 import { BoundsCheck } from "./keyframes/bounds-check.mjs";
@@ -390,7 +390,7 @@ export class MAHPatternDesignFE {
 	}
 
 	#eval_pattern() {
-		const eval_result = this.pattern_evaluator.eval_brush_at_anim_local_time(this.evaluator_params);
+		const eval_result = this.pattern_evaluator.eval_brush_at_anim_local_time_for_max_t(this.evaluator_params);
 		this.last_eval = eval_result;
 		const sce = new StateChangeEvent("playback_update", { detail: {} });
 		this.state_change_events.dispatchEvent(sce);
@@ -551,7 +551,7 @@ MAHPatternDesignFE.DEFAULT = ["test.json", {
 			},
 			brush: {
 				brush: {
-					name: "point",
+					name: "circle",
 					params: {
 						size: 1.00
 					}

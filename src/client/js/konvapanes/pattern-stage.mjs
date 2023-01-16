@@ -349,9 +349,9 @@ class KonvaPlaybackVis {
 
 	update() {
 		const last_eval = this.pattern_stage.current_design.last_eval;
-		const last_eval_layer_coords = this.pattern_stage.pattern_coords_to_layer_coords(last_eval.coords);
+		const last_eval_layer_coords = last_eval.map(p => this.pattern_stage.pattern_coords_to_layer_coords(p.coords));
 		this.playback_vis.strokeWidth(10);
-		this.playback_vis.points([last_eval_layer_coords.x, last_eval_layer_coords.y, last_eval_layer_coords.x, last_eval_layer_coords.y]);
+		this.playback_vis.points([last_eval_layer_coords[0].x, last_eval_layer_coords[0].y, ...last_eval_layer_coords.flatMap(c => [c.x, c.y])]);
 		this.playback_vis.opacity();
 		this.playback_vis.stroke(getComputedStyle(document.body).getPropertyValue("--pattern-playback-vis"));
 	}

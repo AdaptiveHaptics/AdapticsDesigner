@@ -37,6 +37,8 @@
     --pattern-playback-vis: #74d4ec;
 
     --pattern-boundary: var(--background-tertiary);
+    --pattern-axis: hsl(var(--bg-hue), var(--bg-sat), 17%);
+    --pattern-axis: var(--pattern-boundary);
     --pattern-background: var(--background-tertiary-alt);
 
 

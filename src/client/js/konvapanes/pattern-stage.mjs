@@ -195,6 +195,23 @@ export class KonvaPatternStage extends KonvaResizeStage {
 			this.k_control_points_layer.add(this.pattern_area);
 		}
 
+		{ //initalize grid
+			const { x: layer0x, y: layer0y } = this.pattern_coords_to_layer_coords({ x: 0, y: 0 });
+			const axisconfig = {
+				listening: false,
+				stroke: getComputedStyle(document.body).getPropertyValue("--pattern-axis"),
+				strokeWidth: 2,
+			};
+			this.k_control_points_layer.add(new Konva.Line({
+				points: [layer0x, this.pattern_padding, layer0x, this.pattern_padding+this.pattern_square_size],
+				...axisconfig
+			}));
+			this.k_control_points_layer.add(new Konva.Line({
+				points: [this.pattern_padding, layer0y, this.pattern_padding+this.pattern_square_size, layer0y],
+				...axisconfig
+			}));
+		}
+
 		{ //init playback
 			this.playback_vis = new KonvaPlaybackVis(this);
 			this.playback_vis.update();
@@ -348,12 +365,15 @@ class KonvaPlaybackVis {
 	}
 
 	update() {
+		const color = getComputedStyle(document.body).getPropertyValue("--pattern-playback-vis");
+
 		const last_eval = this.pattern_stage.current_design.last_eval;
 		const last_eval_layer_coords = last_eval.map(p => this.pattern_stage.pattern_coords_to_layer_coords(p.coords));
-		this.playback_vis.strokeWidth(10);
+
 		this.playback_vis.points([last_eval_layer_coords[0].x, last_eval_layer_coords[0].y, ...last_eval_layer_coords.flatMap(c => [c.x, c.y])]);
-		this.playback_vis.opacity();
-		this.playback_vis.stroke(getComputedStyle(document.body).getPropertyValue("--pattern-playback-vis"));
+
+		this.playback_vis.strokeWidth(10);
+		this.playback_vis.stroke(color);
 	}
 }
 

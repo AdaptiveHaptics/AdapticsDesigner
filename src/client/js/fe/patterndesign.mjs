@@ -14,7 +14,8 @@
  * @typedef {import("../../../shared/util").OptExceptProp<T, K>} OptExceptProp
  */
 
-const MAH_$REVISION = "0.0.3-alpha.3";
+/** @type {MidAirHapticsAnimationFileFormat['$REVISION']} */
+const MAH_$REVISION = "0.0.3-alpha.4";
 
 import { PatternEvaluator } from "../pattern-evaluator.mjs";
 import { BoundsCheck } from "./keyframes/bounds-check.mjs";

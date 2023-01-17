@@ -65,16 +65,20 @@ try {
 	console.error(e);
 }
 
+const focus_within_design_panes = () => {
+	return patternDiv.matches(":focus-within") || timelineDiv.matches(":focus-within");
+};
 document.addEventListener("keydown", ev => {
-	if (ev.key == "/" || ev.key == "?") alert(`Help:
-	ctrl+z to undo
-	ctrl+shift+z to redo
-	double click on the pattern canvas to create a new control point
-	alt+click on a control point to delete it
-	click and drag to select multiple
-	ctrl+click or ctrl+click and drag to add to selection
-	`);
+	if (ev.key == "s" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
+		ev.preventDefault();
+		console.warn("todo");
+		//todo
+	}
+
+	// begin design pane restricted keybinds
+	if (!focus_within_design_panes()) return;
 	if (ev.key == "z" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
+		ev.preventDefault();
 		console.log("undo");
 		if (primary_design.undo()) {
 			//success
@@ -84,6 +88,7 @@ document.addEventListener("keydown", ev => {
 	}
 	if (ev.key == "Z" && ev.ctrlKey && ev.shiftKey && !ev.altKey ||
 		ev.key == "y" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
+		ev.preventDefault();
 		console.log("redo");
 		if (primary_design.redo()) {
 			//success
@@ -91,7 +96,8 @@ document.addEventListener("keydown", ev => {
 			//do nothing
 		}
 	}
-	if (ev.key == "Delete" && !ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
+	if (ev.key == "Delete" && !ev.ctrlKey && !ev.shiftKey && !ev.altKey && focus_within_design_panes()) {
+		ev.preventDefault();
 		console.log("delete");
 		if (primary_design.selected_keyframes.size == 0) return;
 		primary_design.save_state();
@@ -102,21 +108,16 @@ document.addEventListener("keydown", ev => {
 		ev.preventDefault();
 		primary_design.select_all_keyframes();
 	}
-	if (ev.key == "s" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
-		ev.preventDefault();
-		console.warn("todo");
-		//todo
-	}
 });
 
 document.addEventListener("copy", ev => {
-	if (patternDiv.matches(":focus-within") || timelineDiv.matches(":focus-within")) {
+	if (focus_within_design_panes()) {
 		primary_design.copy_selected_to_clipboard();
 		ev.preventDefault();
 	}
 });
 document.addEventListener("paste", ev => {
-	if (patternDiv.matches(":focus-within") || timelineDiv.matches(":focus-within")) {
+	if (focus_within_design_panes()) {
 		primary_design.paste_clipboard();
 		ev.preventDefault();
 	}

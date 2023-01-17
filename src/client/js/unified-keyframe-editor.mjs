@@ -224,13 +224,14 @@ export class UnifiedKeyframeEditor {
 				case "circle":
 					kf.brush.brush = {
 						name: this.brush_type_select.value,
-						params: { size: 1 }
+						params: { radius: 1 }
 					};
 					break;
 				case "line":
 					kf.brush.brush = {
 						name: this.brush_type_select.value,
 						params: {
+							length: 5,
 							thickness: 1,
 							rotation: 0
 						}

@@ -15,7 +15,7 @@
  */
 
 /** @type {MidAirHapticsAnimationFileFormat['$REVISION']} */
-const MAH_$REVISION = "0.0.3-alpha.4";
+const MAH_$REVISION = "0.0.4-alpha.1";
 
 import { PatternEvaluator } from "../pattern-evaluator.mjs";
 import { BoundsCheck } from "./keyframes/bounds-check.mjs";
@@ -554,7 +554,7 @@ MAHPatternDesignFE.DEFAULT = ["test.json", {
 				brush: {
 					name: "circle",
 					params: {
-						size: 1.00
+						radius: 1.00
 					}
 				},
 				transition: {

@@ -208,7 +208,7 @@ export class PatternEvaluator {
 		const eval_mahbrush = (brush) => {
 			switch (brush.name) {
 				case "circle": {
-					const amplitude = this.unit_convert_dist_to_hapev2(brush.params.size);
+					const amplitude = this.unit_convert_dist_to_hapev2(brush.params.radius);
 					return {
 						primitive_type: brush.name,
 						primitive: PatternEvaluator.HAPEV2_BRUSH_PRIMITIVE_MAP[brush.name],
@@ -220,15 +220,16 @@ export class PatternEvaluator {
 					};
 				}
 				case "line": {
-					const thickness = this.unit_convert_dist_to_hapev2(brush.params.thickness);
-					const rotation = this.unit_convert_dist_to_hapev2(brush.params.rotation);
+					const length = this.unit_convert_dist_to_hapev2(brush.params.length);
+					const thickness = this.unit_convert_dist_to_hapev2(brush.params.thickness); //thickness doesnt work
+					const rotation = this.unit_convert_rot_to_hapev2(brush.params.rotation);
 					return {
 						primitive_type: brush.name,
 						primitive: PatternEvaluator.HAPEV2_BRUSH_PRIMITIVE_MAP[brush.name],
 						painter: {
-							z_rot: this.unit_convert_rot_to_hapev2(rotation),
-							x_scale: this.unit_convert_dist_to_hapev2(200),
-							y_scale: thickness,
+							z_rot: rotation,
+							x_scale: length,
+							y_scale: thickness, // y is 0 so this is a noop
 						},
 					};
 				}

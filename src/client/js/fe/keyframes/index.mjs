@@ -160,7 +160,7 @@ export class NewKeyframeCommon {
 		const current_keyframes_sorted = this.pattern_design.get_sorted_keyframes();
 		const next_keyframe_index = current_keyframes_sorted.findIndex(kf => kf.time > this.time);
 		const next_keyframe = (next_keyframe_index == -1) ? undefined : current_keyframes_sorted[next_keyframe_index];
-		const prev_keyframe = (next_keyframe_index == -1 || next_keyframe_index == 0) ? undefined : current_keyframes_sorted[next_keyframe_index-1];
+		const prev_keyframe = (next_keyframe_index == 0) ? undefined : current_keyframes_sorted[(next_keyframe_index == -1 ? current_keyframes_sorted.length : next_keyframe_index)-1];
 		return { next_keyframe, prev_keyframe };
 	}
 
@@ -170,7 +170,7 @@ export class NewKeyframeCommon {
 		brush: {
 			name: "circle",
 			params: {
-				size: 1.00
+				radius: 1.00
 			}
 		},
 		transition: {

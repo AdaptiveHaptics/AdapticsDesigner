@@ -1,4 +1,4 @@
-type REVISION_STRING = "0.0.3-alpha.4";
+type REVISION_STRING = "0.0.4-alpha.1";
 
 export interface MidAirHapticsAnimationFileFormat {
     $DATA_FORMAT: "MidAirHapticsAnimationFileFormat",
@@ -94,22 +94,22 @@ type Variant<Key extends string, Value = undefined> = {
     name: Key,
     params: Value,
 };
-const make_variant = <Key extends string, Value = undefined>(key: Key) => (value: Value): Variant<Key, Value> => ({ key, value });
+// const make_variant = <Key extends string, Value = undefined>(name: Key) => (params: Value): Variant<Key, Value> => ({ name, params });
 
-const BrushCircle = make_variant<"circle", { size: number }>("circle");
-const BrushLine = make_variant<"line", { thickness: number, rotation: number }>("line");
-type MAHBrush = ReturnType<typeof BrushCircle> | ReturnType<typeof BrushLine>;
+type BrushCircle = Variant<"circle", { radius: number }>;
+type BrushLine = Variant<"line", { length: number, thickness: number, rotation: number }>;
+type MAHBrush = BrushCircle | BrushLine;
 
-const IntensityConstant = make_variant<"constant", { value: number }>("constant");
-const IntensityRandom = make_variant<"random", { min: number, max: number }>("random");
-type MAHIntensity = ReturnType<typeof IntensityConstant> | ReturnType<typeof IntensityRandom>;
+type IntensityConstant = Variant<"constant", { value: number }>;
+type IntensityRandom = Variant<"random", { min: number, max: number }>;
+type MAHIntensity = IntensityConstant | IntensityRandom;
 
 
 /** Linear interpolation between the keyframes */
-const TransitionLinear = make_variant<"linear", {}>("linear");
+type TransitionLinear = Variant<"linear", {}>;
 /** Step/Jump between the keyframes */
-const TransitionStep = make_variant<"step", {}>("step");
-type MAHTransition = ReturnType<typeof TransitionLinear> | ReturnType<typeof TransitionStep>;
+type TransitionStep = Variant<"step", {}>;
+type MAHTransition = TransitionLinear | TransitionStep;
 
 
 

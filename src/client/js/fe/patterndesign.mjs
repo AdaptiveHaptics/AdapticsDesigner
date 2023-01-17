@@ -557,7 +557,7 @@ MAHPatternDesignFE.DEFAULT = ["test.json", {
 					}
 				},
 				transition: {
-					name: "step",
+					name: "linear",
 					params: {}
 				}
 			}

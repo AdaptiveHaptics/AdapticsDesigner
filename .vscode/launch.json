@@ -10,6 +10,13 @@
 			"name": "Launch Chrome against localhost",
 			"url": "http://localhost:8000",
 			"webRoot": "${workspaceFolder}/src/client"
-		}
+		},
+		{
+            "name": "Attach to ClearScript V8 on port 9222",
+            "type": "node",
+            "request": "attach",
+            "address": "localhost",
+            "port": 9222
+        }
 	]
 }

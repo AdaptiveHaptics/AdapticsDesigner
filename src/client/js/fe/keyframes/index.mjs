@@ -174,7 +174,7 @@ export class NewKeyframeCommon {
 			}
 		},
 		transition: {
-			name: "step",
+			name: "linear",
 			params: {}
 		}
 	};
@@ -196,7 +196,7 @@ export class NewKeyframeCommon {
 			}
 		},
 		transition: {
-			name: "step",
+			name: "linear",
 			params: {}
 		}
 	};

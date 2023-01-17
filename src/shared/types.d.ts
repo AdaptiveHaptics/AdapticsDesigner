@@ -1,4 +1,4 @@
-type REVISION_STRING = "0.0.3-alpha.3";
+type REVISION_STRING = "0.0.3-alpha.4";
 
 export interface MidAirHapticsAnimationFileFormat {
     $DATA_FORMAT: "MidAirHapticsAnimationFileFormat",
@@ -52,7 +52,7 @@ export interface MAHKeyframeTime {
 export interface MAHKeyframeBrush {
     brush: {
         brush: MAHBrush,
-        transition: ReturnType<typeof TransitionStep>
+        transition: ReturnType<typeof TransitionLinear>
     }
 }
 export interface MAHKeyframeIntensity {

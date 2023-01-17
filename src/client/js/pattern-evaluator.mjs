@@ -203,7 +203,7 @@ export class PatternEvaluator {
 		/**
 		 *
 		 * @param {MAHBrush} brush
-		 * @returns
+		 * @returns {BrushEvalParams}
 		 */
 		const eval_mahbrush = (brush) => {
 			switch (brush.name) {
@@ -237,12 +237,12 @@ export class PatternEvaluator {
 
 		if (prev_brush && next_brush) {
 			const prev_brush_eval = eval_mahbrush(prev_brush.brush);
-			const next_brush_eval = eval_mahbrush(prev_brush.brush);
+			const next_brush_eval = eval_mahbrush(next_brush.brush);
 			if (prev_brush_eval.primitive_type == next_brush_eval.primitive_type) {
-				const { pf, nf } = this.perform_transition_interp(p, prev_brush.time, prev_brush.time, prev_brush.transition);
-				prev_brush_eval.z_rot = prev_brush_eval.z_rot * pf + nf * next_brush_eval.z_rot;
-				prev_brush_eval.x_scale = prev_brush_eval.x_scale * pf + nf * next_brush_eval.x_scale;
-				prev_brush_eval.y_scale = prev_brush_eval.y_scale * pf + nf * next_brush_eval.y_scale;
+				const { pf, nf } = this.perform_transition_interp(p, prev_brush.time, next_brush.time, prev_brush.transition);
+				prev_brush_eval.painter.z_rot = prev_brush_eval.painter.z_rot * pf + nf * next_brush_eval.painter.z_rot;
+				prev_brush_eval.painter.x_scale = prev_brush_eval.painter.x_scale * pf + nf * next_brush_eval.painter.x_scale;
+				prev_brush_eval.painter.y_scale = prev_brush_eval.painter.y_scale * pf + nf * next_brush_eval.painter.y_scale;
 			}
 			return prev_brush_eval;
 		} else if (prev_brush) {
@@ -288,12 +288,12 @@ export class PatternEvaluator {
 	 * @param {HapeV2PrimitiveParams} bp
 	 * @param {number} time milliseconds
 	 */
-	eval_hapev2_primitive_equation_into_mah_units(bp, time) {
+	eval_hapev2_primitive_equation(bp, time) {
 		if (bp.k != 0) throw new Error("not yet implement"); //im not sure how they incorporate the rose curve
 		const brush_t_rads = this.#time_to_hapev2_brush_rads(bp, time);
 		return {
-			x: 1000 * bp.A * Math.sin(bp.a*brush_t_rads + bp.d),
-			y: 1000 * bp.B * Math.sin(bp.b*brush_t_rads),
+			x: bp.A * Math.sin(bp.a*brush_t_rads + bp.d),
+			y: bp.B * Math.sin(bp.b*brush_t_rads),
 		};
 	}
 	/**
@@ -301,15 +301,15 @@ export class PatternEvaluator {
 	 * @param {PatternEvaluatorParameters} p
 	 * @param {BrushEvalParams} brush_eval
 	 */
-	eval_hapev2_primitive_into_mah(p, brush_eval) {
-		const brush_coords = this.eval_hapev2_primitive_equation_into_mah_units(brush_eval.primitive, p.time);
+	eval_hapev2_primitive_into_mah_units(p, brush_eval) {
+		const brush_coords = this.eval_hapev2_primitive_equation(brush_eval.primitive, p.time);
 		const sx = brush_coords.x * brush_eval.painter.x_scale;
 		const sy = brush_coords.y * brush_eval.painter.y_scale;
 		const rx = sx * Math.cos(brush_eval.painter.z_rot) - sy * Math.sin(brush_eval.painter.z_rot);
 		const ry = sx * Math.sin(brush_eval.painter.z_rot) + sy * Math.cos(brush_eval.painter.z_rot);
 		return {
-			x: rx,
-			y: ry,
+			x: rx * 1000,
+			y: ry * 1000,
 		};
 	}
 
@@ -335,7 +335,7 @@ export class PatternEvaluator {
 	eval_brush_at_anim_local_time(p) {
 		const path_eval = this.eval_path_at_anim_local_time(p);
 
-		const brush_coords_offset = this.eval_hapev2_primitive_into_mah(p, path_eval.brush);
+		const brush_coords_offset = this.eval_hapev2_primitive_into_mah_units(p, path_eval.brush);
 		return {
 			coords: {
 				x: path_eval.coords.x + brush_coords_offset.x,

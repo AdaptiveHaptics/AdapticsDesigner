@@ -3,12 +3,10 @@ import { MAHPatternDesignFE } from "./fe/patterndesign.mjs";
 import { KonvaPatternStage } from "./konvapanes/pattern-stage.mjs";
 import { KonvaTimelineStage } from "./konvapanes/timeline-stage.mjs";
 import { ParameterEditor } from "./parameter-editor.mjs";
-import { PatternEvaluator } from "./pattern-evaluator.mjs";
 import { UnifiedKeyframeEditor } from "./unified-keyframe-editor.mjs";
 import { notnull } from "./util.mjs";
 
 const ignoreErrorsContaining = [
-	"The play() request was interrupted by a new load request"
 ];
 window.addEventListener("unhandledrejection", event => {
 	// console.error(event.reason);
@@ -29,13 +27,12 @@ const SplitGrid = /** @type {import("split-grid").default} */(/** @type {unknown
 
 /** @typedef {import("../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
-/** @typedef {import("../../shared/types").MAHKeyframeBase} MAHKeyframeBase */
 /** @typedef {import("../../shared/types").MAHKeyframeStandard} MAHKeyframeStandard */
 /** @typedef {import("../../shared/types").MAHKeyframePause} MAHKeyframePause */
 /** @typedef {import("../../shared/types").MidAirHapticsClipboardFormat} MidAirHapticsClipboardFormat */
 
 const mainsplitgridDiv = /** @type {HTMLDivElement} */ (document.querySelector("div.mainsplitgrid"));
-const centerDiv = /** @type {HTMLDivElement} */ (mainsplitgridDiv.querySelector("div.center"));
+const patternDiv = /** @type {HTMLDivElement} */ (mainsplitgridDiv.querySelector("div.center"));
 const timelineDiv = /** @type {HTMLDivElement} */ (document.querySelector("div.timeline"));
 const savedstateSpan = /** @type {HTMLSpanElement} */ (document.querySelector("span.savedstate"));
 
@@ -68,16 +65,20 @@ try {
 	console.error(e);
 }
 
+const focus_within_design_panes = () => {
+	return patternDiv.matches(":focus-within") || timelineDiv.matches(":focus-within");
+};
 document.addEventListener("keydown", ev => {
-	if (ev.key == "/" || ev.key == "?") alert(`Help:
-	ctrl+z to undo
-	ctrl+shift+z to redo
-	double click on the pattern canvas to create a new control point
-	alt+click on a control point to delete it
-	click and drag to select multiple
-	ctrl+click or ctrl+click and drag to add to selection
-	`);
+	if (ev.key == "s" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
+		ev.preventDefault();
+		console.warn("todo");
+		//todo
+	}
+
+	// begin design pane restricted keybinds
+	if (!focus_within_design_panes()) return;
 	if (ev.key == "z" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
+		ev.preventDefault();
 		console.log("undo");
 		if (primary_design.undo()) {
 			//success
@@ -87,6 +88,7 @@ document.addEventListener("keydown", ev => {
 	}
 	if (ev.key == "Z" && ev.ctrlKey && ev.shiftKey && !ev.altKey ||
 		ev.key == "y" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
+		ev.preventDefault();
 		console.log("redo");
 		if (primary_design.redo()) {
 			//success
@@ -94,7 +96,8 @@ document.addEventListener("keydown", ev => {
 			//do nothing
 		}
 	}
-	if (ev.key == "Delete" && !ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
+	if (ev.key == "Delete" && !ev.ctrlKey && !ev.shiftKey && !ev.altKey && focus_within_design_panes()) {
+		ev.preventDefault();
 		console.log("delete");
 		if (primary_design.selected_keyframes.size == 0) return;
 		primary_design.save_state();
@@ -105,25 +108,26 @@ document.addEventListener("keydown", ev => {
 		ev.preventDefault();
 		primary_design.select_all_keyframes();
 	}
-	if (ev.key == "s" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
-		ev.preventDefault();
-		console.warn("todo");
-		//todo
-	}
 });
 
-document.addEventListener("copy", _ev => {
-	primary_design.copy_selected_to_clipboard();
+document.addEventListener("copy", ev => {
+	if (focus_within_design_panes()) {
+		primary_design.copy_selected_to_clipboard();
+		ev.preventDefault();
+	}
 });
-document.addEventListener("paste", _ev => {
-	primary_design.paste_clipboard(); 
+document.addEventListener("paste", ev => {
+	if (focus_within_design_panes()) {
+		primary_design.paste_clipboard();
+		ev.preventDefault();
+	}
 });
 
 primary_design.state_change_events.addEventListener("commit_update", ev => {
 	savedstateSpan.textContent = ev.detail.committed ? "saved to localstorage" : "pending change";
 });
 primary_design.commit_operation({});
-const konva_pattern_stage = new KonvaPatternStage(primary_design, "patternstage", centerDiv);
+const konva_pattern_stage = new KonvaPatternStage(primary_design, "patternstage", patternDiv);
 const konva_timeline_stage = new KonvaTimelineStage(primary_design, "timelinestage", timelineDiv);
 const unified_keyframe_editor = new UnifiedKeyframeEditor(primary_design, notnull(document.querySelector("div.unifiedkeyframeeditor")));
 const parameter_editor = new ParameterEditor(primary_design, notnull(document.querySelector("div.parametereditor")));

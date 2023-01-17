@@ -3,13 +3,14 @@
     --bg-hue: 210;
     --bg-sat: 13%;
     --background-primary: hsl(var(--bg-hue), var(--bg-sat), 40%);
+    --background-primary-disabled: hsl(var(--bg-hue), var(--bg-sat), 28%);
     --background-secondary: hsl(var(--bg-hue), var(--bg-sat), 30%);
     --background-tertiary: hsl(var(--bg-hue), var(--bg-sat), 20%);
     --background-tertiary-alt: hsl(var(--bg-hue), var(--bg-sat), 19%);
     --background-titlebar: hsl(var(--bg-hue), var(--bg-sat), 14%);
     --background-accent: hsl(var(--bg-hue), var(--bg-sat), 50%);
     --background-gutter: hsl(var(--bg-hue), var(--bg-sat), 60%);
-    
+
     --hitbox: green;
     --hitbox: none;
 
@@ -25,7 +26,7 @@
     --selected-keyframe-color: hwb(204 55% 5%);
     --paused-keyframe-color: var(--pause-color);
 
-    
+
     --control-point-select-rect-fill: #8cc9f230;
     --control-point-stroke: #f5fffa;
     --control-point-stroke-selected: var(--selected-keyframe-color);
@@ -36,6 +37,8 @@
     --pattern-playback-vis: #74d4ec;
 
     --pattern-boundary: var(--background-tertiary);
+    --pattern-axis: hsl(var(--bg-hue), var(--bg-sat), 17%);
+    --pattern-axis: var(--pattern-boundary);
     --pattern-background: var(--background-tertiary-alt);
 
 
@@ -108,7 +111,7 @@ div.bottom {
     background-color: var(--background-primary);
 
     display: grid;
-    grid-template-columns: 25% 1px 75%;
+    grid-template-columns: 22% 1px 78%;
 }
 
 div.left,
@@ -238,6 +241,11 @@ div.unifiedkeyframeeditor select, div.unifiedkeyframeeditor option, input {
     background-color: var(--background-primary);
     padding: 1ex;
     border: none;
+    min-width: 4ex;
+}
+div.unifiedkeyframeeditor option:disabled, input:disabled {
+    background-color: var(--background-primary-disabled);
+    color: var(--text-low-priority);
 }
 
 div.unifiedkeyframeeditor summary, div.typecontainer select, div.typecontainer option {
@@ -255,6 +263,8 @@ div.unifiedkeyframeeditor details {
 
 div.unifiedkeyframeeditor summary {
     margin: -1ex -1ex 0;
+    background-color: var(--background-secondary);
+    user-select: none;
 }
 
 div.unifiedkeyframeeditor details[open] {
@@ -271,10 +281,19 @@ div.labelinputgrid {
     grid-template-columns: auto 1fr;
     gap: 0.5ex 1ex;
     align-items: center;
+    margin-bottom: 1ex;
 }
 
 div.labelinputgrid > label {
     display: contents;
+}
+div.labelinputgrid > label > .labeltext {
+    justify-self: end;
+}
+
+label span.unit {
+    font-family: monospace;
+    /* font-size: 1.1em; */
 }
 
 div.parametereditor {

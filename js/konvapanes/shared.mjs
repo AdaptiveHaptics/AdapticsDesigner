@@ -2,9 +2,9 @@ const Konva = /** @type {import("konva").default} */ (window["Konva"]);
 
 export class KonvaResizeStage {
 	/**
-	 * 
-	 * @param {string} direct_container_id 
-	 * @param {HTMLElement} resize_container 
+	 *
+	 * @param {string} direct_container_id
+	 * @param {HTMLElement} resize_container
 	 */
 	constructor(direct_container_id, resize_container, { stageWidth = 500, stageHeight = 500 }) {
 		this.stageWidth = stageWidth;
@@ -41,11 +41,11 @@ export class KonvaResizeStage {
 
 export class KonvaResizeScrollStage extends KonvaResizeStage {
 	scrollbar_padding = 5;
-	
+
 	/**
-	 * 
-	 * @param {string} direct_container_id 
-	 * @param {HTMLElement} resize_container 
+	 *
+	 * @param {string} direct_container_id
+	 * @param {HTMLElement} resize_container
 	 */
 	constructor(direct_container_id, resize_container, { stageWidth = 1500, stageHeight = 500, fullWidth = 2500, fullHeight = 800, flipDefaultScrollDirection = false }) {
 		super(direct_container_id, resize_container, { stageWidth, stageHeight });

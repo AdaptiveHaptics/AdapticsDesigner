@@ -3,14 +3,23 @@
 /** @typedef {import("../../../shared/types").MidAirHapticsClipboardFormat} MidAirHapticsClipboardFormat */
 /** @typedef {import("./keyframes/index.mjs").MAHKeyframeFE} MAHKeyframeFE */
 /** @typedef {import("../pattern-evaluator.mjs").PatternEvaluatorParameters} PatternEvaluatorParameters */
-/** 
+/**
  * @template T
  * @template K
  * @typedef {import("../../../shared/util").ReqProp<T, K>} ReqProp
  */
+/**
+ * @template T
+ * @template K
+ * @typedef {import("../../../shared/util").OptExceptProp<T, K>} OptExceptProp
+ */
+
+/** @type {MidAirHapticsAnimationFileFormat['$REVISION']} */
+const MAH_$REVISION = "0.0.4-alpha.1";
 
 import { PatternEvaluator } from "../pattern-evaluator.mjs";
-import { create_correct_keyframefe_wrapper, MAHKeyframePauseFE, MAHKeyframeStandardFE } from "./keyframes/index.mjs";
+import { BoundsCheck } from "./keyframes/bounds-check.mjs";
+import { create_correct_keyframefe_wrapper, MAHKeyframePauseFE, MAHKeyframeStandardFE, NewKeyframeCommon } from "./keyframes/index.mjs";
 
 /**
  * @typedef {Object} StateEventMap
@@ -35,8 +44,8 @@ import { create_correct_keyframefe_wrapper, MAHKeyframePauseFE, MAHKeyframeStand
  */
 export class StateChangeEvent extends CustomEvent {
 	/**
-	 * 
-	 * @param {K} event 
+	 *
+	 * @param {K} event
 	 * @param {ReqProp<CustomEventInit<StateEventMap[K]>, "detail">} eventInitDict
 	 */
 	constructor(event, eventInitDict) {
@@ -46,11 +55,11 @@ export class StateChangeEvent extends CustomEvent {
 
 class StateChangeEventTarget extends EventTarget {
 	/**
-	 * 
+	 *
 	 * @template {keyof StateEventMap} K
-	 * @param {K} type 
-	 * @param {(ev: CustomEvent<StateEventMap[K]>) => void} listener 
-	 * @param {boolean | AddEventListenerOptions=} options 
+	 * @param {K} type
+	 * @param {(ev: CustomEvent<StateEventMap[K]>) => void} listener
+	 * @param {boolean | AddEventListenerOptions=} options
 	 */
 	addEventListener(type, listener, options) {
 		super.addEventListener(type, listener, options);
@@ -59,13 +68,13 @@ class StateChangeEventTarget extends EventTarget {
 
 export class MAHPatternDesignFE {
 	/**
-	 * 
-	 * @param {string} filename 
-	 * @param {MidAirHapticsAnimationFileFormat} filedata 
+	 *
+	 * @param {string} filename
+	 * @param {MidAirHapticsAnimationFileFormat} filedata
 	 */
 	constructor(filename, filedata, undo_states = [], redo_states = [], undo_states_size = 50, redo_states_size = 50) {
 		this.filename = filename;
-		
+
 		/** @type {MAHAnimationFileFormatFE} */
 		this.filedata = this.load_filedata_into_fe_format(filedata);
 
@@ -129,7 +138,7 @@ export class MAHPatternDesignFE {
 		// setTimeout(() => this.save_to_localstorage(), 1800);
 	}
 	/**
-	 * 
+	 *
 	 * @param {{
 	 * 	rerender?: boolean,
 	 * 	new_keyframes?: MAHKeyframeFE[]
@@ -205,9 +214,9 @@ export class MAHPatternDesignFE {
 
 
 	/**
-	 * 
-	 * @param {Partial<MAHKeyframe> & Pick<MAHKeyframe, "type">} set
-	 * @returns 
+	 *
+	 * @param {OptExceptProp<MAHKeyframe, "type">} set
+	 * @returns
 	 */
 	insert_new_keyframe(set) {
 		let keyframe;
@@ -222,13 +231,13 @@ export class MAHPatternDesignFE {
 		return keyframe;
 	}
 
-	
+
 	/** @type {Set<MAHKeyframeFE>} */
 	selected_keyframes = new Set();
 
 	/**
-	 * 
-	 * @param {MAHKeyframeFE[]} selected_keyframes 
+	 *
+	 * @param {MAHKeyframeFE[]} selected_keyframes
 	 */
 	select_keyframes(selected_keyframes) {
 		for (const keyframe of selected_keyframes) {
@@ -238,8 +247,8 @@ export class MAHPatternDesignFE {
 		}
 	}
 	/**
-	 * 
-	 * @param {MAHKeyframeFE[]} deselected_keyframes 
+	 *
+	 * @param {MAHKeyframeFE[]} deselected_keyframes
 	 */
 	deselect_keyframes(deselected_keyframes) {
 		for (const keyframe of deselected_keyframes) {
@@ -255,8 +264,8 @@ export class MAHPatternDesignFE {
 		this.deselect_keyframes([...this.selected_keyframes]);
 	}
 	/**
-	 * 
-	 * @param {MAHKeyframeFE} keyframe 
+	 *
+	 * @param {MAHKeyframeFE} keyframe
 	 * @returns {boolean}
 	 */
 	is_keyframe_selected(keyframe) {
@@ -265,7 +274,7 @@ export class MAHPatternDesignFE {
 
 	group_select_logic(selected_keyframes, linked_keyframes, { shiftKey = false, ctrlKey = false, altKey = false }) {
 		let keyframes = [];
-		
+
 		if (altKey) { keyframes = [...selected_keyframes, ...linked_keyframes]; }
 		else keyframes = [...selected_keyframes];
 
@@ -276,7 +285,7 @@ export class MAHPatternDesignFE {
 
 
 	/**
-	 * 
+	 *
 	 * @returns {MAHKeyframeFE[]}
 	 */
 	get_sorted_keyframes() {
@@ -284,22 +293,22 @@ export class MAHPatternDesignFE {
 		return this.filedata.keyframes;
 	}
 	/**
-	 * 
+	 *
 	 * @returns {MAHKeyframeFE | undefined}
 	 */
 	get_last_keyframe() {
 		return this.get_sorted_keyframes()[this.filedata.keyframes.length - 1];
 	}
 	/**
-	 * 
+	 *
 	 * @returns {MAHKeyframeFE | undefined}
 	 */
 	get_secondlast_keyframe() {
 		return this.get_sorted_keyframes()[this.filedata.keyframes.length - 2];
 	}
 	/**
-	 * 
-	 * @param {MAHKeyframeFE} keyframe 
+	 *
+	 * @param {MAHKeyframeFE} keyframe
 	 */
 	get_sorted_keyframe_index(keyframe) {
 		const index = this.get_sorted_keyframes().indexOf(keyframe);
@@ -312,7 +321,7 @@ export class MAHPatternDesignFE {
 	/**
 	 * @template R
 	 * @param {(keyframe: MAHKeyframeFE) => (R | null)} pred
-	 * @param {MAHKeyframeFE} keyframe 
+	 * @param {MAHKeyframeFE} keyframe
 	 * @param {"next" | "prev"} prevornext
 	 * @returns {R | null}
 	 */
@@ -338,8 +347,8 @@ export class MAHPatternDesignFE {
 	}
 
 	/**
-	 * 
-	 * @param {MAHKeyframeFE[]} keyframes 
+	 *
+	 * @param {MAHKeyframeFE[]} keyframes
 	 */
 	delete_keyframes(keyframes) {
 		this.deselect_all_keyframes();
@@ -349,9 +358,9 @@ export class MAHPatternDesignFE {
 		}
 		return keyframes;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param {MAHKeyframeFE} keyframe
 	 */
 	check_for_reorder(keyframe) {
@@ -372,8 +381,8 @@ export class MAHPatternDesignFE {
 
 	/**
 	 * @template {keyof PatternEvaluatorParameters} K
-	 * @param {K} param 
-	 * @param {PatternEvaluatorParameters[K]} value 
+	 * @param {K} param
+	 * @param {PatternEvaluatorParameters[K]} value
 	 */
 	update_evaluator_params(param, value) {
 		this.evaluator_params[param] = value;
@@ -382,7 +391,7 @@ export class MAHPatternDesignFE {
 	}
 
 	#eval_pattern() {
-		const eval_result = this.pattern_evaluator.eval_stream_at_anim_local_time(this.evaluator_params);
+		const eval_result = this.pattern_evaluator.eval_brush_at_anim_local_time_for_max_t(this.evaluator_params);
 		this.last_eval = eval_result;
 		const sce = new StateChangeEvent("playback_update", { detail: {} });
 		this.state_change_events.dispatchEvent(sce);
@@ -394,7 +403,7 @@ export class MAHPatternDesignFE {
 		/** @type {MidAirHapticsClipboardFormat} */
 		const clipboard_data = {
 			$DATA_FORMAT: "MidAirHapticsClipboardFormat",
-			$REVISION: "0.0.1-alpha.3",
+			$REVISION: MAH_$REVISION,
 			keyframes: [...this.selected_keyframes]
 		};
 		// const ci = new ClipboardItem({
@@ -418,25 +427,27 @@ export class MAHPatternDesignFE {
 				throw new Error("Could not find MidAirHapticsClipboardFormat data in clipboard.");
 			}
 			if (clipboard_parsed.$DATA_FORMAT != "MidAirHapticsClipboardFormat") throw new Error(`incorrect $DATA_FORMAT ${clipboard_parsed.$DATA_FORMAT} expected ${"MidAirHapticsClipboardFormat"}`);
-			if (clipboard_parsed.$REVISION != "0.0.1-alpha.3") throw new Error(`incorrect revision ${clipboard_parsed.$REVISION} expected ${"0.0.1-alpha.2"}`);
+			if (clipboard_parsed.$REVISION != MAH_$REVISION) throw new Error(`incorrect revision ${clipboard_parsed.$REVISION} expected ${"0.0.1-alpha.2"}`);
 
 
 			// I was gonna do a more complicated "ghost" behaviour
 			// but google slides just drops the new objects at an offset
+			// and adds them to selected
 			this.deselect_all_keyframes();
 			this.save_state();
 			clipboard_parsed.keyframes.sort();
 
-			const paste_time_offset = this.linterp_next_timestamp() - (clipboard_parsed.keyframes[0]?.time || 0);
-			console.log(paste_time_offset);
+			const paste_time_offset = NewKeyframeCommon.next_timestamp(this) - (clipboard_parsed.keyframes[0]?.time || 0);
+			// console.log(paste_time_offset);
 
 			const new_keyframes = clipboard_parsed.keyframes.map(kf => {
 				console.log(kf.time);
 				kf.time += paste_time_offset;
 				console.log(kf.time);
 				if ("coords" in kf) {
-					Object.keys(kf.coords).forEach(k => kf.coords[k] += 5);
-					Object.keys(kf.coords).forEach(k => kf.coords[k] = Math.min(Math.max(kf.coords[k], 0), 500));
+					kf.coords.coords.x += 5;
+					kf.coords.coords.y += 5;
+					kf.coords.coords = BoundsCheck.coords(kf.coords.coords);
 				}
 				return this.insert_new_keyframe(kf);
 			});
@@ -448,27 +459,9 @@ export class MAHPatternDesignFE {
 		}
 	}
 
-	/**
-	 * 
-	 * @returns {number} timestamp for next keyframe
-	 */
-	linterp_next_timestamp() {
-		const last_keyframe = this.get_last_keyframe();
-		const secondlast_keyframe = this.get_secondlast_keyframe();
-		if (last_keyframe) { // linterp
-			if (secondlast_keyframe) {
-				return 2 * last_keyframe.time - secondlast_keyframe.time;
-			} else {
-				return last_keyframe.time + 500;
-			}
-		} else {
-			return 0;
-		}
-	}
-
 
 	/**
-	 * @param {MidAirHapticsAnimationFileFormat} filedata 
+	 * @param {MidAirHapticsAnimationFileFormat} filedata
 	 */
 	load_filedata_into_fe_format(filedata) {
 		const keyframesFE = filedata.keyframes.map(kf => create_correct_keyframefe_wrapper(kf, this));
@@ -482,26 +475,26 @@ export class MAHPatternDesignFE {
 		/** @type {MidAirHapticsAnimationFileFormat} */
 		const filedata = JSON.parse(JSON.stringify(this.filedata));
 		filedata.$DATA_FORMAT = "MidAirHapticsAnimationFileFormat";
-		filedata.$REVISION = "0.0.1-alpha.3";
+		filedata.$REVISION = MAH_$REVISION;
 		return filedata;
 	}
 
 	serialize() {
 		const { filename, filedata, undo_states, redo_states, undo_states_size, redo_states_size } = this;
 		filedata.$DATA_FORMAT = "MidAirHapticsAnimationFileFormat";
-		filedata.$REVISION = "0.0.1-alpha.3";
+		filedata.$REVISION = MAH_$REVISION;
 		const serializable_obj = { filename, filedata, undo_states, redo_states, undo_states_size, redo_states_size };
 		return JSON.stringify(serializable_obj);
 	}
 	/**
-	 * 
-	 * @param {string} json_str 
+	 *
+	 * @param {string} json_str
 	 * @returns {MAHPatternDesignFE}
 	 */
 	static deserialize(json_str) {
 		const { filename, filedata, undo_states, redo_states, undo_states_size, redo_states_size } = JSON.parse(json_str);
 		if (filedata.$DATA_FORMAT != "MidAirHapticsAnimationFileFormat") throw new Error(`incorrect $DATA_FORMAT ${filedata.$DATA_FORMAT} expected ${"MidAirHapticsAnimationFileFormat"}`);
-		if (filedata.$REVISION != "0.0.1-alpha.3") throw new Error(`incorrect revision ${filedata.$REVISION} expected ${"0.0.1-alpha.3"}`);
+		if (filedata.$REVISION != MAH_$REVISION) throw new Error(`incorrect revision ${filedata.$REVISION} expected ${MAH_$REVISION}`);
 		return new MAHPatternDesignFE(filename, filedata, undo_states, redo_states, undo_states_size, redo_states_size);
 	}
 
@@ -523,13 +516,9 @@ export class MAHPatternDesignFE {
 /** @type {[string, MidAirHapticsAnimationFileFormat]} */
 MAHPatternDesignFE.DEFAULT = ["test.json", {
 	$DATA_FORMAT: "MidAirHapticsAnimationFileFormat",
-	$REVISION: "0.0.1-alpha.3",
+	$REVISION: MAH_$REVISION,
 
 	name: "test",
-
-	direction: "normal",
-	duration: 5 * 1000,
-	iteration_count: 1,
 
 	projection: "plane",
 	update_rate: 1,
@@ -539,25 +528,39 @@ MAHPatternDesignFE.DEFAULT = ["test.json", {
 			type: "standard",
 			time: 0.000,
 			coords: {
-				x: 250,
-				y: 250,
-				z: 0,
+				coords: {
+					x: 0,
+					y: 0,
+					z: 0,
+				},
+				transition: {
+					name: "linear",
+					params: {}
+				}
 			},
 			intensity: {
-				name: "Constant",
-				params: {
-					value: 1.00
+				intensity: {
+					name: "constant",
+					params: {
+						value: 1.00
+					}
+				},
+				transition: {
+					name: "linear",
+					params: {}
 				}
 			},
 			brush: {
-				name: "Point",
-				params: {
-					size: 1.00
+				brush: {
+					name: "circle",
+					params: {
+						radius: 1.00
+					}
+				},
+				transition: {
+					name: "linear",
+					params: {}
 				}
-			},
-			transition: {
-				name: "Linear",
-				params: {}
 			}
 		}
 	]

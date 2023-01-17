@@ -51,7 +51,7 @@
 							<ul>
 								<li><code>Alt</code> is deletion</li>
 								<li><code>Ctrl</code> toggles selection</li>
-							</ul>							
+							</ul>
 						</p>
 						<p>
 							<h4>During group selection:</h4>
@@ -65,8 +65,8 @@
 					<form>
 						<h1>Keyframe Editor</h1>
 						<div class="typecontainer">
-							<label>Type: </label>
-							<select name="type" class="type">
+							<label>Type</label>
+							<select name="keyframetype" class="keyframe type">
 								<option hidden disabled selected value="multipletypes">multiple types</option>
 								<option value="standard" title="Standard keyframe with coords, brush, intensity, and transitions">standard</option>
 								<option value="pause" title="Pauses the previous standard keyframe until timestamp reached">pause</option>
@@ -74,34 +74,73 @@
 						</div>
 						<details class="coords">
 							<summary>Coords</summary>
-							<div class="coordsconfig labelinputgrid">
-								<label>x: <input type="number" name="x" min="0" max="500"></label>
-								<label>y: <input type="number" name="y" min="0" max="500"></label>
-								<label>z: <input type="number" name="z" min="0" max="500"></label>
+							<div>
+								<div class="coordsconfig labelinputgrid">
+									<label><span class="labeltext">x <span class="unit">mm</span></span><input type="number" name="x" min="-100" max="100"></label>
+									<label><span class="labeltext">y <span class="unit">mm</span></span><input type="number" name="y" min="-100" max="100"></label>
+									<label><span class="labeltext">z <span class="unit">mm</span></span><input disabled type="number" name="z" min="0" max="100"></label>
+								</div>
+								<div class="transition">
+									<span>Transition</span>
+									<div class="transitionconfig">
+										<select name="coordstransitiontype" class="coords transition type">
+											<option hidden disabled selected value="multipletypes">multiple types</option>
+											<option value="linear" title="Linear interpolation between the keyframes">linear</option>
+											<option value="step" title="Step/Jump between the keyframes">step</option>
+										</select>
+									</div>
+								</div>
 							</div>
 						</details>
 						<details class="brush">
 							<summary>Brush</summary>
-							<div class="brushconfig">
-								<label>Brush Type: </label>
-								<select name="type" class="type">
+							<div class="brushconfig labelinputgrid">
+								<label>Brush Type</label>
+								<select name="brushtype" class="brush type">
 									<option hidden disabled selected value="multipletypes">multiple types</option>
-									<option value="standard">standard</option>
-									<option value="pause">pause</option>
+									<option disabled value="omitted">omitted</option>
+									<option value="circle">circle</option>
+									<option value="line">line</option>
 								</select>
-								TODO
+								<label><span class="labeltext">radius <span class="unit">mm</span></span><input type="number" name="radius" min="0" max="100"></label>
+								<label><span class="labeltext">length <span class="unit">mm</span></span><input type="number" name="length" min="0" max="100"></label>
+								<label><span class="labeltext">thickness <span class="unit">mm</span></span><input disabled type="number" name="thickness" min="0" max="100"></label>
+								<label><span class="labeltext">rotation <span class="unit">deg</span></span><input type="number" name="rotation" min="0" max="360"></label>
+							</div>
+							<div class="transition">
+								<span>Transition</span>
+								<div class="transitionconfig">
+									<select disabled name="brushtransitiontype" class="brush transition type">
+										<option hidden disabled selected value="multipletypes">multiple types</option>
+										<option disabled value="linear" title="Linear interpolation between the keyframes">linear</option>
+										<option disabled value="step" title="Step/Jump between the keyframes">step</option>
+									</select>
+								</div>
 							</div>
 						</details>
 						<details class="intensity">
 							<summary>Intensity</summary>
-							<div class="intensityconfig">
-								TODO
+							<div class="intensityconfig labelinputgrid">
+								<label>Intensity Type</label>
+								<select name="intensitytype" class="intensity type">
+									<option hidden disabled selected value="multipletypes">multiple types</option>
+									<option disabled value="omitted">omitted</option>
+									<option value="constant">constant</option>
+									<option value="random">random</option>
+								</select>
+								<label><span class="labeltext">value</span><input type="number" name="value" min="0" max="1" step="0.05"></label>
+								<label><span class="labeltext">min</span><input type="number" name="min" min="0" max="1" step="0.05"></label>
+								<label><span class="labeltext">max</span><input type="number" name="max" min="0" max="1" step="0.05"></label>
 							</div>
-						</details>
-						<details class="transition">
-							<summary>Transition</summary>
-							<div class="transitionconfig">
-								TODO
+							<div class="transition">
+								<span>Transition</span>
+								<div class="transitionconfig">
+									<select name="intensitytransitiontype" class="intensity transition type">
+										<option hidden disabled selected value="multipletypes">multiple types</option>
+										<option value="linear" title="Linear interpolation between the keyframes">linear</option>
+										<option value="step" title="Step/Jump between the keyframes">step</option>
+									</select>
+								</div>
 							</div>
 						</details>
 					</form>
@@ -112,7 +151,7 @@
 				<div class="parametereditor betterscroll">
 					<h1>Parameter Editor</h1>
 					<div class="timecontrol">
-						<label>Time (ms): <input type="number" name="time" min="0" step="1"></label>
+						<label><span class="labeltext">Time <span class="unit">ms</span></span><input type="number" name="time" min="0" step="1"></label>
 						<button class="reset">⏮</button>
 						<button class="play">⏵</button>
 						<button class="pause" style="display: none;">⏸</button>

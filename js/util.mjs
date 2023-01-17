@@ -1,12 +1,20 @@
 /**
  * Assert Not Null
  * @template T
- * @param {T | null} t 
+ * @param {T | null} t
  * @returns {T}
  */
 export function notnull(t) {
 	if (t) return t;
 	else throw new TypeError("Unexpected null");
+}
+/**
+ *
+ * @param {never} _x
+ * @returns {never}
+ */
+export function assert_unreachable(_x) {
+	throw new Error("Didn't expect to get here");
 }
 
 export function milliseconds_to_hhmmssms_format(t) {
@@ -20,4 +28,13 @@ export function milliseconds_to_hhmmssms_format(t) {
 	t = (t - mins) / 60;
 	const hrs = t;
 	return `${pad(hrs)}:${pad(mins)}:${pad(secs)}.${pad(ms, 3)}`;
+}
+
+/**
+ * @template T
+ * @param {T} o
+ * @returns {T}
+ */
+export function structured_clone(o) {
+	return window.structuredClone(o);
 }

@@ -51,10 +51,10 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 	playback_head = new Konva.Line();
 
 	/**
-	 * 
-	 * @param {MAHPatternDesignFE} current_design 
-	 * @param {string} direct_container_id 
-	 * @param {HTMLElement} resize_container 
+	 *
+	 * @param {MAHPatternDesignFE} current_design
+	 * @param {string} direct_container_id
+	 * @param {HTMLElement} resize_container
 	 */
 	constructor(current_design, direct_container_id, resize_container) {
 		super(direct_container_id, resize_container, {
@@ -135,7 +135,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 
 	render_design() {
 		this.update_zoom();
-		
+
 		for (const kf of this.current_design.filedata.keyframes) {
 			kf[KonvaTimelineKeyframeSymbol]?.destroy();
 		}
@@ -314,9 +314,9 @@ class KonvaTimelineKeyframe {
 	ycoord = minor_gridline_start + 3;
 
 	/**
-	 * 
-	 * @param {MAHKeyframeFE} keyframe 
-	 * @param {KonvaTimelineStage} timeline_stage 
+	 *
+	 * @param {MAHKeyframeFE} keyframe
+	 * @param {KonvaTimelineStage} timeline_stage
 	 */
 	constructor(keyframe, timeline_stage) {
 		this.keyframe = keyframe;
@@ -335,7 +335,7 @@ class KonvaTimelineKeyframe {
 			stroke: getComputedStyle(document.body).getPropertyValue("--paused-keyframe-color"),
 			strokeWidth: 3,
 		} : {};
-		
+
 		this.flag = new Konva.Label({
 			x: -1,
 			y: this.ycoord,
@@ -408,7 +408,7 @@ class KonvaTimelineKeyframe {
 
 		this.listener_abort = new AbortController();
 		timeline_stage.current_design.state_change_events.addEventListener("kf_delete", ev => {
-			if (ev.detail.keyframe != keyframe) return;	
+			if (ev.detail.keyframe != keyframe) return;
 			this.destroy();
 		}, { signal: this.listener_abort.signal });
 
@@ -442,8 +442,8 @@ class KonvaTimelineKeyframe {
 	}
 
 	/**
-	 * 
-	 * @param {boolean} ctrlKey 
+	 *
+	 * @param {boolean} ctrlKey
 	 * @param {boolean} dont_deselect
 	 */
 	select_this(ctrlKey, dont_deselect) {
@@ -457,8 +457,8 @@ class KonvaTimelineKeyframe {
 	}
 
 	/**
-	 * 
-	 * @param {boolean} selected 
+	 *
+	 * @param {boolean} selected
 	 */
 	update_select(selected) {
 		const fill = selected?"--keyframe-flag-fill-selected":"--keyframe-flag-fill";
@@ -468,7 +468,7 @@ class KonvaTimelineKeyframe {
 		else this.timeline_stage.transformer.nodes(this.timeline_stage.transformer.nodes().filter(n => n != this.flag));
 	}
 
-	update_time({ time }) {	
+	update_time({ time }) {
 		const x = this.timeline_stage.milliseconds_to_x_coord(time);
 		this.flag.x(x);
 		this.flag.y(this.ycoord);

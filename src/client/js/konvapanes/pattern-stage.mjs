@@ -104,7 +104,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 
 				// const box = this.selection_rect.getSelfRect();
 				const pat_c1 = this.layer_coords_to_pattern_coords({ raw_x: x1, raw_y: y1 });
-				const pat_c2 = this.layer_coords_to_pattern_coords({ raw_x: x2, raw_y: x2 });
+				const pat_c2 = this.layer_coords_to_pattern_coords({ raw_x: x2, raw_y: y2 });
 				const low_coords = { x: Math.min(pat_c1.x, pat_c2.x), y: Math.min(pat_c1.y, pat_c2.y) };
 				const high_coords = { x: Math.max(pat_c1.x, pat_c2.x), y: Math.max(pat_c1.y, pat_c2.y) };
 				const keyframes_in_box = this.pattern_design.filedata.keyframes.filter(has_coords).filter(kf => {

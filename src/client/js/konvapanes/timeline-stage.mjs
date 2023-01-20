@@ -52,18 +52,18 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 
 	/**
 	 *
-	 * @param {MAHPatternDesignFE} current_design
+	 * @param {MAHPatternDesignFE} pattern_design
 	 * @param {string} direct_container_id
 	 * @param {HTMLElement} resize_container
 	 */
-	constructor(current_design, direct_container_id, resize_container) {
+	constructor(pattern_design, direct_container_id, resize_container) {
 		super(direct_container_id, resize_container, {
 			stageWidth: 1500, stageHeight: 500,
 			fullWidth: 2500, fullHeight: 800,
 			// flipDefaultScrollDirection: true, //disabled because this sucks on trackpads. audacity also keeps regular scrolling directions
 		});
 
-		this.current_design = current_design;
+		this.pattern_design = pattern_design;
 
 		this.k_stage.on("wheel", ev => {
 			if (!ev.evt.ctrlKey) return;
@@ -77,7 +77,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 			if (ev.key == "a" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
 				ev.preventDefault();
 				ev.stopPropagation();
-				this.current_design.select_all_keyframes();
+				this.pattern_design.select_all_keyframes();
 			}
 		});
 
@@ -114,19 +114,19 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 				this.selection_rect.visible(false);
 
 				// const box = this.selection_rect.getSelfRect();
-				const keyframes_in_box = this.current_design.filedata.keyframes.filter(kf => {
+				const keyframes_in_box = this.pattern_design.filedata.keyframes.filter(kf => {
 					const time_low = this.x_coord_to_milliseconds(Math.min(x1, x2));
 					const time_high = this.x_coord_to_milliseconds(Math.max(x1, x2));
 					return time_low <= kf.time && kf.time <= time_high;
 				});
-				this.current_design.group_select_logic(keyframes_in_box, [], { shiftKey: ev.shiftKey, ctrlKey: ev.ctrlKey, altKey: ev.altKey });
+				this.pattern_design.group_select_logic(keyframes_in_box, [], { shiftKey: ev.shiftKey, ctrlKey: ev.ctrlKey, altKey: ev.altKey });
 			});
 		}
 
-		current_design.state_change_events.addEventListener("kf_new", ev => {
+		pattern_design.state_change_events.addEventListener("kf_new", ev => {
 			const _timelinekeyframe = new KonvaTimelineKeyframe(ev.detail.keyframe, this);
 		});
-		current_design.state_change_events.addEventListener("rerender", _ev => {
+		pattern_design.state_change_events.addEventListener("rerender", _ev => {
 			this.render_design();
 		});
 
@@ -136,12 +136,12 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 	render_design() {
 		this.update_zoom();
 
-		for (const kf of this.current_design.filedata.keyframes) {
+		for (const kf of this.pattern_design.filedata.keyframes) {
 			kf[KonvaTimelineKeyframeSymbol]?.destroy();
 		}
 		this.scrolling_layer.destroyChildren();
 
-		const keyframes = this.current_design.filedata.keyframes;
+		const keyframes = this.pattern_design.filedata.keyframes;
 
 		this.timestamp_rect = new Konva.Rect({
 			x: 0, y: 0, width: this.fullWidth, height: timestamp_rect_height,
@@ -156,15 +156,15 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 		this.keyframe_rect.on("pointerdblclick", ev => {
 			if (ev.target != this.keyframe_rect) return;
 			ev.evt.preventDefault();
-			this.current_design.save_state();
+			this.pattern_design.save_state();
 			const { x } = this.keyframe_rect.getRelativePointerPosition();
 			const t = this.raw_x_to_t({ raw_x: x, snap: true });
-			const new_keyframe = this.current_design.insert_new_keyframe({ type: "standard", time: t });
-			this.current_design.commit_operation({ new_keyframes: [new_keyframe] });
+			const new_keyframe = this.pattern_design.insert_new_keyframe({ type: "standard", time: t });
+			this.pattern_design.commit_operation({ new_keyframes: [new_keyframe] });
 
 			this.selection_rect.visible(false);
-			if (!ev.evt.ctrlKey) this.current_design.deselect_all_keyframes();
-			this.current_design.select_keyframes([ new_keyframe ]);
+			if (!ev.evt.ctrlKey) this.pattern_design.deselect_all_keyframes();
+			this.pattern_design.select_keyframes([ new_keyframe ]);
 		});
 
 		{ //init transformer
@@ -176,19 +176,19 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 				enabledAnchors: ["middle-left", "middle-right"],
 			});
 			this.transformer.on("dragstart", _ev => {
-				this.current_design.save_state();
+				this.pattern_design.save_state();
 			});
 			this.transformer.on("dragend", _ev => {
 				requestAnimationFrame(() => { //wait for child dragend events to snap/etc
-					this.current_design.commit_operation({ updated_keyframes: [...this.current_design.selected_keyframes] });
+					this.pattern_design.commit_operation({ updated_keyframes: [...this.pattern_design.selected_keyframes] });
 				});
 			});
 			this.transformer.on("transformstart", _ev => {
-				this.current_design.save_state();
+				this.pattern_design.save_state();
 			});
 			this.transformer.on("transformend", _ev => {
 				requestAnimationFrame(() => { //wait for child dragend events to snap/etc
-					this.current_design.commit_operation({ updated_keyframes: [...this.current_design.selected_keyframes] });
+					this.pattern_design.commit_operation({ updated_keyframes: [...this.pattern_design.selected_keyframes] });
 				});
 			});
 			this.scrolling_layer.add(this.transformer);
@@ -241,7 +241,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 
 		{ //initialize playback head
 			this.playback_head = new Konva.Line({
-				x: this.milliseconds_to_x_coord(this.current_design.evaluator_params.time),
+				x: this.milliseconds_to_x_coord(this.pattern_design.evaluator_params.time),
 				y: 0,
 				points: [
 					-timestamp_rect_height/3,timestamp_rect_height/2,
@@ -258,10 +258,10 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 				this.playback_head.x(Math.max(this.playback_head.x(), this.x_axis_left_padding_pixels));
 				this.playback_head.y(0);
 				const time = this.x_coord_to_milliseconds(this.playback_head.x());
-				this.current_design.update_evaluator_params("time", time);
+				this.pattern_design.update_evaluator_params("time", time);
 			});
-			this.current_design.state_change_events.addEventListener("parameters_update", _ev => {
-				this.playback_head.x(this.milliseconds_to_x_coord(this.current_design.evaluator_params.time));
+			this.pattern_design.state_change_events.addEventListener("parameters_update", _ev => {
+				this.playback_head.x(this.milliseconds_to_x_coord(this.pattern_design.evaluator_params.time));
 			});
 			this.playback_head.on("mouseenter", _ev => {
 				document.body.style.cursor = "ew-resize";
@@ -367,9 +367,9 @@ class KonvaTimelineKeyframe {
 			this.select_this(ev.evt.ctrlKey, false);
 
 			if (ev.evt.altKey) {
-				timeline_stage.current_design.save_state();
-				const deleted_keyframes = timeline_stage.current_design.delete_keyframes([...timeline_stage.current_design.selected_keyframes]);
-				timeline_stage.current_design.commit_operation({ deleted_keyframes });
+				timeline_stage.pattern_design.save_state();
+				const deleted_keyframes = timeline_stage.pattern_design.delete_keyframes([...timeline_stage.pattern_design.selected_keyframes]);
+				timeline_stage.pattern_design.commit_operation({ deleted_keyframes });
 				return;
 			}
 		});
@@ -407,22 +407,22 @@ class KonvaTimelineKeyframe {
 		timeline_stage.scrolling_layer.add(this.line);
 
 		this.listener_abort = new AbortController();
-		timeline_stage.current_design.state_change_events.addEventListener("kf_delete", ev => {
+		timeline_stage.pattern_design.state_change_events.addEventListener("kf_delete", ev => {
 			if (ev.detail.keyframe != keyframe) return;
 			this.destroy();
 		}, { signal: this.listener_abort.signal });
 
-		timeline_stage.current_design.state_change_events.addEventListener("kf_update", ev => {
+		timeline_stage.pattern_design.state_change_events.addEventListener("kf_update", ev => {
 			if (ev.detail.keyframe != keyframe) return;
 			this.update_time({ time: keyframe.time });
 		}, { signal: this.listener_abort.signal });
 
-		timeline_stage.current_design.state_change_events.addEventListener("kf_select", ev => {
+		timeline_stage.pattern_design.state_change_events.addEventListener("kf_select", ev => {
 			if (ev.detail.keyframe != keyframe) return;
 			this.update_select(true);
 		}, { signal: this.listener_abort.signal });
 
-		timeline_stage.current_design.state_change_events.addEventListener("kf_deselect", ev => {
+		timeline_stage.pattern_design.state_change_events.addEventListener("kf_deselect", ev => {
 			if (ev.detail.keyframe != keyframe) return;
 			this.update_select(false);
 		}, { signal: this.listener_abort.signal });
@@ -432,7 +432,7 @@ class KonvaTimelineKeyframe {
 		keyframe[KonvaTimelineKeyframeSymbol] = this;
 
 		this.update_time({ time: keyframe.time });
-		this.update_select(timeline_stage.current_design.is_keyframe_selected(keyframe));
+		this.update_select(timeline_stage.pattern_design.is_keyframe_selected(keyframe));
 	}
 
 	destroy() {
@@ -447,13 +447,13 @@ class KonvaTimelineKeyframe {
 	 * @param {boolean} dont_deselect
 	 */
 	select_this(ctrlKey, dont_deselect) {
-		if (this.timeline_stage.current_design.is_keyframe_selected(this.keyframe)) {
-			if (ctrlKey && !dont_deselect) this.timeline_stage.current_design.deselect_keyframes([this.keyframe]);
+		if (this.timeline_stage.pattern_design.is_keyframe_selected(this.keyframe)) {
+			if (ctrlKey && !dont_deselect) this.timeline_stage.pattern_design.deselect_keyframes([this.keyframe]);
 			return;
 		}
 
-		if (!ctrlKey) this.timeline_stage.current_design.deselect_all_keyframes();
-		this.timeline_stage.current_design.select_keyframes([this.keyframe]);
+		if (!ctrlKey) this.timeline_stage.pattern_design.deselect_all_keyframes();
+		this.timeline_stage.pattern_design.select_keyframes([this.keyframe]);
 	}
 
 	/**

@@ -325,6 +325,7 @@ class KonvaTimelineKeyframe {
 
 		/** @type {import("konva/lib/shapes/Label.js").TagConfig} */
 		const shadow_settings = {
+			shadowForStrokeEnabled: false,
 			shadowColor: getComputedStyle(document.body).getPropertyValue("--keyframe-flag-shadow"),
 			shadowBlur: 3,
 			shadowOffset: { x: 1, y: 1 } ,
@@ -397,10 +398,12 @@ class KonvaTimelineKeyframe {
 			this.update_time({ time: this.timeline_stage.raw_x_to_t({ raw_x: this.flag.x(), snap: true }) });
 		});
 
-		this.line = new Konva.Line({
-			points: [0, this.ycoord, 0, timeline_stage.fullHeight],
-			stroke: getComputedStyle(document.body).getPropertyValue("--keyframe-flag-fill"),
-			strokeWidth: 1,
+		this.line = new Konva.Rect({
+			y: this.ycoord,
+			width: 0.1,
+			opacity: 0.65,
+			height: timeline_stage.fullHeight,
+			fill: getComputedStyle(document.body).getPropertyValue("--keyframe-flag-fill"),
 			listening: false,
 			...shadow_settings,
 		});
@@ -472,7 +475,7 @@ class KonvaTimelineKeyframe {
 		const x = this.timeline_stage.milliseconds_to_x_coord(time);
 		this.flag.x(x);
 		this.flag.y(this.ycoord);
-		this.line.points([x, this.ycoord, x, this.timeline_stage.fullHeight]);
+		this.line.x(x-this.line.width()/2);
 		this.flag.getText().text(milliseconds_to_hhmmssms_format(time).slice(-6));
 		this.keyframe.set_time(time);
 	}

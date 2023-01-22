@@ -401,7 +401,7 @@ class KonvaTimelineKeyframe {
 		this.line = new Konva.Rect({
 			y: this.ycoord,
 			width: 0.1,
-			opacity: 0.65,
+			// opacity: 0.65,
 			height: timeline_stage.fullHeight,
 			fill: getComputedStyle(document.body).getPropertyValue("--keyframe-flag-fill"),
 			listening: false,

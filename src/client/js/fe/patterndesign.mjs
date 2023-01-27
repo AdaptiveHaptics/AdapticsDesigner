@@ -4,8 +4,7 @@
 /** @typedef {import("./keyframes/index.mjs").MAHKeyframeFE} MAHKeyframeFE */
 /** @typedef {import("../pattern-evaluator.mjs").PatternEvaluatorParameters} PatternEvaluatorParameters */
 /**
- * @template T
- * @template K
+ * @template T, K
  * @typedef {import("../../../shared/util").ReqProp<T, K>} ReqProp
  */
 /**

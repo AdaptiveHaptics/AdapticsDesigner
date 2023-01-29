@@ -331,9 +331,10 @@ export class PatternEvaluator {
 	/**
 	 *
 	 * @param {PatternEvaluatorParameters} p
-	 * @returns {{ coords: { x: number, y: number, z: number }, intensity: number }}
+	 * @returns {{ coords: { x: number, y: number, z: number }, intensity: number, pattern_time: number }}
 	 */
 	eval_brush_at_anim_local_time(p) {
+		const pattern_time = p.time;
 		const path_eval = this.eval_path_at_anim_local_time(p);
 
 		const brush_coords_offset = this.eval_hapev2_primitive_into_mah_units(p, path_eval.brush);
@@ -343,7 +344,8 @@ export class PatternEvaluator {
 				y: path_eval.coords.y + brush_coords_offset.y,
 				z: path_eval.coords.z,
 			},
-			intensity: path_eval.intensity
+			intensity: path_eval.intensity,
+			pattern_time
 		};
 	}
 

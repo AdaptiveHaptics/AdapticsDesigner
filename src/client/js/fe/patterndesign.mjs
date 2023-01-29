@@ -16,6 +16,7 @@
 /** @type {MidAirHapticsAnimationFileFormat['$REVISION']} */
 const MAH_$REVISION = "0.0.4-alpha.1";
 
+import { DeviceWSController } from "../device-ws-controller.mjs";
 import { PatternEvaluator } from "../pattern-evaluator.mjs";
 import { BoundsCheck } from "./keyframes/bounds-check.mjs";
 import { create_correct_keyframefe_wrapper, MAHKeyframePauseFE, MAHKeyframeStandardFE, NewKeyframeCommon } from "./keyframes/index.mjs";
@@ -86,6 +87,7 @@ export class MAHPatternDesignFE {
 		this.state_change_events = new StateChangeEventTarget();
 		this.state_change_events.addEventListener("rerender", ev => console.info(ev));
 
+		//pattern eval
 		/** @type {PatternEvaluatorParameters}  */
 		this.evaluator_params = { time: 0, user_parameters: new Map() };
 		this.pattern_evaluator = new PatternEvaluator(this.filedata);
@@ -395,6 +397,19 @@ export class MAHPatternDesignFE {
 		const sce = new StateChangeEvent("playback_update", { detail: {} });
 		this.state_change_events.dispatchEvent(sce);
 		return eval_result;
+	}
+
+	/**
+	 *
+	 * @param {string | URL} url
+	 */
+	connect_websocket(url) {
+		if (this.websocket) this.websocket.destroy();
+		this.websocket = new DeviceWSController(this, url);
+	}
+	disconnect_websocket() {
+		if (this.websocket) this.websocket.destroy();
+		this.websocket = null;
 	}
 
 

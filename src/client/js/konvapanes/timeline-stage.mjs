@@ -260,8 +260,8 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 				const time = this.x_coord_to_milliseconds(this.playback_head.x());
 				this.pattern_design.update_evaluator_params("time", time);
 			});
-			this.pattern_design.state_change_events.addEventListener("parameters_update", _ev => {
-				this.playback_head.x(this.milliseconds_to_x_coord(this.pattern_design.evaluator_params.time));
+			this.pattern_design.state_change_events.addEventListener("playback_update", _ev => {
+				this.playback_head.x(this.milliseconds_to_x_coord(this.pattern_design.last_eval[0].pattern_time));
 			});
 			this.playback_head.on("mouseenter", _ev => {
 				document.body.style.cursor = "ew-resize";

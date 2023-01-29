@@ -14,8 +14,17 @@
 <body>
 	<div class="app">
 		<div class="titlebar">
-			<span class="filename">test.json</span>
-			<span class="savedstate">loading....</span>
+			<div class="isection file">
+				<!-- <span class="icon">💾</span> -->
+				<span class="filename">test.json</span>
+				<span class="status savedstate">loading....</span>
+			</div>
+			<div class="verticalrule"></div>
+			<div class="isection websocket">
+				<span class="icon">⥮</span>
+				<input class="websocketurl" type="text" value="ws://127.0.0.1:8080/" disabled>
+				<span class="status websocketstate">loading....</span>
+			</div>
 		</div>
 		<div class="mainsplitgrid">
 			<div class="left">

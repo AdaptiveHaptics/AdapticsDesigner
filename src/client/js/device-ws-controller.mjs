@@ -1,3 +1,4 @@
+/** @typedef {import("./fe/patterndesign.mjs").MAHAnimationFileFormatFE} MAHAnimationFileFormatFE */
 /** @typedef {import("./fe/patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
 /**
  * @template T, K
@@ -5,6 +6,7 @@
  */
 
 export class DeviceWSController {
+	#destroyed = false;
 
 	/**
 	 *
@@ -22,12 +24,13 @@ export class DeviceWSController {
 
 		this.pattern_design.state_change_events.addEventListener("commit_update", ev => {
 			if (ev.detail.committed) {
-				this.update_pattern();
+				this.update_pattern(this.pattern_design.filedata);
 			}
 		});
 	}
 
 	#initws() {
+		if (this.#destroyed) return;
 		this.ws = new WebSocket(this.url);
 		this.ws.addEventListener("error", ev => {
 			console.error(ev);
@@ -48,21 +51,38 @@ export class DeviceWSController {
 		});
 	}
 
+	is_connected() {
+		return this.ws?.readyState == WebSocket.OPEN;
+	}
+
 	/**
 	 *
 	 * @returns {Promise<void>}
 	 */
 	async wait_connected() {
-		return await new Promise((res, rej) => {
-			if (this.ws?.readyState == WebSocket.OPEN) return res();
+		return await new Promise((res) => {
+			if (this.is_connected()) return res();
 			else {
 				this.state_change_events.addEventListener("connected", () => res());
 			}
 		});
 	}
 
-	update_pattern() {
-		this.send("update_pattern", { patternjson: JSON.stringify(this.pattern_design.filedata) });
+	/**
+	 *
+	 * @param {MAHAnimationFileFormatFE} pattern
+	 */
+	update_pattern(pattern) {
+		this.send("update_pattern", { pattern_json: JSON.stringify(pattern) });
+	}
+
+	/**
+	 *
+	 * @param {number} playstart time in milliseconds
+	 */
+	update_playstart(playstart) {
+		const playstart_offset = playstart - Date.now();
+		this.send("update_playstart", { playstart_offset: playstart_offset });
 	}
 
 	/**
@@ -82,6 +102,7 @@ export class DeviceWSController {
 
 	destroy() {
 		this.ws?.close();
+		this.#destroyed = true;
 	}
 }
 

@@ -19,7 +19,7 @@ export class ParameterEditor {
 			this._timecontrol_input.addEventListener("input", _ev => {
 				const v = parseFloat(this._timecontrol_input.value);
 				if (Number.isFinite(v)) {
-					this._pattern_design.update_evaluator_params("time", Math.max(v, 0));
+					this._pattern_design.update_pattern_time(Math.max(v, 0));
 				} else {
 					this._timecontrol_input.value = this._pattern_design.evaluator_params.time.toFixed(0);
 				}
@@ -31,29 +31,21 @@ export class ParameterEditor {
 			/** @type {HTMLButtonElement} */
 			this._timecontrol_reset = notnull(this._timecontrol_div.querySelector("button.reset"));
 
-			this._timecontrol_playstart = 0;
-			const tickplayback = () => {
-				if (this.is_paused()) return;
-				const time = Date.now()-this.timecontrol_playstart;
-				this._pattern_design.update_evaluator_params("time", time);
-				requestAnimationFrame(tickplayback);
-			};
 			this._timecontrol_play.addEventListener("click", _ev => {
 				this._timecontrol_play.style.display = "none";
 				this._timecontrol_pause.style.display = "";
-				this.timecontrol_playstart = Date.now() - this._pattern_design.evaluator_params.time;
-				tickplayback();
+				this._pattern_design.update_playstart(Date.now() - this._pattern_design.evaluator_params.time);
 			});
 			this._timecontrol_pause.addEventListener("click", _ev => {
 				this._timecontrol_play.style.display = "";
 				this._timecontrol_pause.style.display = "none";
-				this.timecontrol_playstart = 0;
+				this._pattern_design.update_playstart(0);
 			});
 			this._timecontrol_reset.addEventListener("click", _ev => {
 				this._timecontrol_play.style.display = "";
 				this._timecontrol_pause.style.display = "none";
-				this.timecontrol_playstart = 0;
-				this._pattern_design.update_evaluator_params("time", 0);
+				this._pattern_design.update_playstart(0);
+				this._pattern_design.update_pattern_time(0);
 			});
 		}
 
@@ -68,21 +60,6 @@ export class ParameterEditor {
 		});
 
 		this.update_controls();
-	}
-
-	get timecontrol_playstart() {
-		return this._timecontrol_playstart;
-	}
-	set timecontrol_playstart(v) {
-		this._pattern_design.websocket?.update_playstart(v);
-		this._timecontrol_playstart = v;
-	}
-
-	is_playing() {
-		return this.timecontrol_playstart != 0;
-	}
-	is_paused() {
-		return this.timecontrol_playstart == 0;
 	}
 
 	// append_param_control(key, val) {

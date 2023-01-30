@@ -10,23 +10,14 @@ export class DeviceWSController {
 
 	/**
 	 *
-	 * @param {MAHPatternDesignFE} pattern_design
 	 * @param {string | URL} url_arg
 	 */
-	constructor(pattern_design, url_arg) {
-		this.pattern_design = pattern_design;
-
+	constructor(url_arg) {
 		this.url = new URL(url_arg);
 		this.url.protocol = "ws";
 
 		this.state_change_events = new WebsocketStateChangeEventTarget();
 		this.#initws();
-
-		this.pattern_design.state_change_events.addEventListener("commit_update", ev => {
-			if (ev.detail.committed) {
-				this.update_pattern(this.pattern_design.filedata);
-			}
-		});
 	}
 
 	#initws() {

@@ -32,7 +32,7 @@ import { create_correct_keyframefe_wrapper, MAHKeyframePauseFE, MAHKeyframeStand
  * @property {{ keyframe: MAHKeyframeFE }} kf_reorder
  * @property {{ committed: boolean }} commit_update
  * @property {{ }} playback_update
- * @property {{ }} parameters_update
+ * @property {{ time: boolean }} parameters_update
  */
 
 /**
@@ -94,13 +94,22 @@ export class MAHPatternDesignFE {
 		this.state_change_events.addEventListener("commit_update", ev => {
 			if (ev.detail.committed) {
 				this.pattern_evaluator = new PatternEvaluator(this.filedata);
-				this.#eval_pattern();
+				this.websocket?.update_pattern(this.filedata);
+				this.#_eval_pattern();
 			}
 		});
-		this.state_change_events.addEventListener("parameters_update", _ev => {
-			this.#eval_pattern();
+		this.state_change_events.addEventListener("parameters_update", ev => {
+			if (this.is_playing() && this.websocket?.is_connected()) {
+				if (ev.detail.time) {
+					//wait for playback_update from websocket
+				} else {
+					this.websocket.update_parameters(this.evaluator_params);
+				}
+			} else {
+				this.#_eval_pattern();
+			}
 		});
-		this.last_eval = this.#eval_pattern(); //set in constructor for typecheck
+		this.last_eval = this.#_eval_pattern(); //set in constructor for typecheck
 	}
 
 
@@ -380,18 +389,59 @@ export class MAHPatternDesignFE {
 	}
 
 
+
+	#_playstart_timestamp = 0;
+	#_tick_playback() {
+		if (!this.is_playing()) return;
+		const time = Date.now()-this.#_playstart_timestamp;
+		this.#_update_pattern_time(time);
+		requestAnimationFrame(() => this.#_tick_playback());
+	}
+	is_playing() {
+		return this.#_playstart_timestamp != 0;
+	}
+
 	/**
-	 * @template {keyof PatternEvaluatorParameters} K
-	 * @param {K} param
-	 * @param {PatternEvaluatorParameters[K]} value
+	 *
+	 * @param {number} playstart_timestamp in milliseconds
 	 */
-	update_evaluator_params(param, value) {
-		this.evaluator_params[param] = value;
-		const ce = new StateChangeEvent("parameters_update", { detail: {} });
+	update_playstart(playstart_timestamp) {
+		this.#_playstart_timestamp = playstart_timestamp;
+		this.websocket?.update_playstart(playstart_timestamp);
+		if (this.is_playing()) {
+			this.#_tick_playback();
+		}
+	}
+
+	/**
+	 *
+	 * @param {number} time
+	 */
+	update_pattern_time(time) {
+		if (this.is_playing()) return; //ignore during playback
+		this.#_update_pattern_time(time);
+	}
+	/**
+	 *
+	 * @param {number} time
+	 */
+	#_update_pattern_time(time) {
+		this.evaluator_params.time = time;
+		const ce = new StateChangeEvent("parameters_update", { detail: { time: true } });
 		this.state_change_events.dispatchEvent(ce);
 	}
 
-	#eval_pattern() {
+	/**
+	 * @param {string} param
+	 * @param {number} value
+	 */
+	update_evaluator_user_params(param, value) {
+		this.evaluator_params.user_parameters.set(param, value);
+		const ce = new StateChangeEvent("parameters_update", { detail: { time: false } });
+		this.state_change_events.dispatchEvent(ce);
+	}
+
+	#_eval_pattern() {
 		const eval_result = this.pattern_evaluator.eval_brush_at_anim_local_time_for_max_t(this.evaluator_params);
 		this.last_eval = eval_result;
 		const sce = new StateChangeEvent("playback_update", { detail: {} });
@@ -399,13 +449,23 @@ export class MAHPatternDesignFE {
 		return eval_result;
 	}
 
+
+
 	/**
 	 *
 	 * @param {string | URL} url
 	 */
 	connect_websocket(url) {
 		if (this.websocket) this.websocket.destroy();
-		this.websocket = new DeviceWSController(this, url);
+		const websocket = new DeviceWSController(url);
+		websocket.state_change_events.addEventListener("connected", _ev => {
+			websocket.update_pattern(this.filedata);
+			websocket.update_playstart(this.#_playstart_timestamp);
+		});
+		websocket.state_change_events.addEventListener("disconnected", _ev => {
+			this.#_eval_pattern();
+		});
+		this.websocket = websocket;
 	}
 	disconnect_websocket() {
 		if (this.websocket) this.websocket.destroy();

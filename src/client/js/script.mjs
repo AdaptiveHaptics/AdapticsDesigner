@@ -36,6 +36,10 @@ const patternDiv = /** @type {HTMLDivElement} */ (mainsplitgridDiv.querySelector
 const timelineDiv = /** @type {HTMLDivElement} */ (document.querySelector("div.timeline"));
 const savedstateSpan = /** @type {HTMLSpanElement} */ (document.querySelector("span.savedstate"));
 
+const websocketurl_input = /** @type {HTMLInputElement} */ (document.querySelector(".isection.websocket input.websocketurl"));
+const websocket_connect_button = /** @type {HTMLButtonElement} */ (document.querySelector(".isection.websocket button.connect"));
+const websocket_disconnect_button = /** @type {HTMLButtonElement} */ (document.querySelector(".isection.websocket button.disconnect"));
+
 
 const _mainsplit = SplitGrid({
 	minSize: 5,
@@ -121,6 +125,19 @@ document.addEventListener("paste", ev => {
 		primary_design.paste_clipboard();
 		ev.preventDefault();
 	}
+});
+
+websocket_connect_button.addEventListener("click", () => {
+	websocket_connect_button.disabled = true;
+	websocket_disconnect_button.disabled = false;
+	websocketurl_input.disabled = true;
+	primary_design.connect_websocket(websocketurl_input.value);
+});
+websocket_disconnect_button.addEventListener("click", () => {
+	websocket_connect_button.disabled = true;
+	websocket_disconnect_button.disabled = false;
+	websocketurl_input.disabled = false;
+	primary_design.disconnect_websocket();
 });
 
 primary_design.state_change_events.addEventListener("commit_update", ev => {

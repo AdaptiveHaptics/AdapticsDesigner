@@ -1,5 +1,6 @@
 /** @typedef {import("./fe/patterndesign.mjs").MAHAnimationFileFormatFE} MAHAnimationFileFormatFE */
 /** @typedef {import("./fe/patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
+/** @typedef {import("./pattern-evaluator.mjs").PatternEvaluatorParameters} PatternEvaluatorParameters */
 /**
  * @template T, K
  * @typedef {import("../../shared/util").ReqProp<T, K>} ReqProp
@@ -74,6 +75,14 @@ export class DeviceWSController {
 	update_playstart(playstart) {
 		const playstart_offset = playstart - Date.now();
 		this.send("update_playstart", { playstart_offset: playstart_offset });
+	}
+
+	/**
+	 *
+	 * @param {PatternEvaluatorParameters} evaluator_params
+	 */
+	update_parameters(evaluator_params) {
+		this.send("update_parameters", { evaluator_params: evaluator_params });
 	}
 
 	/**

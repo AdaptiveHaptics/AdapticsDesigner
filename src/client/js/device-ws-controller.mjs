@@ -7,7 +7,7 @@
  */
 
 export class DeviceWSController {
-	#destroyed = false;
+	#_destroyed = false;
 
 	/**
 	 *
@@ -22,7 +22,7 @@ export class DeviceWSController {
 	}
 
 	#initws() {
-		if (this.#destroyed) return;
+		if (this.#_destroyed) return;
 		this.ws = new WebSocket(this.url);
 		this.ws.addEventListener("error", ev => {
 			console.error(ev);
@@ -74,7 +74,7 @@ export class DeviceWSController {
 	 */
 	update_playstart(playstart) {
 		const playstart_offset = playstart - Date.now();
-		this.send("update_playstart", { playstart_offset: playstart_offset });
+		this.send("update_playstart", { playstart, playstart_offset });
 	}
 
 	/**
@@ -82,7 +82,7 @@ export class DeviceWSController {
 	 * @param {PatternEvaluatorParameters} evaluator_params
 	 */
 	update_parameters(evaluator_params) {
-		this.send("update_parameters", { evaluator_params: evaluator_params });
+		this.send("update_parameters", { evaluator_params });
 	}
 
 	/**
@@ -102,7 +102,11 @@ export class DeviceWSController {
 
 	destroy() {
 		this.ws?.close();
-		this.#destroyed = true;
+		this.#_destroyed = true;
+	}
+
+	get destroyed() {
+		return this.#_destroyed;
 	}
 }
 

@@ -119,6 +119,9 @@ div.titlebar span.icon {
     /* display: flex; */
     /* align-items: center; */
 }
+div.titlebar button {
+    height: 100%;
+}
 
 div.mainsplitgrid {
     display: grid;
@@ -355,4 +358,8 @@ button {
     cursor: pointer;
     background-color: var(--background-primary);
     color: var(--text-normal);
+}
+button:disabled {
+    background-color: var(--background-primary-disabled);
+    color: var(--text-low-priority);
 }

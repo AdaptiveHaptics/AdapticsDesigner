@@ -39,6 +39,7 @@ const savedstateSpan = /** @type {HTMLSpanElement} */ (document.querySelector("s
 const websocketurl_input = /** @type {HTMLInputElement} */ (document.querySelector(".isection.websocket input.websocketurl"));
 const websocket_connect_button = /** @type {HTMLButtonElement} */ (document.querySelector(".isection.websocket button.connect"));
 const websocket_disconnect_button = /** @type {HTMLButtonElement} */ (document.querySelector(".isection.websocket button.disconnect"));
+const websocket_state_span = /** @type {HTMLButtonElement} */ (document.querySelector(".isection.websocket span.websocketstate"));
 
 
 const _mainsplit = SplitGrid({
@@ -128,14 +129,22 @@ document.addEventListener("paste", ev => {
 });
 
 websocket_connect_button.addEventListener("click", () => {
-	websocket_connect_button.disabled = true;
-	websocket_disconnect_button.disabled = false;
+	websocket_connect_button.style.display = "none";
+	websocket_disconnect_button.style.display = "";
 	websocketurl_input.disabled = true;
 	primary_design.connect_websocket(websocketurl_input.value);
+	const websocket = primary_design.websocket;
+	if (websocket == null) throw new Error("websocket == null");
+	websocket.state_change_events.addEventListener("connected", _ev => {
+		websocket_state_span.textContent = "connected";
+	});
+	websocket.state_change_events.addEventListener("disconnected", _ev => {
+		websocket_state_span.textContent =  websocket.destroyed ? "disconnected" : "reconnecting...";
+	});
 });
 websocket_disconnect_button.addEventListener("click", () => {
-	websocket_connect_button.disabled = true;
-	websocket_disconnect_button.disabled = false;
+	websocket_connect_button.style.display = "";
+	websocket_disconnect_button.style.display = "none";
 	websocketurl_input.disabled = false;
 	primary_design.disconnect_websocket();
 });

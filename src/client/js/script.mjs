@@ -129,10 +129,12 @@ document.addEventListener("paste", ev => {
 });
 
 websocket_connect_button.addEventListener("click", () => {
+	primary_design.connect_websocket(websocketurl_input.value);
+
 	websocket_connect_button.style.display = "none";
 	websocket_disconnect_button.style.display = "";
 	websocketurl_input.disabled = true;
-	primary_design.connect_websocket(websocketurl_input.value);
+	websocket_state_span.textContent = "connecting...";
 	const websocket = primary_design.websocket;
 	if (websocket == null) throw new Error("websocket == null");
 	websocket.state_change_events.addEventListener("connected", _ev => {
@@ -143,10 +145,11 @@ websocket_connect_button.addEventListener("click", () => {
 	});
 });
 websocket_disconnect_button.addEventListener("click", () => {
+	primary_design.disconnect_websocket();
+
 	websocket_connect_button.style.display = "";
 	websocket_disconnect_button.style.display = "none";
 	websocketurl_input.disabled = false;
-	primary_design.disconnect_websocket();
 });
 
 primary_design.state_change_events.addEventListener("commit_update", ev => {

@@ -465,6 +465,11 @@ export class MAHPatternDesignFE {
 		websocket.state_change_events.addEventListener("disconnected", _ev => {
 			this.#_eval_pattern();
 		});
+		websocket.state_change_events.addEventListener("playback_update", ev => {
+			this.last_eval = ev.detail.evals;
+			const sce = new StateChangeEvent("playback_update", { detail: {} });
+			this.state_change_events.dispatchEvent(sce);
+		});
 		this.websocket = websocket;
 	}
 	disconnect_websocket() {

@@ -39,7 +39,7 @@ export class DeviceWSController {
 		});
 		this.ws.addEventListener("message", ev => {
 			const m = JSON.parse(ev.data);
-			console.log(m);
+			this.handle_message(m);
 		});
 	}
 
@@ -92,13 +92,33 @@ export class DeviceWSController {
 	 */
 	send(cmd, data) {
 		if (!this.ws) throw new Error("ws not initialized");
-		if (this.ws.readyState != WebSocket.OPEN) throw new Error("ws not OPEN");
+		if (this.ws.readyState != WebSocket.OPEN) return console.warn("ws not OPEN");
 		const o = {
 			cmd,
 			data
 		};
 		this.ws.send(JSON.stringify(o));
 	}
+
+	/**
+	 *
+	 * @param {{ cmd: string, data: { [x: string]: any } }} m
+	 */
+	handle_message(m) {
+		switch (m.cmd) {
+			case "playback_update": {
+				this.state_change_events.dispatchEvent(new WebsocketStateEvent("playback_update", { detail: { evals: m.data.evals } }));
+				return;
+			}
+			case "ignoreme": {
+				break;
+			}
+			default:
+				throw new Error(`Unknown websocket message '${m.cmd}'`);
+		}
+		console.log(m);
+	}
+
 
 	destroy() {
 		this.ws?.close();
@@ -115,6 +135,7 @@ export class DeviceWSController {
  * @typedef {Object} WebsocketStateEventMap
  * @property {{ }} connected
  * @property {{ }} disconnected
+ * @property {{ evals: ReturnType<typeof import("./pattern-evaluator.mjs").PatternEvaluator.prototype.eval_brush_at_anim_local_time>[] }} playback_update
  */
 
 /**

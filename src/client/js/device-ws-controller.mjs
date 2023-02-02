@@ -121,8 +121,8 @@ export class DeviceWSController {
 
 
 	destroy() {
-		this.ws?.close();
 		this.#_destroyed = true;
+		this.ws?.close();
 	}
 
 	get destroyed() {

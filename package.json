@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "json-schema-to-typescript": "^11.0.3",
     "konva": "^8.3.14",
     "split-grid": "^1.0.11"
   },

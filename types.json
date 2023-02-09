@@ -1,0 +1,376 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "MidAirHapticsAnimationFileFormat",
+  "type": "object",
+  "required": [
+    "$DATA_FORMAT",
+    "$REVISION",
+    "keyframes",
+    "name",
+    "projection",
+    "update_rate"
+  ],
+  "properties": {
+    "$DATA_FORMAT": {
+      "type": "string"
+    },
+    "$REVISION": {
+      "type": "string"
+    },
+    "keyframes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/MAHKeyframe"
+      }
+    },
+    "name": {
+      "type": "string"
+    },
+    "projection": {
+      "$ref": "#/definitions/Projection"
+    },
+    "update_rate": {
+      "type": "number",
+      "format": "double"
+    }
+  },
+  "definitions": {
+    "BrushWithTransition": {
+      "type": "object",
+      "required": [
+        "brush",
+        "transition"
+      ],
+      "properties": {
+        "brush": {
+          "$ref": "#/definitions/MAHBrush"
+        },
+        "transition": {
+          "$ref": "#/definitions/MAHTransition"
+        }
+      }
+    },
+    "CoordsWithTransition": {
+      "type": "object",
+      "required": [
+        "coords",
+        "transition"
+      ],
+      "properties": {
+        "coords": {
+          "$ref": "#/definitions/MAHCoords"
+        },
+        "transition": {
+          "$ref": "#/definitions/MAHTransition"
+        }
+      }
+    },
+    "IntensityWithTransition": {
+      "type": "object",
+      "required": [
+        "intensity",
+        "transition"
+      ],
+      "properties": {
+        "intensity": {
+          "$ref": "#/definitions/MAHIntensity"
+        },
+        "transition": {
+          "$ref": "#/definitions/MAHTransition"
+        }
+      }
+    },
+    "MAHBrush": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "params"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "enum": [
+                "Circle"
+              ]
+            },
+            "params": {
+              "type": "object",
+              "required": [
+                "radius"
+              ],
+              "properties": {
+                "radius": {
+                  "type": "number",
+                  "format": "double"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "params"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "enum": [
+                "Line"
+              ]
+            },
+            "params": {
+              "type": "object",
+              "required": [
+                "length",
+                "rotation",
+                "thickness"
+              ],
+              "properties": {
+                "length": {
+                  "type": "number",
+                  "format": "double"
+                },
+                "rotation": {
+                  "type": "number",
+                  "format": "double"
+                },
+                "thickness": {
+                  "type": "number",
+                  "format": "double"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "MAHCoords": {
+      "description": "x and y are used for the xy coordinate system in the 2d designer. z is intended to be orthogonal to the phased array",
+      "type": "object",
+      "required": [
+        "x",
+        "y",
+        "z"
+      ],
+      "properties": {
+        "x": {
+          "description": "in millimeters, [-100, 100]",
+          "type": "number",
+          "format": "double"
+        },
+        "y": {
+          "description": "in millimeters, [-100, 100]",
+          "type": "number",
+          "format": "double"
+        },
+        "z": {
+          "description": "in millimeters, [0, 100]",
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "MAHIntensity": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "params"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "enum": [
+                "Constant"
+              ]
+            },
+            "params": {
+              "type": "object",
+              "required": [
+                "value"
+              ],
+              "properties": {
+                "value": {
+                  "type": "number",
+                  "format": "double"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "params"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "enum": [
+                "Random"
+              ]
+            },
+            "params": {
+              "type": "object",
+              "required": [
+                "max",
+                "min"
+              ],
+              "properties": {
+                "max": {
+                  "type": "number",
+                  "format": "double"
+                },
+                "min": {
+                  "type": "number",
+                  "format": "double"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "MAHKeyframe": {
+      "oneOf": [
+        {
+          "description": "standard keyframe with coords, brush, intensity, and transitions",
+          "type": "object",
+          "required": [
+            "coords",
+            "time",
+            "type"
+          ],
+          "properties": {
+            "brush": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/BrushWithTransition"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "coords": {
+              "$ref": "#/definitions/CoordsWithTransition"
+            },
+            "intensity": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/IntensityWithTransition"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "time": {
+              "type": "number",
+              "format": "double"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "standard"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Holds the coordinates of the previous keyframe until elapsed. can be used to animate the brush/intensity at a static location in the path, or just to create a pause in the animation path.",
+          "type": "object",
+          "required": [
+            "time",
+            "type"
+          ],
+          "properties": {
+            "brush": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/BrushWithTransition"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "intensity": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/IntensityWithTransition"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "time": {
+              "type": "number",
+              "format": "double"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "pause"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "MAHTransition": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "params"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "enum": [
+                "Linear"
+              ]
+            },
+            "params": {
+              "type": "object"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "params"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "enum": [
+                "Step"
+              ]
+            },
+            "params": {
+              "type": "object"
+            }
+          }
+        }
+      ]
+    },
+    "Projection": {
+      "type": "string",
+      "enum": [
+        "plane",
+        "palm"
+      ]
+    }
+  }
+}

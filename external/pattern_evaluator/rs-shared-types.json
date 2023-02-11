@@ -1,0 +1,451 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Tuple_of_MidAirHapticsAnimationFileFormat_and_PatternEvaluatorParameters_and_BrushAtAnimLocalTime_and_Array_of_BrushAtAnimLocalTime",
+  "type": "array",
+  "items": [
+    {
+      "$ref": "#/definitions/MidAirHapticsAnimationFileFormat"
+    },
+    {
+      "$ref": "#/definitions/PatternEvaluatorParameters"
+    },
+    {
+      "$ref": "#/definitions/BrushAtAnimLocalTime"
+    },
+    {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/BrushAtAnimLocalTime"
+      }
+    }
+  ],
+  "maxItems": 4,
+  "minItems": 4,
+  "definitions": {
+    "BrushAtAnimLocalTime": {
+      "type": "object",
+      "required": [
+        "coords",
+        "intensity",
+        "pattern_time"
+      ],
+      "properties": {
+        "coords": {
+          "$ref": "#/definitions/MAHCoords"
+        },
+        "intensity": {
+          "type": "number",
+          "format": "double"
+        },
+        "pattern_time": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "BrushWithTransition": {
+      "type": "object",
+      "required": [
+        "brush",
+        "transition"
+      ],
+      "properties": {
+        "brush": {
+          "$ref": "#/definitions/MAHBrush"
+        },
+        "transition": {
+          "$ref": "#/definitions/MAHTransition"
+        }
+      }
+    },
+    "CoordsWithTransition": {
+      "type": "object",
+      "required": [
+        "coords",
+        "transition"
+      ],
+      "properties": {
+        "coords": {
+          "$ref": "#/definitions/MAHCoords"
+        },
+        "transition": {
+          "$ref": "#/definitions/MAHTransition"
+        }
+      }
+    },
+    "DataFormatRevision": {
+      "type": "string",
+      "enum": [
+        "0.0.4-alpha.1"
+      ]
+    },
+    "IntensityWithTransition": {
+      "type": "object",
+      "required": [
+        "intensity",
+        "transition"
+      ],
+      "properties": {
+        "intensity": {
+          "$ref": "#/definitions/MAHIntensity"
+        },
+        "transition": {
+          "$ref": "#/definitions/MAHTransition"
+        }
+      }
+    },
+    "MAHBrush": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "params"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "enum": [
+                "circle"
+              ]
+            },
+            "params": {
+              "type": "object",
+              "required": [
+                "radius"
+              ],
+              "properties": {
+                "radius": {
+                  "type": "number",
+                  "format": "double"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "params"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "enum": [
+                "line"
+              ]
+            },
+            "params": {
+              "type": "object",
+              "required": [
+                "length",
+                "rotation",
+                "thickness"
+              ],
+              "properties": {
+                "length": {
+                  "type": "number",
+                  "format": "double"
+                },
+                "rotation": {
+                  "type": "number",
+                  "format": "double"
+                },
+                "thickness": {
+                  "type": "number",
+                  "format": "double"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "MAHCoords": {
+      "description": "x and y are used for the xy coordinate system in the 2d designer. z is intended to be orthogonal to the phased array",
+      "type": "object",
+      "required": [
+        "x",
+        "y",
+        "z"
+      ],
+      "properties": {
+        "x": {
+          "description": "in millimeters, [-100, 100]",
+          "type": "number",
+          "format": "double"
+        },
+        "y": {
+          "description": "in millimeters, [-100, 100]",
+          "type": "number",
+          "format": "double"
+        },
+        "z": {
+          "description": "in millimeters, [0, 100]",
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "MAHIntensity": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "params"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "enum": [
+                "constant"
+              ]
+            },
+            "params": {
+              "type": "object",
+              "required": [
+                "value"
+              ],
+              "properties": {
+                "value": {
+                  "type": "number",
+                  "format": "double"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "params"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "enum": [
+                "random"
+              ]
+            },
+            "params": {
+              "type": "object",
+              "required": [
+                "max",
+                "min"
+              ],
+              "properties": {
+                "max": {
+                  "type": "number",
+                  "format": "double"
+                },
+                "min": {
+                  "type": "number",
+                  "format": "double"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "MAHKeyframe": {
+      "oneOf": [
+        {
+          "description": "standard keyframe with coords, brush, intensity, and transitions",
+          "type": "object",
+          "required": [
+            "coords",
+            "time",
+            "type"
+          ],
+          "properties": {
+            "brush": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/BrushWithTransition"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "coords": {
+              "$ref": "#/definitions/CoordsWithTransition"
+            },
+            "intensity": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/IntensityWithTransition"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "time": {
+              "type": "number",
+              "format": "double"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "standard"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Holds the coordinates of the previous keyframe until elapsed. can be used to animate the brush/intensity at a static location in the path, or just to create a pause in the animation path.",
+          "type": "object",
+          "required": [
+            "time",
+            "type"
+          ],
+          "properties": {
+            "brush": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/BrushWithTransition"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "intensity": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/IntensityWithTransition"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "time": {
+              "type": "number",
+              "format": "double"
+            },
+            "type": {
+              "type": "string",
+              "enum": [
+                "pause"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "MAHTransition": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "params"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "enum": [
+                "linear"
+              ]
+            },
+            "params": {
+              "type": "object"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "params"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "enum": [
+                "step"
+              ]
+            },
+            "params": {
+              "type": "object"
+            }
+          }
+        }
+      ]
+    },
+    "MidAirHapticsAnimationFileFormat": {
+      "type": "object",
+      "required": [
+        "$DATA_FORMAT",
+        "$REVISION",
+        "keyframes",
+        "name",
+        "projection",
+        "update_rate"
+      ],
+      "properties": {
+        "$DATA_FORMAT": {
+          "$ref": "#/definitions/MidAirHapticsAnimationFileFormatDataFormatName"
+        },
+        "$REVISION": {
+          "$ref": "#/definitions/DataFormatRevision"
+        },
+        "keyframes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MAHKeyframe"
+          }
+        },
+        "name": {
+          "type": "string"
+        },
+        "projection": {
+          "$ref": "#/definitions/Projection"
+        },
+        "update_rate": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
+    "MidAirHapticsAnimationFileFormatDataFormatName": {
+      "type": "string",
+      "enum": [
+        "MidAirHapticsAnimationFileFormat"
+      ]
+    },
+    "PatternEvaluatorParameters": {
+      "type": "object",
+      "required": [
+        "time",
+        "user_parameters"
+      ],
+      "properties": {
+        "time": {
+          "type": "number",
+          "format": "double"
+        },
+        "user_parameters": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      }
+    },
+    "Projection": {
+      "type": "string",
+      "enum": [
+        "plane",
+        "palm"
+      ]
+    }
+  }
+}

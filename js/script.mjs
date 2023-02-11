@@ -27,14 +27,17 @@ const SplitGrid = /** @type {import("split-grid").default} */(/** @type {unknown
 
 /** @typedef {import("../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
-/** @typedef {import("../../shared/types").MAHKeyframeStandard} MAHKeyframeStandard */
-/** @typedef {import("../../shared/types").MAHKeyframePause} MAHKeyframePause */
 /** @typedef {import("../../shared/types").MidAirHapticsClipboardFormat} MidAirHapticsClipboardFormat */
 
 const mainsplitgridDiv = /** @type {HTMLDivElement} */ (document.querySelector("div.mainsplitgrid"));
 const patternDiv = /** @type {HTMLDivElement} */ (mainsplitgridDiv.querySelector("div.center"));
 const timelineDiv = /** @type {HTMLDivElement} */ (document.querySelector("div.timeline"));
 const savedstateSpan = /** @type {HTMLSpanElement} */ (document.querySelector("span.savedstate"));
+
+const websocketurl_input = /** @type {HTMLInputElement} */ (document.querySelector(".isection.websocket input.websocketurl"));
+const websocket_connect_button = /** @type {HTMLButtonElement} */ (document.querySelector(".isection.websocket button.connect"));
+const websocket_disconnect_button = /** @type {HTMLButtonElement} */ (document.querySelector(".isection.websocket button.disconnect"));
+const websocket_state_span = /** @type {HTMLButtonElement} */ (document.querySelector(".isection.websocket span.websocketstate"));
 
 
 const _mainsplit = SplitGrid({
@@ -121,6 +124,30 @@ document.addEventListener("paste", ev => {
 		primary_design.paste_clipboard();
 		ev.preventDefault();
 	}
+});
+
+websocket_connect_button.addEventListener("click", () => {
+	primary_design.connect_websocket(websocketurl_input.value);
+
+	websocket_connect_button.style.display = "none";
+	websocket_disconnect_button.style.display = "";
+	websocketurl_input.disabled = true;
+	websocket_state_span.textContent = "connecting...";
+	const websocket = primary_design.websocket;
+	if (websocket == null) throw new Error("websocket == null");
+	websocket.state_change_events.addEventListener("connected", _ev => {
+		websocket_state_span.textContent = "connected";
+	});
+	websocket.state_change_events.addEventListener("disconnected", _ev => {
+		websocket_state_span.textContent =  websocket.destroyed ? "disconnected" : "reconnecting...";
+	});
+});
+websocket_disconnect_button.addEventListener("click", () => {
+	primary_design.disconnect_websocket();
+
+	websocket_connect_button.style.display = "";
+	websocket_disconnect_button.style.display = "none";
+	websocketurl_input.disabled = false;
 });
 
 primary_design.state_change_events.addEventListener("commit_update", ev => {

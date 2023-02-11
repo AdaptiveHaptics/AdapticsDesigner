@@ -79,6 +79,10 @@ body {
     margin: 0;
 }
 
+*:disabled {
+    /* cursor: not-allowed; */
+}
+
 div.app {
     height: 100vh;
     width: 100vw;
@@ -90,13 +94,33 @@ div.titlebar {
     background-color: var(--background-titlebar);
     padding: 1.2ex;
     display: flex;
-    gap: 2ex;
+    gap: 3ex;
+    justify-content: start;
+    /* align-items: center; */
+}
+
+div.verticalrule {
+    width: 1px;
+    height: 100%;
+    background-color: var(--background-accent);
+}
+
+div.titlebar > div.isection {
+    display: flex;
+    gap: 1ex;
     justify-content: start;
     align-items: center;
 }
-span.savedstate {
+div.titlebar span.status {
     font-size: 0.9em;
     color: var(--text-low-priority);
+}
+div.titlebar span.icon {
+    /* display: flex; */
+    /* align-items: center; */
+}
+div.titlebar button {
+    height: 100%;
 }
 
 div.mainsplitgrid {
@@ -334,4 +358,8 @@ button {
     cursor: pointer;
     background-color: var(--background-primary);
     color: var(--text-normal);
+}
+button:disabled {
+    background-color: var(--background-primary-disabled);
+    color: var(--text-low-priority);
 }

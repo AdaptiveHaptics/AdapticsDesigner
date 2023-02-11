@@ -14,8 +14,19 @@
 <body>
 	<div class="app">
 		<div class="titlebar">
-			<span class="filename">test.json</span>
-			<span class="savedstate">loading....</span>
+			<div class="isection file">
+				<!-- <span class="icon">💾</span> -->
+				<span class="filename">test.json</span>
+				<span class="status savedstate">loading....</span>
+			</div>
+			<div class="verticalrule"></div>
+			<div class="isection websocket">
+				<span class="icon">⥮</span>
+				<input class="websocketurl" type="text" value="ws://127.0.0.1:8080/">
+				<button class="connect">Connect</button>
+				<button class="disconnect" style="display: none;">Disconnect</button>
+				<span class="status websocketstate">disconnected</span>
+			</div>
 		</div>
 		<div class="mainsplitgrid">
 			<div class="left">
@@ -24,7 +35,7 @@
 				</div>
 			</div>
 			<div class="gutter column leftcenter"></div>
-			<div class="center konvastagecontainer" tabindex="1">
+			<div class="center konvastagecontainer" tabindex="0">
 				<div id="patternstage" class="konvastage"></div>
 			</div>
 			<div class="gutter column centerright"></div>
@@ -104,8 +115,8 @@
 								</select>
 								<label><span class="labeltext">radius <span class="unit">mm</span></span><input type="number" name="radius" min="0" max="100"></label>
 								<label><span class="labeltext">length <span class="unit">mm</span></span><input type="number" name="length" min="0" max="100"></label>
-								<label><span class="labeltext">thickness <span class="unit">mm</span></span><input disabled type="number" name="thickness" min="0" max="100"></label>
-								<label><span class="labeltext">rotation <span class="unit">deg</span></span><input type="number" name="rotation" min="0" max="360"></label>
+								<!-- <label><span class="labeltext">thickness <span class="unit">mm</span></span><input disabled type="number" name="thickness" min="0" max="100"></label> -->
+								<label><span class="labeltext">rotation <span class="unit">deg</span></span><input type="number" name="rotation" min="0"></label>
 							</div>
 							<div class="transition">
 								<span>Transition</span>
@@ -158,7 +169,7 @@
 					</div>
 				</div>
 				<div class="gutter column"></div>
-				<div class="timeline konvastagecontainer" tabindex="2">
+				<div class="timeline konvastagecontainer" tabindex="0">
 					<div id="timelinestage" class="konvastage"></div>
 				</div>
 			</div>

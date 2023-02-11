@@ -107,14 +107,14 @@ export class NewKeyframeCommon {
 		}
 	}
 
-	/** @type {import("../../../../shared/types").MAHKeyframeCoords['coords']['transition']} */
+	/** @type {typeof NewKeyframeCommon.prototype.brush['transition']} */
 	static DEFAULT_COORDS_TRANSITION = {
 		name: "linear",
 		params: {}
 	};
 
 	/**
-	 * @returns {import("../../../../shared/types").MAHKeyframeCoords['coords']}
+	 * @returns {import("../../../../shared/types").CoordsWithTransition}
 	 */
 	get coords() {
 		const current_keyframes_sorted = this.pattern_design.get_sorted_keyframes();
@@ -179,7 +179,7 @@ export class NewKeyframeCommon {
 		}
 	};
 	/**
-	 * @returns {import("../../../../shared/types").MAHKeyframeBrush['brush']}
+	 * @returns {import("../../../../shared/types").BrushWithTransition}
 	 */
 	get brush() {
 		const { next_keyframe, prev_keyframe } = this.#find_neighbors();
@@ -201,7 +201,7 @@ export class NewKeyframeCommon {
 		}
 	};
 	/**
-	 * @returns {import("../../../../shared/types").MAHKeyframeIntensity['intensity']}
+	 * @returns {import("../../../../shared/types").IntensityWithTransition}
 	 */
 	get intensity() {
 		const { next_keyframe, prev_keyframe } = this.#find_neighbors();

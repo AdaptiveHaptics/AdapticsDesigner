@@ -28,3 +28,8 @@ type OptExceptProp<T, K extends keyof T> = Partial<T> & Pick<T, K>;
 type NotNullable<T> = Exclude<T, null | undefined>;
 
 type KeysOfUnion<T> = T extends T ? keyof T: never;
+
+type OmitNever<T extends Record<string, unknown>> = {
+    [K in keyof T as T[K] extends never ? never : K]: T[K];
+};
+type SharedProperties<A, B> = OmitNever<Pick<A & B, keyof A & keyof B>>;

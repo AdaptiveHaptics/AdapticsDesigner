@@ -1,6 +1,5 @@
 /** @typedef {import("../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
-/** @typedef {import("../../shared/types").MAHKeyframeStandard} MAHKeyframeStandard */
 /** @typedef {import("../../shared/types").MAHBrush} MAHBrush */
 /** @typedef {import("../../shared/types").MAHCoords} MAHCoords */
 /** @typedef {import("../../shared/types").MAHIntensity} MAHIntensity */

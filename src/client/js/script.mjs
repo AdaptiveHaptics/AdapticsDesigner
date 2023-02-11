@@ -27,8 +27,6 @@ const SplitGrid = /** @type {import("split-grid").default} */(/** @type {unknown
 
 /** @typedef {import("../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
-/** @typedef {import("../../shared/types").MAHKeyframeStandard} MAHKeyframeStandard */
-/** @typedef {import("../../shared/types").MAHKeyframePause} MAHKeyframePause */
 /** @typedef {import("../../shared/types").MidAirHapticsClipboardFormat} MidAirHapticsClipboardFormat */
 
 const mainsplitgridDiv = /** @type {HTMLDivElement} */ (document.querySelector("div.mainsplitgrid"));

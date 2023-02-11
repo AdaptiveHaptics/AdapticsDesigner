@@ -1,6 +1,5 @@
 /** @typedef {import("../../../../shared/types").MAHKeyframeBasic} MAHKeyframeBasic */
 /** @typedef {import("../../../../shared/types").MAHKeyframe} MAHKeyframe */
-/** @typedef {import("../../../../shared/types").MAHKeyframeTime} MAHKeyframeBase */
 /** @typedef {import("../patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
 /** @typedef {import("./index.mjs").MAHKeyframeFE} MAHKeyframeFE */
 

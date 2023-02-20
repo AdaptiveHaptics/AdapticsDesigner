@@ -54,8 +54,6 @@ export class PatternEvaluator {
 	eval_brush_at_anim_local_time_for_max_t(p) {
 		/** @type {WASMPatternEvaluatorParameters} */
 		const json_safe_p = { time: p.time, user_parameters: Object.fromEntries(p.user_parameters) };
-		/** @type {BrushAtAnimLocalTime[]} */
-		const rv = JSON.parse(this.#_internal.eval_brush_at_anim_local_time_for_max_t(JSON.stringify(json_safe_p)));
-		return rv;
+		return JSON.parse(this.#_internal.eval_brush_at_anim_local_time_for_max_t(JSON.stringify(json_safe_p)));
 	}
 }

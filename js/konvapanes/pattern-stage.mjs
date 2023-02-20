@@ -281,6 +281,10 @@ export class KonvaPatternStage extends KonvaResizeStage {
 			const next_cp = control_points[i + 1];
 			if (curr_cp && next_cp) new KonvaPatternControlPointLine(curr_cp, next_cp, this);
 		}
+		const first_cp = control_points[0];
+		const last_cp = control_points[control_points.length-1];
+		if (first_cp) first_cp.lines.in = null;
+		if (last_cp) last_cp.lines.out = null;
 	}
 
 	update_all_pause() {

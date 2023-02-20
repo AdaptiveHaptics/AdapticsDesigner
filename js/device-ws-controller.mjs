@@ -82,7 +82,9 @@ export class DeviceWSController {
 	 * @param {PatternEvaluatorParameters} evaluator_params
 	 */
 	update_parameters(evaluator_params) {
-		this.send("update_parameters", { evaluator_params });
+		/** @type {import("./pattern-evaluator.mjs").WASMPatternEvaluatorParameters} */
+		const json_safe_p = { time: evaluator_params.time, user_parameters: Object.fromEntries(evaluator_params.user_parameters) };
+		this.send("update_parameters", { evaluator_params: json_safe_p });
 	}
 
 	/**
@@ -135,7 +137,7 @@ export class DeviceWSController {
  * @typedef {Object} WebsocketStateEventMap
  * @property {{ }} connected
  * @property {{ }} disconnected
- * @property {{ evals: ReturnType<typeof import("./pattern-evaluator.mjs").PatternEvaluator.prototype.eval_brush_at_anim_local_time>[] }} playback_update
+ * @property {{ evals: import("./pattern-evaluator.mjs").BrushAtAnimLocalTime[] }} playback_update
  */
 
 /**

@@ -381,9 +381,11 @@ class KonvaPlaybackVis {
 	}
 }
 
-const pausex = 4;
-const pausey = 8;
-const pausewidth = 3;
+const CONTROL_POINT_CIRCLE_RADIUS = 20; //radius of the control point circle
+const PAUSE_X = 2.5; //distance between the two lines of the pause symbol
+const PAUSE_Y = 5; //half of the height of the pause symbol
+const PAUSE_WIDTH = 2; //width of the pause symbol
+const PAUSE_OFFSET = { x: CONTROL_POINT_CIRCLE_RADIUS-4, y: -CONTROL_POINT_CIRCLE_RADIUS-8 }; //offset of the pause symbol from the center of its control point circle
 
 class KonvaPatternControlPoint {
 	/** @type {{ in: KonvaPatternControlPointLine | null, out: KonvaPatternControlPointLine | null }} */
@@ -402,7 +404,7 @@ class KonvaPatternControlPoint {
 		this.k_cp_circle = new Konva.Circle({
 			x: -1,
 			y: -1,
-			radius: 20,
+			radius: CONTROL_POINT_CIRCLE_RADIUS,
 			stroke: getComputedStyle(document.body).getPropertyValue("--control-point-stroke"),
 			strokeWidth: 2,
 			draggable: true,
@@ -452,16 +454,16 @@ class KonvaPatternControlPoint {
 			listening: false,
 		});
 		this.paused_group.add(new Konva.Rect({
-			x: -pausex-pausewidth/2,
-			y: -pausey,
-			width: pausewidth,
-			height: 2*pausey,
+			x: -PAUSE_X-PAUSE_WIDTH/2,
+			y: -PAUSE_Y,
+			width: PAUSE_WIDTH,
+			height: 2*PAUSE_Y,
 		}));
 		this.paused_group.add(new Konva.Rect({
-			x: pausex-pausewidth/2,
-			y: -pausey,
-			width: pausewidth,
-			height: 2*pausey,
+			x: PAUSE_X-PAUSE_WIDTH/2,
+			y: -PAUSE_Y,
+			width: PAUSE_WIDTH,
+			height: 2*PAUSE_Y,
 		}));
 		pattern_stage.k_control_points_layer.add(this.paused_group);
 
@@ -571,8 +573,8 @@ class KonvaPatternControlPoint {
 
 		this.k_cp_circle.x(layer_coords.x);
 		this.k_cp_circle.y(layer_coords.y);
-		this.paused_group.x(layer_coords.x);
-		this.paused_group.y(layer_coords.y);
+		this.paused_group.x(layer_coords.x + PAUSE_OFFSET.x);
+		this.paused_group.y(layer_coords.y + PAUSE_OFFSET.y);
 		this.keyframe.coords.coords.x = pattern_coords.x;
 		this.keyframe.coords.coords.y = pattern_coords.y;
 

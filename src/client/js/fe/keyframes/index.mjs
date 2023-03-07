@@ -3,15 +3,20 @@
 /**
  * @template T
  * @typedef {import("../../../../shared/util").NotNullable<T>} NotNullable
- */
+*/
+/**
+ * @template T
+ * @typedef {import("../../../../shared/util").KeysOfUnion<T>} KeysOfUnion
+*/
 
 import { BoundsCheck } from "./bounds-check.mjs";
 import { MAHKeyframePauseFE } from "./pause.mjs";
 import { MAHKeyframeStandardFE } from "./standard.mjs";
+import { MAHKeyframeStopFE } from "./stop.mjs";
+import { assert_unreachable } from "../../util.mjs";
 
-export { MAHKeyframePauseFE , MAHKeyframeStandardFE };
-
-/** @typedef {MAHKeyframeStandardFE | MAHKeyframePauseFE} MAHKeyframeFE */
+export { MAHKeyframePauseFE , MAHKeyframeStandardFE, MAHKeyframeStopFE };
+/** @typedef {MAHKeyframeStandardFE | MAHKeyframePauseFE | MAHKeyframeStopFE} MAHKeyframeFE */
 
 
 /**
@@ -73,8 +78,8 @@ export function create_correct_keyframefe_wrapper(keyframe, pattern_design) {
 	switch (keyframe.type) {
 		case "standard": return new MAHKeyframeStandardFE(keyframe, pattern_design);
 		case "pause": return new MAHKeyframePauseFE(keyframe, pattern_design);
-		// @ts-ignore
-		default: throw new TypeError(`Unknown keyframe type '${keyframe.type}'`);
+		case "stop": return new MAHKeyframeStopFE(keyframe, pattern_design);
+		default: assert_unreachable(keyframe); //if this is causing a tsc error, switch cases are not complete
 	}
 }
 
@@ -156,12 +161,49 @@ export class NewKeyframeCommon {
 		};
 	}
 
-	#find_neighbors() {
+	#_find_neighbors() {
 		const current_keyframes_sorted = this.pattern_design.get_sorted_keyframes();
 		const next_keyframe_index = current_keyframes_sorted.findIndex(kf => kf.time > this.time);
 		const next_keyframe = (next_keyframe_index == -1) ? undefined : current_keyframes_sorted[next_keyframe_index];
 		const prev_keyframe = (next_keyframe_index == 0) ? undefined : current_keyframes_sorted[(next_keyframe_index == -1 ? current_keyframes_sorted.length : next_keyframe_index)-1];
 		return { next_keyframe, prev_keyframe };
+	}
+
+
+	/**
+	 * @template {KeysOfUnion<MAHKeyframeFE>} P
+	 * @param {P} prop
+	 * @returns {{ prev: Extract<MAHKeyframeFE, {[K in P]: any}>[P] | undefined, next: Extract<MAHKeyframeFE, {[K in P]: any}>[P] | undefined }}
+	 */
+	#_find_neighboring_prop(prop) {
+		/**
+		 * @template {KeysOfUnion<MAHKeyframeFE>} P
+		 * @param {MAHKeyframeFE} kf
+		 * @param {P} prop
+		 * @returns {kf is Extract<MAHKeyframeFE, {[K in P]: any}>}
+		 */
+		function is_keyframe_with_prop(kf, prop) {
+			return prop in kf;
+		}
+
+		const current_keyframes_sorted = this.pattern_design.get_sorted_keyframes();
+		const next_keyframe_index = current_keyframes_sorted.findIndex(kf => kf.time > this.time);
+
+		let prev_prop = undefined;
+		for (let i=next_keyframe_index-1; 0<=i && i<current_keyframes_sorted.length; i--) {
+			const kf = current_keyframes_sorted[i];
+			if (is_keyframe_with_prop(kf, prop)) {
+				prev_prop = kf[prop];
+			}
+		}
+		let next_prop = undefined;
+		for (let i=next_keyframe_index; 0<=i && i<current_keyframes_sorted.length; i++) {
+			const kf = current_keyframes_sorted[i];
+			if (is_keyframe_with_prop(kf, prop)) {
+				next_prop = kf[prop];
+			}
+		}
+		return { prev: prev_prop, next: next_prop };
 	}
 
 
@@ -182,8 +224,8 @@ export class NewKeyframeCommon {
 	 * @returns {import("../../../../shared/types").BrushWithTransition}
 	 */
 	get brush() {
-		const { next_keyframe, prev_keyframe } = this.#find_neighbors();
-		return prev_keyframe?.brush || next_keyframe?.brush || NewKeyframeCommon.DEFAULT_BRUSH;
+		const { prev, next } = this.#_find_neighboring_prop("brush");
+		return prev || next || NewKeyframeCommon.DEFAULT_BRUSH;
 	}
 
 
@@ -204,7 +246,7 @@ export class NewKeyframeCommon {
 	 * @returns {import("../../../../shared/types").IntensityWithTransition}
 	 */
 	get intensity() {
-		const { next_keyframe, prev_keyframe } = this.#find_neighbors();
-		return prev_keyframe?.intensity || next_keyframe?.intensity || NewKeyframeCommon.DEFAULT_INTENSITY;
+		const { prev, next } = this.#_find_neighboring_prop("intensity");
+		return prev || next || NewKeyframeCommon.DEFAULT_INTENSITY;
 	}
 }

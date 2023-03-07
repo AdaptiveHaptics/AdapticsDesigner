@@ -3,6 +3,7 @@
 /** @typedef {import("../../../shared/types").MidAirHapticsClipboardFormat} MidAirHapticsClipboardFormat */
 /** @typedef {import("./keyframes/index.mjs").MAHKeyframeFE} MAHKeyframeFE */
 /** @typedef {import("../pattern-evaluator.mjs").PatternEvaluatorParameters} PatternEvaluatorParameters */
+/** @typedef {import("../pattern-evaluator.mjs").NextEvalParams} NextEvalParams */
 /**
  * @template T, K
  * @typedef {import("../../../shared/util").ReqProp<T, K>} ReqProp
@@ -14,12 +15,13 @@
  */
 
 /** @type {import("../../../shared/types").REVISION_STRING} */
-const MAH_$REVISION = "0.0.4-alpha.1";
+const MAH_$REVISION = "0.0.5-alpha.1";
 
 import { DeviceWSController } from "../device-ws-controller.mjs";
 import { PatternEvaluator } from "../pattern-evaluator.mjs";
+import { assert_unreachable } from "../util.mjs";
 import { BoundsCheck } from "./keyframes/bounds-check.mjs";
-import { create_correct_keyframefe_wrapper, MAHKeyframePauseFE, MAHKeyframeStandardFE, NewKeyframeCommon } from "./keyframes/index.mjs";
+import { create_correct_keyframefe_wrapper, MAHKeyframePauseFE, MAHKeyframeStandardFE, MAHKeyframeStopFE, NewKeyframeCommon } from "./keyframes/index.mjs";
 
 /**
  * @typedef {Object} StateEventMap
@@ -90,6 +92,8 @@ export class MAHPatternDesignFE {
 		//pattern eval
 		/** @type {PatternEvaluatorParameters}  */
 		this.evaluator_params = { time: 0, user_parameters: new Map() };
+		/** @type {NextEvalParams} */
+		this.evaluator_next_eval_params = PatternEvaluator.default_next_eval_params();
 		this.pattern_evaluator = new PatternEvaluator(this.filedata);
 		this.state_change_events.addEventListener("commit_update", ev => {
 			if (ev.detail.committed) {
@@ -233,8 +237,8 @@ export class MAHPatternDesignFE {
 		switch (set.type) {
 			case "standard": { keyframe = MAHKeyframeStandardFE.from_current_keyframes(this, set); break; }
 			case "pause": { keyframe = MAHKeyframePauseFE.from_current_keyframes(this, set); break; }
-			// @ts-ignore
-			default: throw new TypeError(`Unknown keyframe type '${keyframe.type}'`);
+			case "stop": { keyframe = MAHKeyframeStopFE.from_current_keyframes(this, set); break; }
+			default: assert_unreachable(set);
 		}
 		this.filedata.keyframes.push(keyframe);
 		this.filedata.keyframes.sort();
@@ -419,6 +423,7 @@ export class MAHPatternDesignFE {
 	 */
 	update_pattern_time(time) {
 		if (this.is_playing()) return; //ignore during playback
+		this.evaluator_next_eval_params = PatternEvaluator.default_next_eval_params();
 		this.#_update_pattern_time(time);
 	}
 	/**
@@ -442,7 +447,8 @@ export class MAHPatternDesignFE {
 	}
 
 	#_eval_pattern() {
-		const eval_result = this.pattern_evaluator.eval_brush_at_anim_local_time_for_max_t(this.evaluator_params);
+		const eval_result = this.pattern_evaluator.eval_brush_at_anim_local_time_for_max_t(this.evaluator_params, this.evaluator_next_eval_params);
+		if (eval_result[0].stop) this.update_playstart(0);
 		this.last_eval = eval_result;
 		const sce = new StateChangeEvent("playback_update", { detail: {} });
 		this.state_change_events.dispatchEvent(sce);

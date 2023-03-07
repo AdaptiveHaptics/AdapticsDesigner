@@ -333,7 +333,12 @@ class KonvaTimelineKeyframe {
 
 		/** @type {import("konva/lib/shapes/Label.js").TagConfig} */
 		const pause_config = keyframe.type == "pause" ? {
-			stroke: getComputedStyle(document.body).getPropertyValue("--paused-keyframe-color"),
+			stroke: getComputedStyle(document.body).getPropertyValue("--pause-keyframe-color"),
+			strokeWidth: 3,
+		} : {};
+		/** @type {import("konva/lib/shapes/Label.js").TagConfig} */
+		const stop_config = keyframe.type == "stop" ? {
+			stroke: getComputedStyle(document.body).getPropertyValue("--stop-keyframe-color"),
 			strokeWidth: 3,
 		} : {};
 
@@ -356,6 +361,7 @@ class KonvaTimelineKeyframe {
 			lineJoin: "round",
 			...shadow_settings,
 			...pause_config,
+			...stop_config,
 		}));
 		this.flag.add(new Konva.Text({
 			text: "",

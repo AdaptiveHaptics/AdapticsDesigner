@@ -32,18 +32,12 @@ export class ParameterEditor {
 			this._timecontrol_reset = notnull(this._timecontrol_div.querySelector("button.reset"));
 
 			this._timecontrol_play.addEventListener("click", _ev => {
-				this._timecontrol_play.style.display = "none";
-				this._timecontrol_pause.style.display = "";
 				this._pattern_design.update_playstart(Date.now() - this._pattern_design.evaluator_params.time);
 			});
 			this._timecontrol_pause.addEventListener("click", _ev => {
-				this._timecontrol_play.style.display = "";
-				this._timecontrol_pause.style.display = "none";
 				this._pattern_design.update_playstart(0);
 			});
 			this._timecontrol_reset.addEventListener("click", _ev => {
-				this._timecontrol_play.style.display = "";
-				this._timecontrol_pause.style.display = "none";
 				this._pattern_design.update_playstart(0);
 				this._pattern_design.update_pattern_time(0);
 			});
@@ -70,6 +64,13 @@ export class ParameterEditor {
 
 	update_controls() {
 		this._timecontrol_input.value = this._pattern_design.evaluator_params.time.toFixed(0);
+		if (this._pattern_design.is_playing()) {
+			this._timecontrol_play.style.display = "none";
+			this._timecontrol_pause.style.display = "";
+		} else {
+			this._timecontrol_play.style.display = "";
+			this._timecontrol_pause.style.display = "none";
+		}
 	}
 
 }

@@ -23,8 +23,10 @@
 
     --play-color: #74ecb0;
     --pause-color: #ecb474;
+    --stop-color: #ec7474;
     --selected-keyframe-color: hwb(204 55% 5%);
-    --paused-keyframe-color: var(--pause-color);
+    --pause-keyframe-color: var(--pause-color);
+    --stop-keyframe-color: var(--stop-color);
 
 
     --control-point-select-rect-fill: #8cc9f230;
@@ -33,6 +35,8 @@
     --control-point-line-stroke: var(--play-color);
     --control-point-pause: var(--pause-color);
     --control-point-pause-selected: var(--selected-keyframe-color);
+    --control-point-stop: var(--stop-color);
+    --control-point-stop-selected: var(--selected-keyframe-color);
 
     --pattern-playback-vis: #74d4ec;
 

@@ -156,14 +156,17 @@ export class PatternEvaluator {
     }
     /**
     * @param {string} p
+    * @param {string} nep
     * @returns {string}
     */
-    eval_brush_at_anim_local_time(p) {
+    eval_brush_at_anim_local_time(p, nep) {
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
             const ptr0 = passStringToWasm0(p, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
             const len0 = WASM_VECTOR_LEN;
-            wasm.patternevaluator_eval_brush_at_anim_local_time(retptr, this.ptr, ptr0, len0);
+            const ptr1 = passStringToWasm0(nep, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            wasm.patternevaluator_eval_brush_at_anim_local_time(retptr, this.ptr, ptr0, len0, ptr1, len1);
             var r0 = getInt32Memory0()[retptr / 4 + 0];
             var r1 = getInt32Memory0()[retptr / 4 + 1];
             return getStringFromWasm0(r0, r1);
@@ -174,14 +177,32 @@ export class PatternEvaluator {
     }
     /**
     * @param {string} p
+    * @param {string} nep
     * @returns {string}
     */
-    eval_brush_at_anim_local_time_for_max_t(p) {
+    eval_brush_at_anim_local_time_for_max_t(p, nep) {
         try {
             const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
             const ptr0 = passStringToWasm0(p, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
             const len0 = WASM_VECTOR_LEN;
-            wasm.patternevaluator_eval_brush_at_anim_local_time_for_max_t(retptr, this.ptr, ptr0, len0);
+            const ptr1 = passStringToWasm0(nep, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+            const len1 = WASM_VECTOR_LEN;
+            wasm.patternevaluator_eval_brush_at_anim_local_time_for_max_t(retptr, this.ptr, ptr0, len0, ptr1, len1);
+            var r0 = getInt32Memory0()[retptr / 4 + 0];
+            var r1 = getInt32Memory0()[retptr / 4 + 1];
+            return getStringFromWasm0(r0, r1);
+        } finally {
+            wasm.__wbindgen_add_to_stack_pointer(16);
+            wasm.__wbindgen_free(r0, r1);
+        }
+    }
+    /**
+    * @returns {string}
+    */
+    static default_next_eval_params() {
+        try {
+            const retptr = wasm.__wbindgen_add_to_stack_pointer(-16);
+            wasm.patternevaluator_default_next_eval_params(retptr);
             var r0 = getInt32Memory0()[retptr / 4 + 0];
             var r1 = getInt32Memory0()[retptr / 4 + 1];
             return getStringFromWasm0(r0, r1);

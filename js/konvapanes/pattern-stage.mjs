@@ -7,6 +7,7 @@ const Konva = /** @type {import("konva").default} */ (window["Konva"]);
 
 /** @typedef {import("../fe/keyframes/index.mjs").MAHKeyframeFE} MAHKeyframeFE */
 /** @typedef {import("../fe/keyframes/index.mjs").MAHKeyframePauseFE} MAHKeyframePauseFE */
+/** @typedef {import("../fe/keyframes/index.mjs").MAHKeyframeStopFE} MAHKeyframeStopFE */
 /** @typedef {import("../fe/patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
 /** @typedef {import("../../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../../shared/types").MAHKeyframe} MAHKeyframe */
@@ -116,7 +117,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 				const linked_keyframes = [];
 				for (const kf of keyframes_in_box) {
 					const cp = KonvaPatternControlPoint.get_control_point_from_keyframe(kf);
-					if (cp?.pause_keyframe) linked_keyframes.push(cp?.pause_keyframe);
+					cp?.linked_keyframes.forEach(kf => linked_keyframes.push(kf));
 				}
 				this.pattern_design.group_select_logic(keyframes_in_box, linked_keyframes, { shiftKey: ev.shiftKey, ctrlKey: ev.ctrlKey, altKey: ev.altKey });
 			});
@@ -132,17 +133,17 @@ export class KonvaPatternStage extends KonvaResizeStage {
 					this.pattern_design.get_nearest_neighbor_keyframe_matching_pred(ev.detail.keyframe, filter_by_coords, "next"));
 				if (prev_cp) new KonvaPatternControlPointLine(prev_cp, curr_cp, this);
 				if (next_cp) new KonvaPatternControlPointLine(curr_cp, next_cp, this);
-				if (prev_cp?.is_paused()) {
-					this.update_all_pause();
+				if (prev_cp?.has_linked()) {
+					this.update_all_linked();
 				}
-			} else if (ev.detail.keyframe.type == "pause") {
+			} else if (ev.detail.keyframe.type == "pause" || ev.detail.keyframe.type == "stop") {
 				const prev_cp = KonvaPatternControlPoint.get_control_point_from_keyframe(
 					this.pattern_design.get_nearest_neighbor_keyframe_matching_pred(ev.detail.keyframe, filter_by_coords, "prev"));
-				if (prev_cp) prev_cp.update_pause(ev.detail.keyframe);
+				if (prev_cp) prev_cp.update_linked(ev.detail.keyframe);
 			}
 		});
 		pattern_design.state_change_events.addEventListener("kf_delete", _ev => {
-			this.update_all_pause();
+			this.update_all_linked();
 		});
 		pattern_design.state_change_events.addEventListener("rerender", _ev => {
 			this.render_design();
@@ -258,12 +259,12 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		}
 
 		this.update_paths();
-		this.update_all_pause();
+		this.update_all_linked();
 	}
 
 	update_order() {
 		this.update_paths();
-		this.update_all_pause();
+		this.update_all_linked();
 	}
 
 	update_paths() {
@@ -287,15 +288,15 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		if (last_cp) last_cp.lines.out = null;
 	}
 
-	update_all_pause() {
+	update_all_linked() {
 		let last_cp = null;
 		for (const kf of this.pattern_design.get_sorted_keyframes()) {
 			if ("coords" in kf) {
 				const curr_cp = KonvaPatternControlPoint.get_control_point_from_keyframe(kf);
-				curr_cp?.update_pause(null);
+				curr_cp?.update_linked(null);
 				last_cp = curr_cp;
-			} else if (kf.type == "pause") {
-				last_cp?.update_pause(kf);
+			} else if (kf.type == "pause" || kf.type == "stop") {
+				last_cp?.update_linked(kf);
 			}
 		}
 	}
@@ -387,6 +388,9 @@ const PAUSE_Y = 5; //half of the height of the pause symbol
 const PAUSE_WIDTH = 2; //width of the pause symbol
 const PAUSE_OFFSET = { x: CONTROL_POINT_CIRCLE_RADIUS-4, y: -CONTROL_POINT_CIRCLE_RADIUS-8 }; //offset of the pause symbol from the center of its control point circle
 
+const STOP_RADIUS = 9; //radius of the stop symbol
+const STOP_STRK_WIDTH = 1.5; //width of the stroke of the stop symbol
+
 class KonvaPatternControlPoint {
 	/** @type {{ in: KonvaPatternControlPointLine | null, out: KonvaPatternControlPointLine | null }} */
 	lines = { in: null, out: null };
@@ -399,6 +403,9 @@ class KonvaPatternControlPoint {
 	constructor(keyframe, pattern_stage) {
 		this.keyframe = keyframe;
 		this.pattern_stage = pattern_stage;
+
+		/** @type {Set<MAHKeyframePauseFE | MAHKeyframeStopFE>} */
+		this.linked_keyframes = new Set();
 
 		//TODO: it would be nice if perfectly overlapping control points were made obvious to the user
 		this.k_cp_circle = new Konva.Circle({
@@ -449,23 +456,43 @@ class KonvaPatternControlPoint {
 			this.update_position(this.pattern_stage.raw_coords_to_pattern_coords({ raw_x: this.k_cp_circle.x(), raw_y: this.k_cp_circle.y(), snap: true }));
 		});
 
-		this.paused_group = new Konva.Group({
+		this.linked_group = new Konva.Group({
+			visible: true,
+			listening: false,
+		});
+
+		this.linked_pause_group = new Konva.Group({
 			visible: false,
 			listening: false,
 		});
-		this.paused_group.add(new Konva.Rect({
+		this.linked_group.add(this.linked_pause_group);
+		this.linked_pause_group.add(new Konva.Rect({
 			x: -PAUSE_X-PAUSE_WIDTH/2,
 			y: -PAUSE_Y,
 			width: PAUSE_WIDTH,
 			height: 2*PAUSE_Y,
 		}));
-		this.paused_group.add(new Konva.Rect({
+		this.linked_pause_group.add(new Konva.Rect({
 			x: PAUSE_X-PAUSE_WIDTH/2,
 			y: -PAUSE_Y,
 			width: PAUSE_WIDTH,
 			height: 2*PAUSE_Y,
 		}));
-		pattern_stage.k_control_points_layer.add(this.paused_group);
+
+		this.linked_stop_group = new Konva.Group({
+			visible: false,
+			listening: false,
+		});
+		this.linked_group.add(this.linked_stop_group);
+		this.linked_stop_group.add(new Konva.RegularPolygon({
+			sides: 8,
+			radius: STOP_RADIUS,
+			strokeWidth: STOP_STRK_WIDTH,
+			rotation: 180*Math.PI/8,
+		}));
+
+
+		pattern_stage.k_control_points_layer.add(this.linked_group);
 
 		this.listener_abort = new AbortController();
 		pattern_stage.pattern_design.state_change_events.addEventListener("kf_delete", ev => {
@@ -491,16 +518,22 @@ class KonvaPatternControlPoint {
 		pattern_stage.pattern_design.state_change_events.addEventListener("kf_select", ev => {
 			if (ev.detail.keyframe == keyframe) {
 				this.update_select(true);
-			} else if (ev.detail.keyframe == this.pause_keyframe) {
-				this.update_pause(this.pause_keyframe);
+
+			// @ts-ignore TypeScript/issues/13086
+			} else if (this.linked_keyframes.has(ev.detail.keyframe)) {
+				// @ts-ignore TypeScript/issues/13086
+				this.update_linked(ev.detail.keyframe);
 			}
 		}, { signal: this.listener_abort.signal });
 
 		pattern_stage.pattern_design.state_change_events.addEventListener("kf_deselect", ev => {
 			if (ev.detail.keyframe == keyframe) {
 				this.update_select(false);
-			} else if (ev.detail.keyframe == this.pause_keyframe) {
-				this.update_pause(this.pause_keyframe);
+
+			// @ts-ignore TypeScript/issues/13086
+			} else if (this.linked_keyframes.has(ev.detail.keyframe)) {
+				// @ts-ignore TypeScript/issues/13086
+				this.update_linked(ev.detail.keyframe);
 			}
 		}, { signal: this.listener_abort.signal });
 
@@ -516,7 +549,7 @@ class KonvaPatternControlPoint {
 	destroy() {
 		this.k_cp_circle.destroy();
 		this.listener_abort.abort();
-		this.paused_group.destroy();
+		this.linked_group.destroy();
 	}
 
 	/**
@@ -534,22 +567,44 @@ class KonvaPatternControlPoint {
 		this.pattern_stage.pattern_design.select_keyframes([this.keyframe]);
 	}
 
-	is_paused() {
-		return this.paused_group.visible();
+	has_linked() {
+		return this.linked_keyframes.size > 0;
+	}
+	has_pause() {
+		return this.linked_pause_group.visible();
+	}
+	has_stop() {
+		return this.linked_stop_group.visible();
 	}
 
 	/**
 	 *
-	 * @param {MAHKeyframePauseFE | null} pause_keyframe
+	 * @param {MAHKeyframePauseFE | MAHKeyframeStopFE | null} linked_keyframe
 	 */
-	update_pause(pause_keyframe) {
-		this.pause_keyframe = pause_keyframe;
-		this.paused_group.visible(!!pause_keyframe);
-		if (pause_keyframe) {
-			const fillvar = this.pattern_stage.pattern_design.selected_keyframes.has(pause_keyframe)?"--control-point-pause-selected":"--control-point-pause";
-			//@ts-ignore
-			for (const c of this.paused_group.children) c.fill(getComputedStyle(document.body).getPropertyValue(fillvar));
-			this.paused_group.setZIndex((this.pattern_stage.k_control_points_layer.children?.length || 999)-1);
+	update_linked(linked_keyframe) {
+		if (linked_keyframe) this.linked_keyframes.add(linked_keyframe);
+		else this.linked_keyframes.clear();
+
+		if (this.has_linked()) {
+			const pause_keyframe = [...this.linked_keyframes].find(kf => kf.type == "pause");
+			this.linked_pause_group.visible(!!pause_keyframe);
+			if (pause_keyframe) {
+				const fillvar = this.pattern_stage.pattern_design.selected_keyframes.has(pause_keyframe)?"--control-point-pause-selected":"--control-point-pause";
+				//@ts-ignore
+				for (const c of this.linked_pause_group.children) c.fill(getComputedStyle(document.body).getPropertyValue(fillvar));
+			}
+
+			const stop_keyframe = [...this.linked_keyframes].find(kf => kf.type == "stop");
+			this.linked_stop_group.visible(!!stop_keyframe);
+			if (stop_keyframe) {
+				const strokevar = this.pattern_stage.pattern_design.selected_keyframes.has(stop_keyframe)?"--control-point-stop-selected":"--control-point-stop";
+				//@ts-ignore
+				for (const c of this.linked_stop_group.children) c.stroke(getComputedStyle(document.body).getPropertyValue(strokevar));
+			}
+
+
+
+			this.linked_group.setZIndex((this.pattern_stage.k_control_points_layer.children?.length || 999)-1);
 		}
 	}
 
@@ -573,8 +628,8 @@ class KonvaPatternControlPoint {
 
 		this.k_cp_circle.x(layer_coords.x);
 		this.k_cp_circle.y(layer_coords.y);
-		this.paused_group.x(layer_coords.x + PAUSE_OFFSET.x);
-		this.paused_group.y(layer_coords.y + PAUSE_OFFSET.y);
+		this.linked_group.x(layer_coords.x + PAUSE_OFFSET.x);
+		this.linked_group.y(layer_coords.y + PAUSE_OFFSET.y);
 		this.keyframe.coords.coords.x = pattern_coords.x;
 		this.keyframe.coords.coords.y = pattern_coords.y;
 

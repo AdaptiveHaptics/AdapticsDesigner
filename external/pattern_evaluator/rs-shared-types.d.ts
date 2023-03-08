@@ -12,10 +12,11 @@
 export type TupleOf_MidAirHapticsAnimationFileFormatAnd_PatternEvaluatorParametersAnd_BrushAtAnimLocalTimeAnd_ArrayOf_BrushAtAnimLocalTime =
   [MidAirHapticsAnimationFileFormat, PatternEvaluatorParameters, BrushAtAnimLocalTime, BrushAtAnimLocalTime[]];
 export type MidAirHapticsAnimationFileFormatDataFormatName = "MidAirHapticsAnimationFileFormat";
-export type DataFormatRevision = "0.0.4-alpha.1";
+export type DataFormatRevision = "0.0.5-alpha.1";
 export type MAHKeyframe =
   | {
       brush?: BrushWithTransition | null;
+      cjump?: ConditionalJump | null;
       coords: CoordsWithTransition;
       intensity?: IntensityWithTransition | null;
       time: number;
@@ -23,9 +24,14 @@ export type MAHKeyframe =
     }
   | {
       brush?: BrushWithTransition | null;
+      cjump?: ConditionalJump | null;
       intensity?: IntensityWithTransition | null;
       time: number;
       type: "pause";
+    }
+  | {
+      time: number;
+      type: "stop";
     };
 export type MAHBrush =
   | {
@@ -49,6 +55,23 @@ export type MAHTransition =
     }
   | {
       name: "step";
+      params: {};
+    };
+export type MAHConditionalOperator =
+  | {
+      name: "lt";
+      params: {};
+    }
+  | {
+      name: "lt_eq";
+      params: {};
+    }
+  | {
+      name: "gt";
+      params: {};
+    }
+  | {
+      name: "gt_eq";
       params: {};
     };
 export type MAHIntensity =
@@ -78,6 +101,15 @@ export interface MidAirHapticsAnimationFileFormat {
 export interface BrushWithTransition {
   brush: MAHBrush;
   transition: MAHTransition;
+}
+export interface ConditionalJump {
+  condition: MAHCondition;
+  jump_to: number;
+}
+export interface MAHCondition {
+  operator: MAHConditionalOperator;
+  parameter: string;
+  value: number;
 }
 export interface CoordsWithTransition {
   coords: MAHCoords;
@@ -113,5 +145,11 @@ export interface PatternEvaluatorParameters {
 export interface BrushAtAnimLocalTime {
   coords: MAHCoords;
   intensity: number;
+  next_eval_params: NextEvalParams;
   pattern_time: number;
+  stop: boolean;
+}
+export interface NextEvalParams {
+  last_cjump_eval_time: number;
+  time_offset: number;
 }

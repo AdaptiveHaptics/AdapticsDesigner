@@ -10,14 +10,20 @@ export class PatternEvaluator {
   constructor(mah_animation_json: string);
 /**
 * @param {string} p
+* @param {string} nep
 * @returns {string}
 */
-  eval_brush_at_anim_local_time(p: string): string;
+  eval_brush_at_anim_local_time(p: string, nep: string): string;
 /**
 * @param {string} p
+* @param {string} nep
 * @returns {string}
 */
-  eval_brush_at_anim_local_time_for_max_t(p: string): string;
+  eval_brush_at_anim_local_time_for_max_t(p: string, nep: string): string;
+/**
+* @returns {string}
+*/
+  static default_next_eval_params(): string;
 }
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
@@ -26,8 +32,9 @@ export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly __wbg_patternevaluator_free: (a: number) => void;
   readonly patternevaluator_new_json: (a: number, b: number) => number;
-  readonly patternevaluator_eval_brush_at_anim_local_time: (a: number, b: number, c: number, d: number) => void;
-  readonly patternevaluator_eval_brush_at_anim_local_time_for_max_t: (a: number, b: number, c: number, d: number) => void;
+  readonly patternevaluator_eval_brush_at_anim_local_time: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+  readonly patternevaluator_eval_brush_at_anim_local_time_for_max_t: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
+  readonly patternevaluator_default_next_eval_params: (a: number) => void;
   readonly __wbindgen_malloc: (a: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number) => number;
   readonly __wbindgen_add_to_stack_pointer: (a: number) => number;

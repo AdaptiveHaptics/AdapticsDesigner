@@ -52,6 +52,9 @@ export class ParameterEditor {
 		this._pattern_design.state_change_events.addEventListener("parameters_update", () => {
 			this.update_controls();
 		});
+		this._pattern_design.state_change_events.addEventListener("playstart_update", () => {
+			this.update_controls();
+		});
 
 		this.update_controls();
 	}

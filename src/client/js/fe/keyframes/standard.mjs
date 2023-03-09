@@ -22,6 +22,7 @@ export class MAHKeyframeStandardFE extends MAHKeyframeBasicFE {
 		this.brush = keyframe.brush;
 		this.intensity = keyframe.intensity;
 		this.coords = keyframe.coords;
+		this.cjump = keyframe.cjump;
 	}
 
 	/**

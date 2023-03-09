@@ -35,6 +35,7 @@ import { create_correct_keyframefe_wrapper, MAHKeyframePauseFE, MAHKeyframeStand
  * @property {{ committed: boolean }} commit_update
  * @property {{ }} playback_update
  * @property {{ time: boolean }} parameters_update
+ * @property {{ }} playstart_update
  */
 
 /**
@@ -111,6 +112,12 @@ export class MAHPatternDesignFE {
 				}
 			} else {
 				this.#_eval_pattern();
+			}
+		});
+		this.state_change_events.addEventListener("playstart_update", _ => {
+			this.websocket?.update_playstart(this.#_playstart_timestamp);
+			if (this.is_playing()) {
+				this.#_tick_playback();
 			}
 		});
 		this.last_eval = this.#_eval_pattern(); //set in constructor for typecheck
@@ -411,10 +418,8 @@ export class MAHPatternDesignFE {
 	 */
 	update_playstart(playstart_timestamp) {
 		this.#_playstart_timestamp = playstart_timestamp;
-		this.websocket?.update_playstart(playstart_timestamp);
-		if (this.is_playing()) {
-			this.#_tick_playback();
-		}
+		const ce = new StateChangeEvent("playstart_update", { detail: { } });
+		this.state_change_events.dispatchEvent(ce);
 	}
 
 	/**

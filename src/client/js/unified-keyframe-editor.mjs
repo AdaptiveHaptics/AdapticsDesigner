@@ -4,7 +4,7 @@
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
 
 import { BoundsCheck } from "./fe/keyframes/bounds-check.mjs";
-import { has_brush, has_coords, has_intensity } from "./fe/keyframes/index.mjs";
+import { supports_coords, supports_brush, supports_intensity, supports_cjump } from "./fe/keyframes/index.mjs";
 import { notnull } from "./util.mjs";
 
 export class UnifiedKeyframeEditor {
@@ -51,6 +51,16 @@ export class UnifiedKeyframeEditor {
 		this.intensity_inputs = notnull(this.intensity_details.querySelector(".intensityconfig")).querySelectorAll("input");
 		this.intensity_transition_select = /** @type {HTMLSelectElement} */(this.intensity_details.querySelector("div.transitionconfig select"));
 
+		/** @type {HTMLDetailsElement} */
+		this.cjump_details = notnull(this.ukfeForm.querySelector("details.cjump"));
+		/** @type {HTMLInputElement} */
+		this.cjump_parameter_input = notnull(this.cjump_details.querySelector("input[name=parameter]"));
+		/** @type {HTMLInputElement} */
+		this.cjump_value_input = notnull(this.cjump_details.querySelector("input[name=value]"));
+		/** @type {HTMLSelectElement} */
+		this.cjump_operator_select = notnull(this.cjump_details.querySelector("select[name=conditionoperatortype]"));
+		// this.cjump_transition_select = /** @type {HTMLSelectElement} */(this.cjump_details.querySelector("div.transitionconfig select"));
+
 		this.coords_details.addEventListener("change", _ev => {
 			this.on_coords_change();
 		});
@@ -59,6 +69,9 @@ export class UnifiedKeyframeEditor {
 		});
 		this.intensity_details.addEventListener("change", _ev => {
 			this.on_intensity_change();
+		});
+		this.cjump_details.addEventListener("change", _ev => {
+			this.on_cjump_change();
 		});
 
 
@@ -96,32 +109,46 @@ export class UnifiedKeyframeEditor {
 		this.keyframe_type_select.value = selected_type || "multipletypes";
 
 
-
-		const common_fields = new Set(["coords", "brush", "intensity"]);
-		for (const field of common_fields) {
+		const common_fields = {
+			coords: true,
+			brush: true,
+			intensity: true,
+			cjump: true,
+		};
+		for (const field of Object.keys(common_fields)) {
 			/** @type {HTMLDetailsElement} */
 			const field_details = notnull(this.ukfeForm.querySelector(`details.${field}`));
 			field_details.style.display = "none";
 		}
 		for (const kf of selected) {
-			for (const common_field of common_fields) {
-				if (common_field in kf) continue;
-				else common_fields.delete(common_field);
+			switch (kf.type) {
+				case "standard": { break; }
+				case "pause": {
+					common_fields.coords = false;
+					break;
+				}
+				case "stop": {
+					common_fields.coords = false;
+					common_fields.brush = false;
+					common_fields.intensity = false;
+					common_fields.cjump = false;
+					break;
+				}
 			}
 		}
 
-		if (common_fields.has("coords")) {
+		if (common_fields.coords) {
 			this.coords_details.style.display = "";
-			const for_type_check = selected.filter(has_coords);
+			const for_type_check = selected.filter(supports_coords);
 
 			this.coords_inputs.forEach(i => i.value = this.get_if_field_identical(for_type_check, kf => kf.coords.coords[i.name]));
 
 			const selected_transition = this.get_if_field_identical(for_type_check, kf => kf.coords.transition.name);
 			this.coords_transition_select.value = selected_transition || "multipletypes";
 		}
-		if (common_fields.has("brush")) {
+		if (common_fields.brush) {
 			this.brush_details.style.display = "";
-			const for_type_check = selected.filter(has_brush);
+			const for_type_check = selected.filter(supports_brush);
 
 			const brush_type = this.get_if_field_identical(for_type_check, kf => kf.brush?.brush.name || "omitted");
 			this.brush_type_select.value = brush_type || "multipletypes";
@@ -144,9 +171,9 @@ export class UnifiedKeyframeEditor {
 				this.brush_transition_select.value = selected_transition || "multipletypes";
 			}
 		}
-		if (common_fields.has("intensity")) {
+		if (common_fields.intensity) {
 			this.intensity_details.style.display = "";
-			const for_type_check = selected.filter(has_intensity);
+			const for_type_check = selected.filter(supports_intensity);
 
 			const intensity_type = this.get_if_field_identical(for_type_check, kf => kf.intensity?.intensity.name || "omitted");
 			this.intensity_type_select.value = intensity_type || "multipletypes";
@@ -170,6 +197,15 @@ export class UnifiedKeyframeEditor {
 			}
 
 		}
+		if (common_fields.cjump) {
+			this.cjump_details.style.display = "";
+			const for_type_check = selected.filter(supports_cjump);
+
+			this.cjump_parameter_input.value = this.get_if_field_identical(for_type_check, kf => kf.cjump?.condition.parameter) || "";
+			this.cjump_operator_select.value = this.get_if_field_identical(for_type_check, kf => kf.cjump?.condition.operator.name) || "multipletypes";
+			this.cjump_value_input.value = this.get_if_field_identical(for_type_check, kf => kf.cjump?.condition.value)?.toString() || "";
+
+		}
 	}
 
 
@@ -191,7 +227,7 @@ export class UnifiedKeyframeEditor {
 	on_coords_change() {
 		this.pattern_design.save_state();
 
-		const keyframes = [...this.pattern_design.selected_keyframes].filter(has_coords); //filter for type check (redundant since GUI restricts to correct types)
+		const keyframes = [...this.pattern_design.selected_keyframes].filter(supports_coords); //filter for type check (redundant since GUI restricts to correct types)
 		const raw_coords = { x: 0, y: 0, z: 0 };
 		this.coords_inputs.forEach(i => raw_coords[i.name] = parseFloat(i.value));
 		try {
@@ -206,7 +242,7 @@ export class UnifiedKeyframeEditor {
 	on_brush_change() {
 		this.pattern_design.save_state();
 
-		const keyframes = [...this.pattern_design.selected_keyframes].filter(has_brush); //filter for type check (redundant since GUI restricts to correct types)
+		const keyframes = [...this.pattern_design.selected_keyframes].filter(supports_brush); //filter for type check (redundant since GUI restricts to correct types)
 
 		this.brush_inputs.forEach(i => {
 			const parent_label = notnull(i.parentElement);
@@ -249,7 +285,7 @@ export class UnifiedKeyframeEditor {
 	on_intensity_change() {
 		this.pattern_design.save_state();
 
-		const keyframes = [...this.pattern_design.selected_keyframes].filter(has_intensity); //filter for type check (redundant since GUI restricts to correct types)
+		const keyframes = [...this.pattern_design.selected_keyframes].filter(supports_intensity); //filter for type check (redundant since GUI restricts to correct types)
 
 		this.intensity_inputs.forEach(i => {
 			const parent_label = notnull(i.parentElement);
@@ -287,6 +323,23 @@ export class UnifiedKeyframeEditor {
 		keyframes.forEach(kf => { if (kf.intensity) kf.intensity.transition.name = this.intensity_transition_select.value; });
 
 		this.pattern_design.commit_operation({ updated_keyframes: keyframes });
+	}
+	on_cjump_change() {
+		this.pattern_design.save_state();
+
+		const keyframes = [...this.pattern_design.selected_keyframes].filter(supports_cjump); //filter for type check (redundant since GUI restricts to correct types)
+
+		this.cjump_inputs.forEach(i => {
+			const parent_label = notnull(i.parentElement);
+			if (parent_label.style.display == "none") return;
+			keyframes.forEach(kf => {
+				if (!kf.cjump) return;
+				kf.cjump.condition.params[i.name] = parseFloat(i.value);
+			});
+		});
+
+		this.pattern_design.commit_operation({ updated_keyframes: keyframes });
+	}
 	}
 
 }

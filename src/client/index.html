@@ -155,6 +155,33 @@
 								</div>
 							</div>
 						</details>
+						<details class="cjump">
+							<summary>Conditional Jump</summary>
+							<div class="cjumpconfig labelinputgrid">
+								<div>
+									<span>Condition</span>
+									<label><span class="labeltext">Condition Parameter:</span><input type="text" name="parameter"></label>
+									<select name="conditionoperatortype" class="conditionoperator type">
+										<option hidden disabled selected value="multipletypes">multiple types</option>
+										<option value="lt">&lt;</option>
+										<option value="lt_eq">&lt;=</option>
+										<option value="gt">&gt;</option>
+										<option value="gt_eq">&gt;=</option>
+									</select>
+									<input type="number" name="value" step="0.05">
+								</div>
+							</div>
+							<!-- <div class="transition">
+								<span>Transition</span>
+								<div class="transitionconfig">
+									<select name="cjumptransitiontype" class="cjump transition type">
+										<option hidden disabled selected value="multipletypes">multiple types</option>
+										<option value="linear" title="Linear interpolation between the keyframes">linear</option>
+										<option value="step" title="Step/Jump between the keyframes">step</option>
+									</select>
+								</div>
+							</div> -->
+						</details>
 					</form>
 				</div>
 			</div>

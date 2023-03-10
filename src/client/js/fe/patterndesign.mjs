@@ -120,6 +120,9 @@ export class MAHPatternDesignFE {
 				this.#_tick_playback();
 			}
 		});
+		this.state_change_events.addEventListener("playback_update", _ => {
+			if (this.last_eval[0].stop) this.update_playstart(0);
+		});
 		this.last_eval = this.#_eval_pattern(); //set in constructor for typecheck
 	}
 
@@ -453,7 +456,6 @@ export class MAHPatternDesignFE {
 
 	#_eval_pattern() {
 		const eval_result = this.pattern_evaluator.eval_brush_at_anim_local_time_for_max_t(this.evaluator_params, this.evaluator_next_eval_params);
-		if (eval_result[0].stop) this.update_playstart(0);
 		this.last_eval = eval_result;
 		const sce = new StateChangeEvent("playback_update", { detail: {} });
 		this.state_change_events.dispatchEvent(sce);
@@ -517,7 +519,7 @@ export class MAHPatternDesignFE {
 				throw new Error("Could not find MidAirHapticsClipboardFormat data in clipboard.");
 			}
 			if (clipboard_parsed.$DATA_FORMAT != "MidAirHapticsClipboardFormat") throw new Error(`incorrect $DATA_FORMAT ${clipboard_parsed.$DATA_FORMAT} expected ${"MidAirHapticsClipboardFormat"}`);
-			if (clipboard_parsed.$REVISION != MAH_$REVISION) throw new Error(`incorrect revision ${clipboard_parsed.$REVISION} expected ${"0.0.1-alpha.2"}`);
+			if (clipboard_parsed.$REVISION != MAH_$REVISION) throw new Error(`incorrect revision ${clipboard_parsed.$REVISION} expected ${MAH_$REVISION}`);
 
 
 			// I was gonna do a more complicated "ghost" behaviour

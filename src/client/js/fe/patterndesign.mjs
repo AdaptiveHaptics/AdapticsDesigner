@@ -473,6 +473,7 @@ export class MAHPatternDesignFE {
 	#_eval_pattern() {
 		const eval_result = this.pattern_evaluator.eval_brush_at_anim_local_time_for_max_t(this.evaluator_params, this.evaluator_next_eval_params);
 		this.last_eval = eval_result;
+		this.evaluator_next_eval_params = eval_result[0].next_eval_params;
 		const sce = new StateChangeEvent("playback_update", { detail: {} });
 		this.state_change_events.dispatchEvent(sce);
 		return eval_result;

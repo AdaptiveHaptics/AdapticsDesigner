@@ -2,6 +2,7 @@
 
 import { notnull } from "./util.mjs";
 
+const UPARAM_CLICK_EV_HANDLER_SYMBOL = Symbol("UPARAM_CLICK_EV_HANDLER_SYMBOL");
 
 export class ParameterEditor {
 	/**
@@ -120,10 +121,14 @@ export class ParameterEditor {
 		}
 		for (const [param, keyframes] of new Map([...uparam_to_kfs_map].sort((a, b) => a[0].localeCompare(b[0])))) {
 			const pc_label = param_labels.get(param) || this.#_create_user_param_control(param, 0);
-			pc_label.addEventListener("click", _ => {
+
+			if (pc_label[UPARAM_CLICK_EV_HANDLER_SYMBOL]) pc_label.removeEventListener("click", pc_label[UPARAM_CLICK_EV_HANDLER_SYMBOL]);
+			pc_label[UPARAM_CLICK_EV_HANDLER_SYMBOL] = _ => {
 				this._pattern_design.deselect_all_keyframes();
 				this._pattern_design.select_keyframes(keyframes);
-			});
+			};
+			pc_label.addEventListener("click", pc_label[UPARAM_CLICK_EV_HANDLER_SYMBOL]);
+
 			this._userparameters_div.appendChild(pc_label);
 		}
 		this.#_update_user_parameters_values();

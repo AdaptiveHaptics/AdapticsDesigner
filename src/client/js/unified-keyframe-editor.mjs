@@ -338,7 +338,7 @@ export class UnifiedKeyframeEditor {
 
 		keyframes.forEach(kf => {
 			if (!kf.cjump && !this.cjump_parameter_input.value) return;
-			if (!kf.cjump) kf.cjump = { condition: { parameter: "conditionAA", operator: { name: "gt", params: {} }, value: 0 }, jump_to: 1.5 };
+			if (!kf.cjump) kf.cjump = { condition: { parameter: "conditionAA", operator: { name: "lt", params: {} }, value: 0 }, jump_to: 2500 };
 			if (this.cjump_parameter_input.value) kf.cjump.condition.parameter = this.cjump_parameter_input.value;
 			switch (this.cjump_operator_select.value) {
 				case "lt":

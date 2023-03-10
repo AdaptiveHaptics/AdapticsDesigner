@@ -57,6 +57,8 @@ export class UnifiedKeyframeEditor {
 		this.cjump_parameter_input = notnull(this.cjump_details.querySelector("input[name=parameter]"));
 		/** @type {HTMLInputElement} */
 		this.cjump_value_input = notnull(this.cjump_details.querySelector("input[name=value]"));
+		/** @type {HTMLInputElement} */
+		this.cjump_jump_to_input = notnull(this.cjump_details.querySelector("input[name=jump_to]"));
 		/** @type {HTMLSelectElement} */
 		this.cjump_operator_select = notnull(this.cjump_details.querySelector("select[name=conditionoperatortype]"));
 		// this.cjump_transition_select = /** @type {HTMLSelectElement} */(this.cjump_details.querySelector("div.transitionconfig select"));
@@ -204,6 +206,7 @@ export class UnifiedKeyframeEditor {
 			this.cjump_parameter_input.value = this.get_if_field_identical(for_type_check, kf => kf.cjump?.condition.parameter) || "";
 			this.cjump_operator_select.value = this.get_if_field_identical(for_type_check, kf => kf.cjump?.condition.operator.name) || "multipletypes";
 			this.cjump_value_input.value = this.get_if_field_identical(for_type_check, kf => kf.cjump?.condition.value)?.toString() || "";
+			this.cjump_jump_to_input.value = this.get_if_field_identical(for_type_check, kf => kf.cjump?.jump_to)?.toString() || "";
 
 		}
 	}
@@ -273,6 +276,8 @@ export class UnifiedKeyframeEditor {
 						}
 					};
 					break;
+				case "multipletypes":
+					break;
 				default: throw new Error(`unexpected brush type: ${this.brush_type_select.value}`);
 			}
 		});
@@ -315,6 +320,8 @@ export class UnifiedKeyframeEditor {
 						}
 					};
 					break;
+				case "multipletypes":
+					break;
 				default: throw new Error(`unexpected intensity type: ${this.intensity_type_select.value}`);
 			}
 		});
@@ -329,17 +336,26 @@ export class UnifiedKeyframeEditor {
 
 		const keyframes = [...this.pattern_design.selected_keyframes].filter(supports_cjump); //filter for type check (redundant since GUI restricts to correct types)
 
-		this.cjump_inputs.forEach(i => {
-			const parent_label = notnull(i.parentElement);
-			if (parent_label.style.display == "none") return;
-			keyframes.forEach(kf => {
-				if (!kf.cjump) return;
-				kf.cjump.condition.params[i.name] = parseFloat(i.value);
-			});
+		keyframes.forEach(kf => {
+			if (!kf.cjump && !this.cjump_parameter_input.value) return;
+			if (!kf.cjump) kf.cjump = { condition: { parameter: "conditionAA", operator: { name: "gt", params: {} }, value: 0 }, jump_to: 1.5 };
+			if (this.cjump_parameter_input.value) kf.cjump.condition.parameter = this.cjump_parameter_input.value;
+			switch (this.cjump_operator_select.value) {
+				case "lt":
+				case "lt_eq":
+				case "gt":
+				case "gt_eq":
+					kf.cjump.condition.operator = { name: this.cjump_operator_select.value, params: {} };
+					break;
+				case "multipletypes":
+					break;
+				default: throw new Error(`unexpected cjump operator type: ${this.intensity_type_select.value}`);
+			}
+			if (this.cjump_value_input.value) kf.cjump.condition.value = parseFloat(this.cjump_value_input.value);
+			if (this.cjump_jump_to_input.value) kf.cjump.jump_to = parseFloat(this.cjump_jump_to_input.value);
 		});
 
 		this.pattern_design.commit_operation({ updated_keyframes: keyframes });
-	}
 	}
 
 }

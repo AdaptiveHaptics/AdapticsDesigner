@@ -325,13 +325,23 @@ label span.unit {
 }
 
 div.parametereditor {
-    display: flex;
+    /* display: flex; */
     flex-direction: column;
     padding: 1ex;
     gap: 1ex;
     background-color: var(--background-tertiary);
+    overflow: hidden auto;
 }
 
+div.parametereditor div.userparameters {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1ex;
+    align-items: center;
+}
+div.parametereditor div.userparameters label {
+    display: contents;
+}
 div.parametereditor div.timecontrol {
     display: grid;
     grid-template-columns: auto 1fr;

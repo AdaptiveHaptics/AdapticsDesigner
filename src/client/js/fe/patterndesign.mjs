@@ -403,6 +403,22 @@ export class MAHPatternDesignFE {
 	}
 
 
+	get_user_parameters_to_keyframes_map() {
+		/** @type {Map<string, MAHKeyframeFE[]>} */
+		const uparam_to_kfs_map = new Map();
+		for (const keyframe of this.filedata.keyframes) {
+			if ("cjump" in keyframe) {
+				const param = keyframe.cjump?.condition.parameter;
+				if (param) {
+					const arr = uparam_to_kfs_map.get(param);
+					if (arr) arr.push(keyframe);
+					else uparam_to_kfs_map.set(param, [keyframe]);
+				}
+			}
+		}
+		return uparam_to_kfs_map;
+	}
+
 
 	#_playstart_timestamp = 0;
 	#_tick_playback() {

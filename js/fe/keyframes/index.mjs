@@ -23,11 +23,11 @@ export { MAHKeyframePauseFE , MAHKeyframeStandardFE, MAHKeyframeStopFE };
  *
  * @param {MAHKeyframeFE} keyframe
  */
-export function filter_by_coords(keyframe) {
+export function filter_has_coords(keyframe) {
 	if ("coords" in keyframe) return keyframe;
-	else null;
+	else return null;
 }
-/** @type {(a0: MAHKeyframeFE) => a0 is NotNullable<ReturnType<typeof filter_by_coords>> } */
+/** @type {(a0: MAHKeyframeFE) => a0 is NotNullable<ReturnType<typeof filter_has_coords>> } */
 export function has_coords(keyframe) {
 	return "coords" in keyframe;
 }
@@ -35,37 +35,68 @@ export function has_coords(keyframe) {
  *
  * @param {MAHKeyframeFE} keyframe
  */
-export function filter_by_brush(keyframe) {
-	if ("brush" in keyframe) return keyframe;
-	else null;
+export function filter_supports_coords(keyframe) {
+	switch (keyframe.type) {
+		case "standard": return keyframe;
+		case "pause": return null;
+		case "stop": return null;
+		default: assert_unreachable(keyframe); //if this is causing a tsc error, switch cases are not complete
+	}
 }
-/** @type {(a0: MAHKeyframeFE) => a0 is NotNullable<ReturnType<typeof filter_by_brush>> } */
-export function has_brush(keyframe) {
-	return "brush" in keyframe;
+/** @type {(a0: MAHKeyframeFE) => a0 is NotNullable<ReturnType<typeof filter_supports_coords>> } */
+export function supports_coords(keyframe) {
+	return filter_supports_coords(keyframe) != null;
 }
+
 /**
  *
  * @param {MAHKeyframeFE} keyframe
  */
-export function filter_by_intensity(keyframe) {
-	if ("intensity" in keyframe) return keyframe;
-	else null;
+export function filter_supports_brush(keyframe) {
+	switch (keyframe.type) {
+		case "standard": return keyframe;
+		case "pause": return keyframe;
+		case "stop": return null;
+		default: assert_unreachable(keyframe); //if this is causing a tsc error, switch cases are not complete
+	}
 }
-/** @type {(a0: MAHKeyframeFE) => a0 is NotNullable<ReturnType<typeof filter_by_intensity>> } */
-export function has_intensity(keyframe) {
-	return "intensity" in keyframe;
+/** @type {(a0: MAHKeyframeFE) => a0 is NotNullable<ReturnType<typeof filter_supports_brush>> } */
+export function supports_brush(keyframe) {
+	return filter_supports_brush(keyframe) != null;
 }
+
 /**
  *
  * @param {MAHKeyframeFE} keyframe
  */
-export function filter_by_transition(keyframe) {
-	if ("transition" in keyframe) return keyframe;
-	else null;
+export function filter_supports_intensity(keyframe) {
+	switch (keyframe.type) {
+		case "standard": return keyframe;
+		case "pause": return keyframe;
+		case "stop": return null;
+		default: assert_unreachable(keyframe); //if this is causing a tsc error, switch cases are not complete
+	}
 }
-/** @type {(a0: MAHKeyframeFE) => a0 is NotNullable<ReturnType<typeof filter_by_transition>> } */
-export function has_transition(keyframe) {
-	return "transition" in keyframe;
+/** @type {(a0: MAHKeyframeFE) => a0 is NotNullable<ReturnType<typeof filter_supports_intensity>> } */
+export function supports_intensity(keyframe) {
+	return filter_supports_intensity(keyframe) != null;
+}
+
+/**
+ *
+ * @param {MAHKeyframeFE} keyframe
+ */
+export function filter_supports_cjump(keyframe) {
+	switch (keyframe.type) {
+		case "standard": return keyframe;
+		case "pause": return keyframe;
+		case "stop": return null;
+		default: assert_unreachable(keyframe); //if this is causing a tsc error, switch cases are not complete
+	}
+}
+/** @type {(a0: MAHKeyframeFE) => a0 is NotNullable<ReturnType<typeof filter_supports_cjump>> } */
+export function supports_cjump(keyframe) {
+	return filter_supports_cjump(keyframe) != null;
 }
 
 /**

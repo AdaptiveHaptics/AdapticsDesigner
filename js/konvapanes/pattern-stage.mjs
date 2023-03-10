@@ -1,4 +1,4 @@
-import { filter_by_coords, has_coords } from "../fe/keyframes/index.mjs";
+import { has_coords, filter_has_coords } from "../fe/keyframes/index.mjs";
 import { KonvaResizeStage } from "./shared.mjs";
 import { notnull } from "../util.mjs";
 import { BoundsCheck } from "../fe/keyframes/bounds-check.mjs";
@@ -128,9 +128,9 @@ export class KonvaPatternStage extends KonvaResizeStage {
 			if ("coords" in ev.detail.keyframe) {
 				const curr_cp = new KonvaPatternControlPoint(ev.detail.keyframe, this);
 				const prev_cp = KonvaPatternControlPoint.get_control_point_from_keyframe(
-					this.pattern_design.get_nearest_neighbor_keyframe_matching_pred(ev.detail.keyframe, filter_by_coords, "prev"));
+					this.pattern_design.get_nearest_neighbor_keyframe_matching_pred(ev.detail.keyframe, filter_has_coords, "prev"));
 				const next_cp = KonvaPatternControlPoint.get_control_point_from_keyframe(
-					this.pattern_design.get_nearest_neighbor_keyframe_matching_pred(ev.detail.keyframe, filter_by_coords, "next"));
+					this.pattern_design.get_nearest_neighbor_keyframe_matching_pred(ev.detail.keyframe, filter_has_coords, "next"));
 				if (prev_cp) new KonvaPatternControlPointLine(prev_cp, curr_cp, this);
 				if (next_cp) new KonvaPatternControlPointLine(curr_cp, next_cp, this);
 				if (prev_cp?.has_linked()) {
@@ -138,7 +138,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 				}
 			} else if (ev.detail.keyframe.type == "pause" || ev.detail.keyframe.type == "stop") {
 				const prev_cp = KonvaPatternControlPoint.get_control_point_from_keyframe(
-					this.pattern_design.get_nearest_neighbor_keyframe_matching_pred(ev.detail.keyframe, filter_by_coords, "prev"));
+					this.pattern_design.get_nearest_neighbor_keyframe_matching_pred(ev.detail.keyframe, filter_has_coords, "prev"));
 				if (prev_cp) prev_cp.update_linked(ev.detail.keyframe);
 			}
 		});
@@ -397,7 +397,7 @@ class KonvaPatternControlPoint {
 
 	/**
 	 *
-	 * @param {NotNullable<ReturnType<import("../fe/keyframes/index.mjs").filter_by_coords>>} keyframe
+	 * @param {NotNullable<ReturnType<import("../fe/keyframes/index.mjs").filter_has_coords>>} keyframe
 	 * @param {KonvaPatternStage} pattern_stage
 	 */
 	constructor(keyframe, pattern_stage) {

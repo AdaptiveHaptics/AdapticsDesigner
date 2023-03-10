@@ -22,6 +22,7 @@ export class MAHKeyframePauseFE extends MAHKeyframeBasicFE {
 		this.type = keyframe.type;
 		this.brush = keyframe.brush;
 		this.intensity = keyframe.intensity;
+		this.cjump = keyframe.cjump;
 	}
 
 	/**

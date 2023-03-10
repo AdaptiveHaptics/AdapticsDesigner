@@ -123,12 +123,16 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 			});
 		}
 
-		pattern_design.state_change_events.addEventListener("kf_new", ev => {
+		this.pattern_design.state_change_events.addEventListener("kf_new", ev => {
 			const _timelinekeyframe = new KonvaTimelineKeyframe(ev.detail.keyframe, this);
 		});
-		pattern_design.state_change_events.addEventListener("rerender", _ev => {
+		this.pattern_design.state_change_events.addEventListener("rerender", _ev => {
 			this.render_design();
 		});
+
+		this.pattern_design.state_change_events.addEventListener("playback_update", _ev => {
+			this.playback_head.x(this.milliseconds_to_x_coord(this.pattern_design.last_eval[0].pattern_time));
+		},);
 
 		this.render_design();
 	}
@@ -147,7 +151,15 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 			x: 0, y: 0, width: this.fullWidth, height: timestamp_rect_height,
 			fill: getComputedStyle(document.body).getPropertyValue("--background-tertiary")
 		});
+		this.timestamp_rect.on("click", ev => {
+			if (ev.target != this.timestamp_rect) return;
+			ev.evt.preventDefault();
+			const { x } = this.keyframe_rect.getRelativePointerPosition();
+			const time = this.raw_x_to_t({ raw_x: x, snap: false });
+			this.pattern_design.update_pattern_time(time);
+		});
 		this.scrolling_layer.add(this.timestamp_rect);
+
 		this.keyframe_rect = new Konva.Rect({
 			x: 0, y: keyframe_rect_y, width: this.fullWidth, height: keyframe_rect_height,
 			fill: getComputedStyle(document.body).getPropertyValue("--timeline-minor-gridline-stroke")
@@ -259,9 +271,6 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 				this.playback_head.y(0);
 				const time = this.x_coord_to_milliseconds(this.playback_head.x());
 				this.pattern_design.update_pattern_time(time);
-			});
-			this.pattern_design.state_change_events.addEventListener("playback_update", _ev => {
-				this.playback_head.x(this.milliseconds_to_x_coord(this.pattern_design.last_eval[0].pattern_time));
 			});
 			this.playback_head.on("mouseenter", _ev => {
 				document.body.style.cursor = "ew-resize";

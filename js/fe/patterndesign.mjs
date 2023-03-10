@@ -35,6 +35,7 @@ import { create_correct_keyframefe_wrapper, MAHKeyframePauseFE, MAHKeyframeStand
  * @property {{ committed: boolean }} commit_update
  * @property {{ }} playback_update
  * @property {{ time: boolean }} parameters_update
+ * @property {{ }} playstart_update
  */
 
 /**
@@ -112,6 +113,15 @@ export class MAHPatternDesignFE {
 			} else {
 				this.#_eval_pattern();
 			}
+		});
+		this.state_change_events.addEventListener("playstart_update", _ => {
+			this.websocket?.update_playstart(this.#_playstart_timestamp);
+			if (this.is_playing()) {
+				this.#_tick_playback();
+			}
+		});
+		this.state_change_events.addEventListener("playback_update", _ => {
+			if (this.last_eval[0].stop) this.update_playstart(0);
 		});
 		this.last_eval = this.#_eval_pattern(); //set in constructor for typecheck
 	}
@@ -393,6 +403,22 @@ export class MAHPatternDesignFE {
 	}
 
 
+	get_user_parameters_to_keyframes_map() {
+		/** @type {Map<string, MAHKeyframeFE[]>} */
+		const uparam_to_kfs_map = new Map();
+		for (const keyframe of this.filedata.keyframes) {
+			if ("cjump" in keyframe) {
+				const param = keyframe.cjump?.condition.parameter;
+				if (param) {
+					const arr = uparam_to_kfs_map.get(param);
+					if (arr) arr.push(keyframe);
+					else uparam_to_kfs_map.set(param, [keyframe]);
+				}
+			}
+		}
+		return uparam_to_kfs_map;
+	}
+
 
 	#_playstart_timestamp = 0;
 	#_tick_playback() {
@@ -411,10 +437,8 @@ export class MAHPatternDesignFE {
 	 */
 	update_playstart(playstart_timestamp) {
 		this.#_playstart_timestamp = playstart_timestamp;
-		this.websocket?.update_playstart(playstart_timestamp);
-		if (this.is_playing()) {
-			this.#_tick_playback();
-		}
+		const ce = new StateChangeEvent("playstart_update", { detail: { } });
+		this.state_change_events.dispatchEvent(ce);
 	}
 
 	/**
@@ -448,8 +472,8 @@ export class MAHPatternDesignFE {
 
 	#_eval_pattern() {
 		const eval_result = this.pattern_evaluator.eval_brush_at_anim_local_time_for_max_t(this.evaluator_params, this.evaluator_next_eval_params);
-		if (eval_result[0].stop) this.update_playstart(0);
 		this.last_eval = eval_result;
+		this.evaluator_next_eval_params = eval_result[0].next_eval_params;
 		const sce = new StateChangeEvent("playback_update", { detail: {} });
 		this.state_change_events.dispatchEvent(sce);
 		return eval_result;
@@ -512,7 +536,7 @@ export class MAHPatternDesignFE {
 				throw new Error("Could not find MidAirHapticsClipboardFormat data in clipboard.");
 			}
 			if (clipboard_parsed.$DATA_FORMAT != "MidAirHapticsClipboardFormat") throw new Error(`incorrect $DATA_FORMAT ${clipboard_parsed.$DATA_FORMAT} expected ${"MidAirHapticsClipboardFormat"}`);
-			if (clipboard_parsed.$REVISION != MAH_$REVISION) throw new Error(`incorrect revision ${clipboard_parsed.$REVISION} expected ${"0.0.1-alpha.2"}`);
+			if (clipboard_parsed.$REVISION != MAH_$REVISION) throw new Error(`incorrect revision ${clipboard_parsed.$REVISION} expected ${MAH_$REVISION}`);
 
 
 			// I was gonna do a more complicated "ghost" behaviour

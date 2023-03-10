@@ -513,6 +513,7 @@ class KonvaPatternControlPoint {
 		pattern_stage.pattern_design.state_change_events.addEventListener("kf_update", ev => {
 			if (ev.detail.keyframe != keyframe) return;
 			this.update_position(keyframe.coords.coords);
+			this.lines.out?.update();
 		}, { signal: this.listener_abort.signal });
 
 		pattern_stage.pattern_design.state_change_events.addEventListener("kf_select", ev => {
@@ -606,6 +607,8 @@ class KonvaPatternControlPoint {
 
 			this.linked_group.setZIndex((this.pattern_stage.k_control_points_layer.children?.length || 999)-1);
 		}
+
+		this.lines.out?.update();
 	}
 
 	/**
@@ -671,12 +674,10 @@ class KonvaPatternControlPointLine {
 			stroke: getComputedStyle(document.body).getPropertyValue("--control-point-line-stroke"),
 			strokeWidth: 2,
 			listening: false,
+			dash: [10, 5],
 		});
 
-		const old_out = curr_cp.lines.out;
-		if (old_out) old_out.line.destroy();
-		const old_in = next_cp.lines.in;
-		if (old_in) old_in.line.destroy();
+		KonvaPatternControlPointLine.clear_lines(curr_cp, next_cp);
 
 		curr_cp.lines.out = this;
 		next_cp.lines.in = this;
@@ -685,5 +686,20 @@ class KonvaPatternControlPointLine {
 		this.next_cp = next_cp;
 
 		pattern_stage.k_control_points_layer.add(this.line);
+	}
+
+	/**
+	 *
+	 * @param {KonvaPatternControlPoint} curr_cp
+	 * @param {KonvaPatternControlPoint} next_cp
+	 */
+	static clear_lines(curr_cp, next_cp) {
+		curr_cp.lines.out?.line.destroy();
+		next_cp.lines.in?.line.destroy();
+	}
+
+	update() {
+		this.line.visible(!this.curr_cp.has_stop());
+		this.line.dashEnabled(this.curr_cp.keyframe.coords.transition.name == "step");
 	}
 }

@@ -65,8 +65,8 @@ export class ParameterEditor {
 			this._pattern_design.state_change_events.addEventListener("kf_delete", () => {
 				this.#_update_user_parameters_controls();
 			});
-			this._pattern_design.state_change_events.addEventListener("parameters_update", () => {
-				this.#_update_user_parameters_values();
+			this._pattern_design.state_change_events.addEventListener("parameters_update", ev => {
+				if (!ev.detail.time) this.#_update_user_parameters_values();
 			});
 			this._userparameters_div.addEventListener("change", ev => {
 				const input = ev.target;
@@ -120,7 +120,7 @@ export class ParameterEditor {
 			pc_label.remove();
 		}
 		for (const [param, keyframes] of new Map([...uparam_to_kfs_map].sort((a, b) => a[0].localeCompare(b[0])))) {
-			const pc_label = param_labels.get(param) || this.#_create_user_param_control(param, 0);
+			const pc_label = param_labels.get(param) || (this._pattern_design.update_evaluator_user_params(param, 0), this.#_create_user_param_control(param, 0));
 
 			if (pc_label[UPARAM_CLICK_EV_HANDLER_SYMBOL]) pc_label.removeEventListener("click", pc_label[UPARAM_CLICK_EV_HANDLER_SYMBOL]);
 			pc_label[UPARAM_CLICK_EV_HANDLER_SYMBOL] = _ => {

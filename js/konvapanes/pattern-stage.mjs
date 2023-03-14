@@ -685,6 +685,8 @@ class KonvaPatternControlPointLine {
 		this.curr_cp = curr_cp;
 		this.next_cp = next_cp;
 
+		this.update();
+
 		pattern_stage.k_control_points_layer.add(this.line);
 	}
 

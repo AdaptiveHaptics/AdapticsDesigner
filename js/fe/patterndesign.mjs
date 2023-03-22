@@ -238,9 +238,8 @@ export class MAHPatternDesignFE {
 
 
 	/**
-	 *
+	 * * return value mused be passed into `commit_operation` as a value in `new_keyframes`
 	 * @param {OptExceptProp<MAHKeyframe, "type">} set
-	 * @returns
 	 */
 	insert_new_keyframe(set) {
 		let keyframe;
@@ -371,7 +370,7 @@ export class MAHPatternDesignFE {
 	}
 
 	/**
-	 *
+	 * return value mused be passed into `commit_operation` as `deleted_keyframes`
 	 * @param {MAHKeyframeFE[]} keyframes
 	 */
 	delete_keyframes(keyframes) {
@@ -538,12 +537,11 @@ export class MAHPatternDesignFE {
 			if (clipboard_parsed.$DATA_FORMAT != "MidAirHapticsClipboardFormat") throw new Error(`incorrect $DATA_FORMAT ${clipboard_parsed.$DATA_FORMAT} expected ${"MidAirHapticsClipboardFormat"}`);
 			if (clipboard_parsed.$REVISION != MAH_$REVISION) throw new Error(`incorrect revision ${clipboard_parsed.$REVISION} expected ${MAH_$REVISION}`);
 
-
 			// I was gonna do a more complicated "ghost" behaviour
 			// but google slides just drops the new objects at an offset
 			// and adds them to selected
-			this.deselect_all_keyframes();
 			this.save_state();
+			const deleted_keyframes = this.delete_keyframes([...this.selected_keyframes]);
 			clipboard_parsed.keyframes.sort();
 
 			const paste_time_offset = NewKeyframeCommon.next_timestamp(this) - (clipboard_parsed.keyframes[0]?.time || 0);
@@ -560,7 +558,7 @@ export class MAHPatternDesignFE {
 				}
 				return this.insert_new_keyframe(kf);
 			});
-			this.commit_operation({ new_keyframes });
+			this.commit_operation({ new_keyframes, deleted_keyframes });
 			this.select_keyframes(new_keyframes);
 		} catch (e) {
 			alert("Could not find MidAirHapticsClipboardFormat data in clipboard");

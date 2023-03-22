@@ -2,7 +2,8 @@
 /** @typedef {import("./fe/patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
 /** @typedef {import("./pattern-evaluator.mjs").PatternEvaluatorParameters} PatternEvaluatorParameters */
 /**
- * @template T, K
+ * @template T
+ * @template {keyof T} K
  * @typedef {import("../../shared/util").ReqProp<T, K>} ReqProp
  */
 

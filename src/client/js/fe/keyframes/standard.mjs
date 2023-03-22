@@ -22,7 +22,7 @@ export class MAHKeyframeStandardFE extends MAHKeyframeBasicFE {
 		this.brush = keyframe.brush;
 		this.intensity = keyframe.intensity;
 		this.coords = keyframe.coords;
-		this.cjump = keyframe.cjump;
+		this.cjumps = keyframe.cjumps;
 	}
 
 	/**
@@ -32,7 +32,7 @@ export class MAHKeyframeStandardFE extends MAHKeyframeBasicFE {
 	 */
 	static from_current_keyframes(pattern_design, set) {
 		const { time, coords, brush, intensity, } = new NewKeyframeCommon(pattern_design, set.time || null);
-		const keyframe = new MAHKeyframeStandardFE(structured_clone({ time, coords, brush, intensity, ...set, type: "standard" }), pattern_design);
+		const keyframe = new MAHKeyframeStandardFE(structured_clone({ time, coords, brush, intensity, cjumps: [], ...set, type: "standard" }), pattern_design);
 		return keyframe;
 	}
 }

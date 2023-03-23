@@ -233,6 +233,7 @@ div.unifiedkeyframeeditor {
     display: flex;
     flex-direction: column;
     overflow: auto;
+    background-color: var(--background-tertiary);
 }
 div.unifiedkeyframeeditor > div.help {
     display: none;
@@ -376,16 +377,24 @@ div.parametereditor {
     gap: 1ex;
     background-color: var(--background-tertiary);
     overflow: hidden auto;
+    padding-bottom: 2ex;
 }
 
 div.parametereditor div.userparameters {
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: 1.5fr auto 1fr;
     gap: 1ex;
     align-items: center;
+    justify-content: center;
 }
-div.parametereditor div.userparameters label {
+div.parametereditor div.userparameters > div:first-child {
+    font-weight: bold;
+}
+div.parametereditor div.userparameters > * {
     display: contents;
+}
+div.parametereditor div.userparameters > user-param-control span:nth-child(2) {
+    font-weight: bold;
 }
 div.parametereditor div.timecontrol {
     display: grid;
@@ -394,7 +403,7 @@ div.parametereditor div.timecontrol {
     gap: 1ex;
     align-items: center;
 }
-div.parametereditor div.timecontrol label {
+div.parametereditor div.timecontrol > label {
     display: contents;
 }
 

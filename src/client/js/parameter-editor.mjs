@@ -1,4 +1,5 @@
 /** @typedef {import("./fe/patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
+/** @typedef {import("./fe/patterndesign.mjs").MAHKeyframeFE} MAHKeyframeFE */
 
 import { notnull } from "./util.mjs";
 
@@ -68,78 +69,39 @@ export class ParameterEditor {
 			this._pattern_design.state_change_events.addEventListener("parameters_update", ev => {
 				if (!ev.detail.time) this.#_update_user_parameters_values();
 			});
-			this._userparameters_div.addEventListener("change", ev => {
-				const input = ev.target;
-				if (input instanceof HTMLInputElement) {
-					const v = parseFloat(input.value);
-					if (Number.isFinite(v)) {
-						this._pattern_design.update_evaluator_user_params(input.name, v);
-					} else {
-						input.value = this._pattern_design.evaluator_params.user_parameters.get(input.name)?.toFixed(2) || "0";
-					}
-				}
-			});
 			this.#_update_user_parameters_controls();
 		}
 	}
 
-	/**
-	 *
-	 * @param {string} key
-	 * @param {number} val
-	 */
-	#_create_user_param_control(key, val) {
-		const label = document.createElement("label");
-
-		const labeltext_span = document.createElement("span");
-		labeltext_span.classList.add("labeltext");
-		labeltext_span.textContent = key;
-		label.appendChild(labeltext_span);
-
-		const val_input = document.createElement("input");
-		val_input.name = key;
-		val_input.step = "0.05";
-		val_input.type = "number";
-		val_input.value = val.toString();
-		label.appendChild(val_input);
-
-		return label;
-	}
-
 	#_update_user_parameters_controls() {
 		const uparam_to_kfs_map = this._pattern_design.get_user_parameters_to_keyframes_map();
-		/** @type {Map<string, HTMLLabelElement>} */
-		const param_labels = new Map();
-		const pc_labels = [...this._userparameters_div.children];
-		for (const pc_label of pc_labels) {
-			if (!(pc_label instanceof HTMLLabelElement)) continue;
-			const user_param_name = notnull(pc_label.querySelector("input")).name;
+		/** @type {Map<string, UserParamControl>} */
+		const userparam_els_by_name = new Map();
+		const uparam_children = [...this._userparameters_div.children];
+		for (const up_el of uparam_children) {
+			if (!(up_el instanceof UserParamControl)) continue;
+			const user_param_name = up_el.param_name;
 			if (uparam_to_kfs_map.has(user_param_name)) {
-				param_labels.set(user_param_name, pc_label);
+				userparam_els_by_name.set(user_param_name, up_el);
 			}
-			pc_label.remove();
+			up_el.remove();
 		}
 		for (const [param, keyframes] of new Map([...uparam_to_kfs_map].sort((a, b) => a[0].localeCompare(b[0])))) {
-			const pc_label = param_labels.get(param) || (this._pattern_design.update_evaluator_user_params(param, 0), this.#_create_user_param_control(param, 0));
+			const up_el = userparam_els_by_name.get(param) || (this._pattern_design.update_evaluator_user_params(param, 0), new UserParamControl(this._pattern_design, param, 0, keyframes));
 
-			if (pc_label[UPARAM_CLICK_EV_HANDLER_SYMBOL]) pc_label.removeEventListener("click", pc_label[UPARAM_CLICK_EV_HANDLER_SYMBOL]);
-			pc_label[UPARAM_CLICK_EV_HANDLER_SYMBOL] = _ => {
-				this._pattern_design.deselect_all_keyframes();
-				this._pattern_design.select_keyframes(keyframes);
-			};
-			pc_label.addEventListener("click", pc_label[UPARAM_CLICK_EV_HANDLER_SYMBOL]);
+			up_el.linked_keyframes = keyframes;
 
-			this._userparameters_div.appendChild(pc_label);
+			this._userparameters_div.appendChild(up_el);
 		}
 		this.#_update_user_parameters_values();
 	}
 
 	#_update_user_parameters_values() {
-		for (const pc_label of this._userparameters_div.children) {
-			const user_param_name = notnull(pc_label.querySelector("input")).name;
-			const user_param_val = this._pattern_design.evaluator_params.user_parameters.get(user_param_name);
+		for (const up_el of this._userparameters_div.children) {
+			if (!(up_el instanceof UserParamControl)) continue;
+			const user_param_val = this._pattern_design.evaluator_params.user_parameters.get(up_el.param_name);
 			if (user_param_val !== undefined) {
-				notnull(pc_label.querySelector("input")).value = user_param_val.toString();
+				up_el.param_value = user_param_val.toString();
 			}
 		}
 	}
@@ -156,3 +118,83 @@ export class ParameterEditor {
 	}
 
 }
+
+
+class UserParamControl extends HTMLElement {
+	#_pattern_design;
+	#_name_input = document.createElement("input");
+	#_val_input = document.createElement("input");
+
+	/**
+	 *
+	 * @param {MAHPatternDesignFE} pattern_design
+	 * @param {string} key
+	 * @param {number} val
+	 * @param {MAHKeyframeFE[]} linked_keyframes
+	 */
+	constructor(pattern_design, key, val, linked_keyframes) {
+		super();
+
+		this.#_pattern_design = pattern_design;
+		this.linked_keyframes = linked_keyframes;
+
+		this.classList.add("userparam");
+
+		this.#_name_input.value = key;
+		this.#_name_input.addEventListener("change", _ => this.on_name_input_change());
+		this.appendChild(this.#_name_input);
+
+		const eq_span = document.createElement("span");
+		eq_span.innerText = "=";
+		this.appendChild(eq_span);
+
+		this.#_val_input.name = key;
+		this.#_val_input.step = "0.05";
+		this.#_val_input.type = "number";
+		this.#_val_input.value = val.toString();
+		this.#_val_input.addEventListener("change", _ => this.on_val_input_change());
+		this.appendChild(this.#_val_input);
+
+		this.addEventListener("click", _ev => this.select_linked());
+	}
+
+	get param_name() {
+		return this.#_name_input.value;
+	}
+	set param_name(v) {
+		this.#_name_input.value = v;
+		this.#_val_input.name = v;
+	}
+	get param_value() {
+		return this.#_val_input.value;
+	}
+	set param_value(v) {
+		this.#_val_input.value = v;
+	}
+
+	on_name_input_change() {
+		const new_name = this.param_name;
+		if (this.#_pattern_design.evaluator_params.user_parameters.has(new_name)) {
+			this.param_name = this.#_val_input.name; // reset to old name to avoid merging/collision
+		} else {
+			this.#_pattern_design.rename_evaluator_user_param(this.#_val_input.name, new_name);
+			this.param_name = new_name;
+		}
+	}
+	on_val_input_change() {
+		const v = parseFloat(this.param_value);
+		if (Number.isFinite(v)) {
+			this.#_pattern_design.update_evaluator_user_params(this.param_name, v);
+		} else {
+			this.param_value = this.#_pattern_design.evaluator_params.user_parameters.get(this.param_name)?.toFixed(2) || "0"; // reset to old value
+		}
+	}
+
+	select_linked() {
+		this.#_pattern_design.deselect_all_keyframes();
+		this.#_pattern_design.select_keyframes(this.linked_keyframes);
+	}
+}
+
+// Register the custom element
+customElements.define("user-param-control", UserParamControl);

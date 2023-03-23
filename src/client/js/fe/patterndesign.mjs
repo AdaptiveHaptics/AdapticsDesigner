@@ -146,6 +146,9 @@ export class MAHPatternDesignFE {
 		this._committed = v;
 	}
 
+	/**
+	 * must be followed by commit_operation
+	 */
 	save_state() {
 		if (!this.committed) {
 			alert("save_state before commit");
@@ -163,12 +166,13 @@ export class MAHPatternDesignFE {
 		// setTimeout(() => this.save_to_localstorage(), 1800);
 	}
 	/**
+	 * must be preceded by save_state
 	 *
 	 * @param {{
 	 * 	rerender?: boolean,
-	 * 	new_keyframes?: MAHKeyframeFE[]
-	 * 	updated_keyframes?: MAHKeyframeFE[]
-	 * 	deleted_keyframes?: MAHKeyframeFE[]
+	 * 	new_keyframes?: MAHKeyframeFE[] | Set<MAHKeyframeFE>
+	 * 	updated_keyframes?: MAHKeyframeFE[] | Set<MAHKeyframeFE>
+	 * 	deleted_keyframes?: MAHKeyframeFE[] | Set<MAHKeyframeFE>
 	 * }} param0
 	 */
 	commit_operation({ rerender, new_keyframes, updated_keyframes, deleted_keyframes }) {
@@ -468,6 +472,30 @@ export class MAHPatternDesignFE {
 	 */
 	update_evaluator_user_params(param, value) {
 		this.evaluator_params.user_parameters.set(param, value);
+		const ce = new StateChangeEvent("parameters_update", { detail: { time: false } });
+		this.state_change_events.dispatchEvent(ce);
+	}
+	rename_evaluator_user_param(old_name, new_name) {
+		this.save_state();
+
+		const value = this.evaluator_params.user_parameters.get(old_name);
+		this.evaluator_params.user_parameters.delete(old_name);
+		this.evaluator_params.user_parameters.set(new_name, value || 0);
+
+		const updated_keyframes = new Set();
+		for (const keyframe of this.filedata.keyframes) {
+			if ("cjumps" in keyframe) {
+				for (const cjump of keyframe.cjumps) {
+					if (cjump.condition.parameter == old_name) {
+						cjump.condition.parameter = new_name;
+						updated_keyframes.add(keyframe);
+					}
+				}
+			}
+		}
+
+		this.commit_operation({ updated_keyframes });
+
 		const ce = new StateChangeEvent("parameters_update", { detail: { time: false } });
 		this.state_change_events.dispatchEvent(ce);
 	}

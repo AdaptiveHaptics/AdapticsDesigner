@@ -100,7 +100,7 @@
     "DataFormatRevision": {
       "type": "string",
       "enum": [
-        "0.0.5-alpha.1"
+        "0.0.6-alpha.1"
       ]
     },
     "IntensityWithTransition": {
@@ -377,6 +377,7 @@
           "description": "standard keyframe with coords, brush, intensity, and transitions",
           "type": "object",
           "required": [
+            "cjumps",
             "coords",
             "time",
             "type"
@@ -392,15 +393,11 @@
                 }
               ]
             },
-            "cjump": {
-              "anyOf": [
-                {
-                  "$ref": "#/definitions/ConditionalJump"
-                },
-                {
-                  "type": "null"
-                }
-              ]
+            "cjumps": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ConditionalJump"
+              }
             },
             "coords": {
               "$ref": "#/definitions/CoordsWithTransition"
@@ -431,6 +428,7 @@
           "description": "Holds the path coordinates of the previous keyframe until elapsed. can be used to animate the brush/intensity at a static location in the path, or just to create a pause in the animation path.",
           "type": "object",
           "required": [
+            "cjumps",
             "time",
             "type"
           ],
@@ -445,15 +443,11 @@
                 }
               ]
             },
-            "cjump": {
-              "anyOf": [
-                {
-                  "$ref": "#/definitions/ConditionalJump"
-                },
-                {
-                  "type": "null"
-                }
-              ]
+            "cjumps": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ConditionalJump"
+              }
             },
             "intensity": {
               "anyOf": [

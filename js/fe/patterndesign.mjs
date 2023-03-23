@@ -5,17 +5,18 @@
 /** @typedef {import("../pattern-evaluator.mjs").PatternEvaluatorParameters} PatternEvaluatorParameters */
 /** @typedef {import("../pattern-evaluator.mjs").NextEvalParams} NextEvalParams */
 /**
- * @template T, K
+ * @template T
+ * @template {keyof T} K
  * @typedef {import("../../../shared/util").ReqProp<T, K>} ReqProp
  */
 /**
  * @template T
- * @template K
+ * @template {keyof T} K
  * @typedef {import("../../../shared/util").OptExceptProp<T, K>} OptExceptProp
  */
 
 /** @type {import("../../../shared/types").REVISION_STRING} */
-const MAH_$REVISION = "0.0.5-alpha.1";
+const MAH_$REVISION = "0.0.6-alpha.1";
 
 import { DeviceWSController } from "../device-ws-controller.mjs";
 import { PatternEvaluator } from "../pattern-evaluator.mjs";
@@ -406,12 +407,14 @@ export class MAHPatternDesignFE {
 		/** @type {Map<string, MAHKeyframeFE[]>} */
 		const uparam_to_kfs_map = new Map();
 		for (const keyframe of this.filedata.keyframes) {
-			if ("cjump" in keyframe) {
-				const param = keyframe.cjump?.condition.parameter;
-				if (param) {
-					const arr = uparam_to_kfs_map.get(param);
-					if (arr) arr.push(keyframe);
-					else uparam_to_kfs_map.set(param, [keyframe]);
+			if ("cjumps" in keyframe) {
+				for (const cjump of keyframe.cjumps) {
+					const param = cjump.condition.parameter;
+					if (param) {
+						const arr = uparam_to_kfs_map.get(param);
+						if (arr) arr.push(keyframe);
+						else uparam_to_kfs_map.set(param, [keyframe]);
+					}
 				}
 			}
 		}
@@ -668,7 +671,8 @@ MAHPatternDesignFE.DEFAULT = ["test.json", {
 					name: "linear",
 					params: {}
 				}
-			}
+			},
+			cjumps: [],
 		}
 	]
 }];

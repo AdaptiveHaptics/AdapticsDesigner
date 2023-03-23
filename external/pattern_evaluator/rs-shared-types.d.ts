@@ -12,11 +12,11 @@
 export type TupleOf_MidAirHapticsAnimationFileFormatAnd_PatternEvaluatorParametersAnd_BrushAtAnimLocalTimeAnd_ArrayOf_BrushAtAnimLocalTime =
   [MidAirHapticsAnimationFileFormat, PatternEvaluatorParameters, BrushAtAnimLocalTime, BrushAtAnimLocalTime[]];
 export type MidAirHapticsAnimationFileFormatDataFormatName = "MidAirHapticsAnimationFileFormat";
-export type DataFormatRevision = "0.0.5-alpha.1";
+export type DataFormatRevision = "0.0.6-alpha.1";
 export type MAHKeyframe =
   | {
       brush?: BrushWithTransition | null;
-      cjump?: ConditionalJump | null;
+      cjumps: ConditionalJump[];
       coords: CoordsWithTransition;
       intensity?: IntensityWithTransition | null;
       time: number;
@@ -24,7 +24,7 @@ export type MAHKeyframe =
     }
   | {
       brush?: BrushWithTransition | null;
-      cjump?: ConditionalJump | null;
+      cjumps: ConditionalJump[];
       intensity?: IntensityWithTransition | null;
       time: number;
       type: "pause";

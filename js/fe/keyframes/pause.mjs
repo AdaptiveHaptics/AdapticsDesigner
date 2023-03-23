@@ -22,7 +22,7 @@ export class MAHKeyframePauseFE extends MAHKeyframeBasicFE {
 		this.type = keyframe.type;
 		this.brush = keyframe.brush;
 		this.intensity = keyframe.intensity;
-		this.cjump = keyframe.cjump;
+		this.cjumps = keyframe.cjumps;
 	}
 
 	/**
@@ -36,7 +36,7 @@ export class MAHKeyframePauseFE extends MAHKeyframeBasicFE {
 			brush,
 			intensity,
 		} = new NewKeyframeCommon(pattern_design, set.time || null);
-		const keyframe = new MAHKeyframePauseFE(structured_clone({ time, brush, intensity, ...set, type: "pause" }), pattern_design);
+		const keyframe = new MAHKeyframePauseFE(structured_clone({ time, brush, intensity, cjumps: [], ...set, type: "pause" }), pattern_design);
 		return keyframe;
 	}
 }

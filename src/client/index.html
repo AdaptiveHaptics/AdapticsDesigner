@@ -158,13 +158,16 @@
 						<details class="cjump">
 							<summary>Conditional Jump</summary>
 							<div class="cjumpconfig">
-								<div class="table" style="grid-template-columns: auto auto auto auto auto;">
+								<div class="table">
 									<div class="thead">
-										<div></div>
-										<div><span class="labeltext">Parameter</span></div>
-										<div><span class="labeltext">Operator</span></div>
-										<div><span class="labeltext">Value</span></div>
-										<div><span class="labeltext">Jump To Time <span class="unit">ms</span></span></div>
+										<div>
+											<div style="visibility: hidden;">⋮⋮</div>
+											<div><span class="labeltext">Parameter</span></div>
+											<div><span class="labeltext">Operator</span></div>
+											<div><span class="labeltext">Value</span></div>
+											<div><span class="labeltext">Jump To Time <span class="unit">ms</span></span></div>
+											<button class="remove" style="visibility: hidden;">✖</button>
+										</div>
 									</div>
 									<div class="tbody cjumps-container">
 										<!--  template.cjump clones into here  -->
@@ -184,6 +187,7 @@
 										</select>
 										<input type="number" name="value" step="0.05">
 										<input type="number" name="jump_to" min="0">
+										<button class="remove">✖</button>
 									</div>
 								</template>
 							</div>

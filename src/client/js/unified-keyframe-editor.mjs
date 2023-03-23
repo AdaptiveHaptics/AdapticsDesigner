@@ -222,12 +222,15 @@ export class UnifiedKeyframeEditor {
 
 			while (this.cjumps_container_div.firstChild) this.cjumps_container_div.removeChild(this.cjumps_container_div.firstChild);
 
-			for (const cjumps_at_index of cjumps_by_index) {
+			for (const [row_index, cjumps_at_index] of cjumps_by_index.entries()) {
 				// clone template row
 				const cjump_row = /** @type {ParentNode} */ (this.cjump_row_template.content.cloneNode(true));
 
-				const { cjump_parameter_input, cjump_value_input, cjump_jump_to_input, cjump_operator_select }
+				const { cjump_parameter_input, cjump_value_input, cjump_jump_to_input, cjump_operator_select, cjump_remove_button }
 					= get_children_from_cjump_row(cjump_row);
+				cjump_remove_button.addEventListener("click", () => {
+					this.on_cjump_remove(row_index);
+				});
 				cjump_parameter_input.value = this.get_if_field_identical(cjumps_at_index, cjump => cjump.condition.parameter) || "";
 				cjump_operator_select.value = this.get_if_field_identical(cjumps_at_index, cjump => cjump.condition.operator.name) || "multipletypes";
 				cjump_value_input.value = this.get_if_field_identical(cjumps_at_index, cjump => cjump.condition.value)?.toString() || "";
@@ -400,6 +403,21 @@ export class UnifiedKeyframeEditor {
 
 		this.pattern_design.commit_operation({ updated_keyframes: keyframes });
 	}
+	/**
+	 *
+	 * @param {number} row_index
+	 */
+	on_cjump_remove(row_index) {
+		this.pattern_design.save_state();
+
+		const keyframes = [...this.pattern_design.selected_keyframes].filter(supports_cjump);
+
+		keyframes.forEach(kf => {
+			kf.cjumps.splice(row_index, 1);
+		});
+
+		this.pattern_design.commit_operation({ updated_keyframes: keyframes });
+	}
 	on_cjump_change() {
 		this.pattern_design.save_state();
 
@@ -448,7 +466,8 @@ function get_children_from_cjump_row(cjump_row) {
 	/** @type {HTMLSelectElement} */
 	const cjump_operator_select = notnull(cjump_row.querySelector("select[name=conditionoperatortype]"));
 	// this.cjump_transition_select = /** @type {HTMLSelectElement} */(this.cjump_details.querySelector("div.transitionconfig select"));
+	/** @type {HTMLButtonElement} */
+	const cjump_remove_button = notnull(cjump_row.querySelector("button.remove"));
 
-
-	return { cjump_parameter_input, cjump_value_input, cjump_jump_to_input, cjump_operator_select };
+	return { cjump_parameter_input, cjump_value_input, cjump_jump_to_input, cjump_operator_select, cjump_remove_button };
 }

@@ -324,6 +324,47 @@ label span.unit {
     /* font-size: 1.1em; */
 }
 
+div.cjumpconfig {
+    display: flex;
+    flex-direction: column;
+    gap: 1ex;
+    /* align-items: center; */
+}
+div.table {
+    display: grid;
+    gap: 1ex;
+}
+div.table > div.thead {
+    display: contents;
+}
+div.table > div.thead > div {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+div.table > div.tbody {
+    display: contents;
+}
+div.table > div.tbody > div {
+    /* display: contents; */
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: auto auto auto auto auto;
+    gap: 1ex;
+}
+div.table div.draghandle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    user-select: none;
+    cursor: grab;
+}
+div.cjumpconfig > button.add {
+    /* grid-column: 1 / -1; */
+    padding: 1ex
+}
+
 div.parametereditor {
     /* display: flex; */
     flex-direction: column;

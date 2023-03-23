@@ -11,12 +11,12 @@
  */
 /**
  * @template T
- * @template K
+ * @template {keyof T} K
  * @typedef {import("../../../shared/util").OptExceptProp<T, K>} OptExceptProp
  */
 
 /** @type {import("../../../shared/types").REVISION_STRING} */
-const MAH_$REVISION = "0.0.5-alpha.1";
+const MAH_$REVISION = "0.0.6-alpha.1";
 
 import { DeviceWSController } from "../device-ws-controller.mjs";
 import { PatternEvaluator } from "../pattern-evaluator.mjs";

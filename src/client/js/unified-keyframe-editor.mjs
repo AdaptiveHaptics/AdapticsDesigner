@@ -6,6 +6,7 @@
 import { BoundsCheck } from "./fe/keyframes/bounds-check.mjs";
 import { supports_coords, supports_brush, supports_intensity, supports_cjump } from "./fe/keyframes/index.mjs";
 import { notnull } from "./util.mjs";
+import Sortable from "../thirdparty/sortable.complete.esm.js";
 
 export class UnifiedKeyframeEditor {
 	/**
@@ -53,15 +54,20 @@ export class UnifiedKeyframeEditor {
 
 		/** @type {HTMLDetailsElement} */
 		this.cjump_details = notnull(this.ukfeForm.querySelector("details.cjump"));
-		/** @type {HTMLInputElement} */
-		this.cjump_parameter_input = notnull(this.cjump_details.querySelector("input[name=parameter]"));
-		/** @type {HTMLInputElement} */
-		this.cjump_value_input = notnull(this.cjump_details.querySelector("input[name=value]"));
-		/** @type {HTMLInputElement} */
-		this.cjump_jump_to_input = notnull(this.cjump_details.querySelector("input[name=jump_to]"));
-		/** @type {HTMLSelectElement} */
-		this.cjump_operator_select = notnull(this.cjump_details.querySelector("select[name=conditionoperatortype]"));
-		// this.cjump_transition_select = /** @type {HTMLSelectElement} */(this.cjump_details.querySelector("div.transitionconfig select"));
+		/** @type {HTMLDivElement} */
+		this.cjumps_container_div = notnull(this.cjump_details.querySelector("div.cjumps-container"));
+		/** @type {HTMLTemplateElement} */
+		this.cjump_row_template = notnull(this.cjump_details.querySelector("template.cjumprow"));
+		/** @type {HTMLButtonElement} */
+		this.cjump_add_button = notnull(this.cjump_details.querySelector("button.add"));
+		this.cjump_add_button.addEventListener("click", _ev => this.on_cjump_add());
+		this.cjumps_sortable = new Sortable(this.cjumps_container_div, {
+			handle: ".draghandle",
+			animation: 150,
+			onEnd: ev => {
+				this.on_cjump_reorder(ev.oldIndex, ev.newIndex);
+			}
+		});
 
 		this.coords_details.addEventListener("change", _ev => {
 			this.on_coords_change();
@@ -72,7 +78,8 @@ export class UnifiedKeyframeEditor {
 		this.intensity_details.addEventListener("change", _ev => {
 			this.on_intensity_change();
 		});
-		this.cjump_details.addEventListener("change", _ev => {
+		this.cjump_details.addEventListener("change", ev => {
+			if (ev.target == this.cjumps_container_div && "newIndex" in ev) return; // ignore if from Sortable
 			this.on_cjump_change();
 		});
 
@@ -203,11 +210,33 @@ export class UnifiedKeyframeEditor {
 			this.cjump_details.style.display = "";
 			const for_type_check = selected.filter(supports_cjump);
 
-			this.cjump_parameter_input.value = this.get_if_field_identical(for_type_check, kf => kf.cjump?.condition.parameter) || "";
-			this.cjump_operator_select.value = this.get_if_field_identical(for_type_check, kf => kf.cjump?.condition.operator.name) || "multipletypes";
-			this.cjump_value_input.value = this.get_if_field_identical(for_type_check, kf => kf.cjump?.condition.value)?.toString() || "";
-			this.cjump_jump_to_input.value = this.get_if_field_identical(for_type_check, kf => kf.cjump?.jump_to)?.toString() || "";
+			const cjumps_by_index = [];
+			for (const kf of for_type_check) {
+				for (let i = 0; i < kf.cjumps.length; i++) {
+					const cjump = kf.cjumps[i];
+					const cjumps_at_index = cjumps_by_index[i] || [];
+					cjumps_at_index.push(cjump);
+					cjumps_by_index[i] = cjumps_at_index;
+				}
+			}
 
+			while (this.cjumps_container_div.firstChild) this.cjumps_container_div.removeChild(this.cjumps_container_div.firstChild);
+
+			for (const cjumps_at_index of cjumps_by_index) {
+				// clone template row
+				const cjump_row = /** @type {ParentNode} */ (this.cjump_row_template.content.cloneNode(true));
+
+				const { cjump_parameter_input, cjump_value_input, cjump_jump_to_input, cjump_operator_select }
+					= get_children_from_cjump_row(cjump_row);
+				cjump_parameter_input.value = this.get_if_field_identical(cjumps_at_index, cjump => cjump.condition.parameter) || "";
+				cjump_operator_select.value = this.get_if_field_identical(cjumps_at_index, cjump => cjump.condition.operator.name) || "multipletypes";
+				cjump_value_input.value = this.get_if_field_identical(cjumps_at_index, cjump => cjump.condition.value)?.toString() || "";
+				cjump_jump_to_input.value = this.get_if_field_identical(cjumps_at_index, cjump => cjump.jump_to)?.toString() || "";
+
+				this.cjumps_container_div.appendChild(cjump_row);
+			}
+
+			this.cjumps_sortable.save();
 		}
 	}
 
@@ -331,31 +360,95 @@ export class UnifiedKeyframeEditor {
 
 		this.pattern_design.commit_operation({ updated_keyframes: keyframes });
 	}
+	on_cjump_add() {
+		this.pattern_design.save_state();
+
+		const keyframes = [...this.pattern_design.selected_keyframes].filter(supports_cjump);
+
+		keyframes.forEach(kf => {
+			kf.cjumps.push({
+				condition: {
+					parameter: "foo",
+					operator: {
+						name: "lt",
+						params: {}
+					},
+					value: 0,
+				},
+				jump_to: 0,
+			});
+		});
+
+
+		this.pattern_design.commit_operation({ updated_keyframes: keyframes });
+	}
+	/**
+	 *
+	 * @param {number} old_index
+	 * @param {number} new_index
+	 */
+	on_cjump_reorder(old_index, new_index) {
+		this.pattern_design.save_state();
+
+		const keyframes = [...this.pattern_design.selected_keyframes].filter(supports_cjump);
+
+		keyframes.forEach(kf => {
+			const cjump = kf.cjumps.splice(old_index, 1)[0];
+			if (!cjump) return;
+			kf.cjumps.splice(new_index, 0, cjump);
+		});
+
+		this.pattern_design.commit_operation({ updated_keyframes: keyframes });
+	}
 	on_cjump_change() {
 		this.pattern_design.save_state();
 
 		const keyframes = [...this.pattern_design.selected_keyframes].filter(supports_cjump); //filter for type check (redundant since GUI restricts to correct types)
 
 		keyframes.forEach(kf => {
-			if (!kf.cjump && !this.cjump_parameter_input.value) return;
-			if (!kf.cjump) kf.cjump = { condition: { parameter: "conditionAA", operator: { name: "lt", params: {} }, value: 0 }, jump_to: 2500 };
-			if (this.cjump_parameter_input.value) kf.cjump.condition.parameter = this.cjump_parameter_input.value;
-			switch (this.cjump_operator_select.value) {
-				case "lt":
-				case "lt_eq":
-				case "gt":
-				case "gt_eq":
-					kf.cjump.condition.operator = { name: this.cjump_operator_select.value, params: {} };
-					break;
-				case "multipletypes":
-					break;
-				default: throw new Error(`unexpected cjump operator type: ${this.intensity_type_select.value}`);
+			const cjump_rows = this.cjumps_container_div.children;
+			for (let i = 0; i< cjump_rows.length; i++) {
+				const cjump_row =  cjump_rows[i];
+				const { cjump_parameter_input, cjump_value_input, cjump_jump_to_input, cjump_operator_select } = get_children_from_cjump_row(cjump_row);
+				const cjump = kf.cjumps[i];
+				if (!cjump) return;
+				if (cjump_parameter_input.value) cjump.condition.parameter = cjump_parameter_input.value;
+				switch (cjump_operator_select.value) {
+					case "lt":
+					case "lt_eq":
+					case "gt":
+					case "gt_eq":
+						cjump.condition.operator = { name: cjump_operator_select.value, params: {} };
+						break;
+					case "multipletypes":
+						break;
+					default: throw new Error(`unexpected cjump operator type: ${this.intensity_type_select.value}`);
+				}
+				if (cjump_value_input.value) cjump.condition.value = parseFloat(cjump_value_input.value);
+				if (cjump_jump_to_input.value) cjump.jump_to = parseFloat(cjump_jump_to_input.value);
 			}
-			if (this.cjump_value_input.value) kf.cjump.condition.value = parseFloat(this.cjump_value_input.value);
-			if (this.cjump_jump_to_input.value) kf.cjump.jump_to = parseFloat(this.cjump_jump_to_input.value);
 		});
 
 		this.pattern_design.commit_operation({ updated_keyframes: keyframes });
 	}
 
+}
+
+/**
+ *
+ * @param {ParentNode} cjump_row
+ */
+function get_children_from_cjump_row(cjump_row) {
+	/** @type {HTMLInputElement} */
+	const cjump_parameter_input = notnull(cjump_row.querySelector("input[name=parameter]"));
+	/** @type {HTMLInputElement} */
+	const cjump_value_input = notnull(cjump_row.querySelector("input[name=value]"));
+	/** @type {HTMLInputElement} */
+	const cjump_jump_to_input = notnull(cjump_row.querySelector("input[name=jump_to]"));
+	/** @type {HTMLSelectElement} */
+	const cjump_operator_select = notnull(cjump_row.querySelector("select[name=conditionoperatortype]"));
+	// this.cjump_transition_select = /** @type {HTMLSelectElement} */(this.cjump_details.querySelector("div.transitionconfig select"));
+
+
+	return { cjump_parameter_input, cjump_value_input, cjump_jump_to_input, cjump_operator_select };
 }

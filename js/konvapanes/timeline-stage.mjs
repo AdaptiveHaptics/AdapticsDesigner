@@ -17,6 +17,7 @@ const keyframe_rect_padding_top = 2;
 const keyframe_rect_y = timestamp_rect_height - keyframe_rect_padding_top;
 const keyframe_rect_height = keyframe_flag_size + keyframe_rect_padding_top;
 const minor_gridline_start = keyframe_rect_y + keyframe_rect_height;
+const cjump_flag_size = 22;
 
 export class KonvaTimelineStage extends KonvaResizeScrollStage {
 	static major_gridline_millisecond_presets = [10 / 10, 10 / 8, 10 / 5, 10 / 4, 10 / 2];
@@ -494,4 +495,57 @@ class KonvaTimelineKeyframe {
 		this.flag.getText().text(milliseconds_to_hhmmssms_format(time).slice(-6));
 		this.keyframe.set_time(time);
 	}
+}
+
+class KonvaCjumpFlag {
+	/**
+	 *
+	 * @param {KonvaTimelineStage} timeline_stage
+	 * @param {CjumpRelatedStateData} cjump
+	 */
+	constructor(timeline_stage, cjump) {
+		// i need to rework select logic to accept non-keyframe objects or figure something else out. I think this should just exist as a GUI element and not be really a "selectable" part of the pattern design
+		this.timeline_stage = timeline_stage;
+		this.cjump = cjump;
+
+		this.ycoord = timeline_stage.fullHeight/2;
+
+		this.flag = new Konva.Label({
+			x: timeline_stage.milliseconds_to_x_coord(cjump.time),
+			y: this.ycoord,
+			draggable: true,
+			opacity: 0.85,
+		});
+		this.flag.add(new Konva.Tag({
+			fill: getComputedStyle(document.body).getPropertyValue("--cjump-flag-fill"),
+			shadowColor: "black",
+			shadowBlur: 2,
+			shadowOffsetX: 1,
+			shadowOffsetY: 1,
+			shadowOpacity: 0.5,
+		}));
+		this.flag.add(new Konva.Text({
+			text: cjump.name,
+			fontSize: 12,
+			padding: 5,
+			fill: "white",
+		}));
+
+		this.flag.on("click", _ev => {
+			this.select_this();
+		});
+		this.flag.on("mouseenter", _ev => {
+			document.body.style.cursor = "pointer";
+		});
+		this.flag.on("mouseleave", _ev => {
+			document.body.style.cursor = "";
+		});
+		this.flag.on("dragstart", ev => {
+			this.select_this(ev.evt.ctrlKey, true);
+		});
+		this.flag.on("dragmove", _ev => {
+			this.update_time({ time: this.timeline_stage.raw_x_to_t({ raw_x: this.flag.x(), snap: true }) });
+		});
+	}
+
 }

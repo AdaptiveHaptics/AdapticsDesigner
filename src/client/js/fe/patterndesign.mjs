@@ -538,6 +538,14 @@ export class MAHPatternDesignFE {
 	}
 
 
+	async cut_selected_to_clipboard() {
+		const selected_keyframes = [...this.selected_keyframes];
+		await this.copy_selected_to_clipboard();
+		this.save_state();
+		const deleted_keyframes = this.delete_keyframes(selected_keyframes);
+		this.commit_operation({ deleted_keyframes });
+	}
+
 	async copy_selected_to_clipboard() {
 		/** @type {MidAirHapticsClipboardFormat} */
 		const clipboard_data = {

@@ -113,6 +113,12 @@ document.addEventListener("keydown", ev => {
 	}
 });
 
+document.addEventListener("cut", ev => {
+	if (focus_within_design_panes()) {
+		primary_design.cut_selected_to_clipboard();
+		ev.preventDefault();
+	}
+});
 document.addEventListener("copy", ev => {
 	if (focus_within_design_panes()) {
 		primary_design.copy_selected_to_clipboard();

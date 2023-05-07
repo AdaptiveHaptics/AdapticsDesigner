@@ -52,8 +52,8 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 	keyframe_rect = new Konva.Rect();
 	playback_head = new Konva.Line();
 
-	/** @type {Map<number, KonvaCJumpFlag>} */
-	cjump_flags = new Map();
+	/** @type {Set<KonvaCJumpFlag>} */
+	cjump_flags = new Set();
 
 	/**
 	 *
@@ -201,7 +201,10 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 			});
 			this.transformer.on("dragend", _ev => {
 				requestAnimationFrame(() => { //wait for child dragend events to snap/etc
-					this.pattern_design.commit_operation({ updated_keyframes: [...this.pattern_design.selected_keyframes] });
+					this.pattern_design.commit_operation({ updated_keyframes: [
+						...this.pattern_design.selected_keyframes,
+						...[...this.pattern_design.selected_cjump_flags].flatMap(cjf => [...cjf.associated_keyframes.keys()])
+					]});
 				});
 			});
 			this.transformer.on("transformstart", _ev => {
@@ -209,7 +212,10 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 			});
 			this.transformer.on("transformend", _ev => {
 				requestAnimationFrame(() => { //wait for child dragend events to snap/etc
-					this.pattern_design.commit_operation({ updated_keyframes: [...this.pattern_design.selected_keyframes] });
+					this.pattern_design.commit_operation({ updated_keyframes: [
+						...this.pattern_design.selected_keyframes,
+						...[...this.pattern_design.selected_cjump_flags].flatMap(cjf => [...cjf.associated_keyframes.keys()])
+					]});
 				});
 			});
 			this.scrolling_layer.add(this.transformer);
@@ -330,8 +336,6 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 
 class KonvaTimelineKeyframe {
 	ycoord = minor_gridline_start + 3;
-
-	linked_cjump_flags = new Set();
 
 	/**
 	 *
@@ -514,13 +518,32 @@ class KonvaTimelineKeyframe {
 	 * @param {ConditionalJump[]} cjumps
 	 */
 	update_cjump_flags(cjumps) {
-		const to_delete = new Set(this.linked_cjump_flags);
+		const to_delete = new Set([...this.timeline_stage.cjump_flags].filter(cjf => cjf.associated_keyframes.has(this.keyframe)));
 		for (const cjump of cjumps) {
-			const cjf = this.timeline_stage.cjump_flags.get(cjump.jump_to) ?? new KonvaCJumpFlag(this.timeline_stage, cjump.jump_to);
+			const existing_cjf = [...this.timeline_stage.cjump_flags];
+			const find_merge_or_create_cjf = () => {
+				const existing_cjfs = existing_cjf.filter(cjf => cjf.current_time == cjump.jump_to);
+				if (existing_cjfs.length > 0) { // find all existing cjfs that have the same current_time, and merge into the first one
+					const cjf = existing_cjfs[0];
+					for (const existing_cjf of existing_cjfs.slice(1)) {
+						console.log("merge");
+						for (const [keyframe, existing_cjset] of existing_cjf.associated_keyframes) {
+							const cjset = cjf.associated_keyframes.get(keyframe) ?? new Set();
+							for (const existing_cjump of existing_cjset) cjset.add(existing_cjump);
+							cjf.associated_keyframes.set(keyframe, cjset);
+						}
+						existing_cjf.destroy();
+					}
+					return cjf;
+				} else { // otherwise create a new one
+					return new KonvaCJumpFlag(this.timeline_stage, cjump.jump_to);
+				}
+			};
+			const cjf = find_merge_or_create_cjf();
 			to_delete.delete(cjf);
-			this.linked_cjump_flags.add(cjf);
-			cjf.associated_keyframes.set(this.keyframe, cjump);
-			this.timeline_stage.cjump_flags.set(cjump.jump_to, cjf);
+			const cjset = cjf.associated_keyframes.get(this.keyframe) ?? new Set();
+			cjset.add(cjump);
+			cjf.associated_keyframes.set(this.keyframe, cjset);
 		}
 		for (const cjf of to_delete) {
 			cjf.associated_keyframes.delete(this.keyframe);
@@ -532,7 +555,7 @@ class KonvaTimelineKeyframe {
 
 // exported for use in select
 export class KonvaCJumpFlag {
-	/** @type {Map<MAHKeyframeFE, ConditionalJump>} */
+	/** @type {Map<MAHKeyframeFE, Set<ConditionalJump>>} */
 	associated_keyframes = new Map();
 
 	/**
@@ -542,6 +565,7 @@ export class KonvaCJumpFlag {
 	 */
 	constructor(timeline_stage, jump_to_time) {
 		this.timeline_stage = timeline_stage;
+		this.current_time = jump_to_time; // set in update_time
 
 		this.listener_abort = new AbortController();
 
@@ -603,9 +627,13 @@ export class KonvaCJumpFlag {
 		timeline_stage.scrolling_layer.add(this.flag);
 
 		this.update_time({ time: jump_to_time });
+
+		this.timeline_stage.cjump_flags.add(this);
 	}
 
 	destroy() {
+		this.timeline_stage.pattern_design.deselect_items({ cjump_flags: [this] });
+		this.timeline_stage.cjump_flags.delete(this);
 		this.listener_abort.abort();
 		this.flag.destroy();
 	}
@@ -637,20 +665,21 @@ export class KonvaCJumpFlag {
 	}
 
 	update_time({ time }) {
+		this.current_time = time;
 		const x = this.timeline_stage.milliseconds_to_x_coord(time);
 		this.flag.x(x);
 		this.flag.y(this.ycoord);
 		this.flag.getText().text(milliseconds_to_hhmmssms_format(time).slice(-6));
-		for (const [kf, cjump] of this.associated_keyframes) {
-			cjump.jump_to = time;
+		for (const [kf, cjset] of this.associated_keyframes) {
+			for (const cjump of cjset) {
+				cjump.jump_to = time;
+			}
 		}
 	}
 
 	delete_cjumps_to_self() {
-		return [...this.associated_keyframes].map(([kf, cjump]) => {
-			if ("cjumps" in kf) {
-				kf.cjumps = kf.cjumps.filter(cj => cj != cjump);
-			}
+		return [...this.associated_keyframes].map(([kf, cjset]) => {
+			if ("cjumps" in kf) kf.cjumps = kf.cjumps.filter(cj => !cjset.has(cj));
 			return kf;
 		});
 	}

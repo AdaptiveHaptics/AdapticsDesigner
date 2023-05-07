@@ -9,6 +9,7 @@ import {
     BrushWithTransition,
     CoordsWithTransition,
     IntensityWithTransition,
+    ConditionalJump,
     DataFormatRevision
 } from "../external/pattern_evaluator/rs-shared-types";
 export {
@@ -21,7 +22,8 @@ export {
     MAHIntensity,
     BrushWithTransition,
     CoordsWithTransition,
-    IntensityWithTransition
+    IntensityWithTransition,
+    ConditionalJump,
 };
 import { SharedProperties } from "./util";
 

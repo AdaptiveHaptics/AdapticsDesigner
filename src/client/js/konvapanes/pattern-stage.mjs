@@ -57,8 +57,8 @@ export class KonvaPatternStage extends KonvaResizeStage {
 			if (ev.key == "a" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
 				ev.preventDefault();
 				ev.stopPropagation();
-				this.pattern_design.deselect_all_keyframes();
-				this.pattern_design.select_keyframes(this.pattern_design.filedata.keyframes.filter(has_coords));
+				this.pattern_design.deselect_all_items();
+				this.pattern_design.select_items({ keyframes: this.pattern_design.filedata.keyframes.filter(has_coords) });
 			}
 		});
 
@@ -190,8 +190,8 @@ export class KonvaPatternStage extends KonvaResizeStage {
 				this.pattern_design.commit_operation({ new_keyframes: [new_keyframe] });
 
 				this.selection_rect.visible(false);
-				if (!ev.evt.ctrlKey) this.pattern_design.deselect_all_keyframes();
-				this.pattern_design.select_keyframes([ new_keyframe ]);
+				if (!ev.evt.ctrlKey) this.pattern_design.deselect_all_items();
+				this.pattern_design.select_items({ keyframes: [ new_keyframe ]});
 			});
 			this.k_control_points_layer.add(this.pattern_area);
 		}
@@ -522,7 +522,7 @@ class KonvaPatternControlPoint {
 			this.lines.out?.update();
 		}, { signal: this.listener_abort.signal });
 
-		pattern_stage.pattern_design.state_change_events.addEventListener("kf_select", ev => {
+		pattern_stage.pattern_design.state_change_events.addEventListener("item_select", ev => {
 			if (ev.detail.keyframe == keyframe) {
 				this.update_select(true);
 
@@ -533,7 +533,7 @@ class KonvaPatternControlPoint {
 			}
 		}, { signal: this.listener_abort.signal });
 
-		pattern_stage.pattern_design.state_change_events.addEventListener("kf_deselect", ev => {
+		pattern_stage.pattern_design.state_change_events.addEventListener("item_deselect", ev => {
 			if (ev.detail.keyframe == keyframe) {
 				this.update_select(false);
 
@@ -549,7 +549,7 @@ class KonvaPatternControlPoint {
 		keyframe[KonvaPatternControlPointSymbol] = this;
 
 		this.update_position(keyframe.coords.coords);
-		this.update_select(pattern_stage.pattern_design.is_keyframe_selected(keyframe));
+		this.update_select(pattern_stage.pattern_design.is_item_selected({ keyframe: keyframe }));
 		// this.update_pause();
 	}
 
@@ -565,13 +565,13 @@ class KonvaPatternControlPoint {
 	 * @param {boolean} dont_deselect
 	 */
 	select_this(ctrlKey, dont_deselect) {
-		if (this.pattern_stage.pattern_design.is_keyframe_selected(this.keyframe)) {
-			if (ctrlKey && !dont_deselect) this.pattern_stage.pattern_design.deselect_keyframes([this.keyframe]);
+		if (this.pattern_stage.pattern_design.is_item_selected({ keyframe: this.keyframe })) {
+			if (ctrlKey && !dont_deselect) this.pattern_stage.pattern_design.deselect_items({ keyframes: [this.keyframe] });
 			return;
 		}
 
-		if (!ctrlKey) this.pattern_stage.pattern_design.deselect_all_keyframes();
-		this.pattern_stage.pattern_design.select_keyframes([this.keyframe]);
+		if (!ctrlKey) this.pattern_stage.pattern_design.deselect_all_items();
+		this.pattern_stage.pattern_design.select_items({ keyframes: [this.keyframe] });
 	}
 
 	has_linked() {

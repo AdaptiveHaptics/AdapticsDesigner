@@ -3,8 +3,6 @@
 
 import { notnull } from "./util.mjs";
 
-const UPARAM_CLICK_EV_HANDLER_SYMBOL = Symbol("UPARAM_CLICK_EV_HANDLER_SYMBOL");
-
 export class ParameterEditor {
 	/**
 	 *
@@ -198,8 +196,8 @@ class UserParamControl extends HTMLElement {
 	}
 
 	select_linked() {
-		this.#_pattern_design.deselect_all_keyframes();
-		this.#_pattern_design.select_keyframes(this.linked_keyframes);
+		this.#_pattern_design.deselect_all_items();
+		this.#_pattern_design.select_items({ keyframes: this.linked_keyframes });
 	}
 }
 

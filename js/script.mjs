@@ -102,10 +102,7 @@ document.addEventListener("keydown", ev => {
 	if (ev.key == "Delete" && !ev.ctrlKey && !ev.shiftKey && !ev.altKey && focus_within_design_panes()) {
 		ev.preventDefault();
 		console.log("delete");
-		if (primary_design.selected_keyframes.size == 0) return;
-		primary_design.save_state();
-		const deleted_keyframes = primary_design.delete_keyframes([...primary_design.selected_keyframes]);
-		primary_design.commit_operation({ deleted_keyframes });
+		primary_design.delete_selected_items();
 	}
 	if (ev.key == "a" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
 		ev.preventDefault();
@@ -113,6 +110,12 @@ document.addEventListener("keydown", ev => {
 	}
 });
 
+document.addEventListener("cut", ev => {
+	if (focus_within_design_panes()) {
+		primary_design.cut_selected_to_clipboard();
+		ev.preventDefault();
+	}
+});
 document.addEventListener("copy", ev => {
 	if (focus_within_design_panes()) {
 		primary_design.copy_selected_to_clipboard();

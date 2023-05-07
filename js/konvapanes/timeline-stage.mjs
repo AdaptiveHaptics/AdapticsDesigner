@@ -7,6 +7,7 @@ const Konva = /** @type {import("konva").default} */ (window["Konva"]);
 /** @typedef {import("../fe/patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
 /** @typedef {import("../../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../../shared/types").MAHKeyframe} MAHKeyframe */
+/** @typedef {import("../../../shared/types").ConditionalJump} ConditionalJump */
 
 const KonvaTimelineKeyframeSymbol = Symbol("KonvaTimelineKeyframe");
 
@@ -50,6 +51,9 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 	timestamp_rect = new Konva.Rect();
 	keyframe_rect = new Konva.Rect();
 	playback_head = new Konva.Line();
+
+	/** @type {Map<number, KonvaCJumpFlag>} */
+	cjump_flags = new Map();
 
 	/**
 	 *
@@ -141,6 +145,10 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 	render_design() {
 		this.update_zoom();
 
+		for (const cjump_flag of this.cjump_flags.values()) {
+			cjump_flag.destroy();
+		}
+		this.cjump_flags.clear();
 		for (const kf of this.pattern_design.filedata.keyframes) {
 			kf[KonvaTimelineKeyframeSymbol]?.destroy();
 		}
@@ -176,8 +184,8 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 			this.pattern_design.commit_operation({ new_keyframes: [new_keyframe] });
 
 			this.selection_rect.visible(false);
-			if (!ev.evt.ctrlKey) this.pattern_design.deselect_all_keyframes();
-			this.pattern_design.select_keyframes([ new_keyframe ]);
+			if (!ev.evt.ctrlKey) this.pattern_design.deselect_all_items();
+			this.pattern_design.select_items({ keyframes: [ new_keyframe ] });
 		});
 
 		{ //init transformer
@@ -323,6 +331,8 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 class KonvaTimelineKeyframe {
 	ycoord = minor_gridline_start + 3;
 
+	linked_cjump_flags = new Set();
+
 	/**
 	 *
 	 * @param {MAHKeyframeFE} keyframe
@@ -428,20 +438,22 @@ class KonvaTimelineKeyframe {
 		this.listener_abort = new AbortController();
 		timeline_stage.pattern_design.state_change_events.addEventListener("kf_delete", ev => {
 			if (ev.detail.keyframe != keyframe) return;
+			if ("cjumps" in keyframe) this.update_cjump_flags([]);
 			this.destroy();
 		}, { signal: this.listener_abort.signal });
 
 		timeline_stage.pattern_design.state_change_events.addEventListener("kf_update", ev => {
 			if (ev.detail.keyframe != keyframe) return;
 			this.update_time({ time: keyframe.time });
+			if ("cjumps" in keyframe) this.update_cjump_flags(keyframe.cjumps);
 		}, { signal: this.listener_abort.signal });
 
-		timeline_stage.pattern_design.state_change_events.addEventListener("kf_select", ev => {
+		timeline_stage.pattern_design.state_change_events.addEventListener("item_select", ev => {
 			if (ev.detail.keyframe != keyframe) return;
 			this.update_select(true);
 		}, { signal: this.listener_abort.signal });
 
-		timeline_stage.pattern_design.state_change_events.addEventListener("kf_deselect", ev => {
+		timeline_stage.pattern_design.state_change_events.addEventListener("item_deselect", ev => {
 			if (ev.detail.keyframe != keyframe) return;
 			this.update_select(false);
 		}, { signal: this.listener_abort.signal });
@@ -451,7 +463,8 @@ class KonvaTimelineKeyframe {
 		keyframe[KonvaTimelineKeyframeSymbol] = this;
 
 		this.update_time({ time: keyframe.time });
-		this.update_select(timeline_stage.pattern_design.is_keyframe_selected(keyframe));
+		this.update_select(timeline_stage.pattern_design.is_item_selected({ keyframe }));
+		if ("cjumps" in keyframe) this.update_cjump_flags(keyframe.cjumps);
 	}
 
 	destroy() {
@@ -466,13 +479,13 @@ class KonvaTimelineKeyframe {
 	 * @param {boolean} dont_deselect
 	 */
 	select_this(ctrlKey, dont_deselect) {
-		if (this.timeline_stage.pattern_design.is_keyframe_selected(this.keyframe)) {
-			if (ctrlKey && !dont_deselect) this.timeline_stage.pattern_design.deselect_keyframes([this.keyframe]);
+		if (this.timeline_stage.pattern_design.is_item_selected({ keyframe: this.keyframe })) {
+			if (ctrlKey && !dont_deselect) this.timeline_stage.pattern_design.deselect_items({ keyframes: [this.keyframe]});
 			return;
 		}
 
-		if (!ctrlKey) this.timeline_stage.pattern_design.deselect_all_keyframes();
-		this.timeline_stage.pattern_design.select_keyframes([this.keyframe]);
+		if (!ctrlKey) this.timeline_stage.pattern_design.deselect_all_items();
+		this.timeline_stage.pattern_design.select_items({ keyframes: [this.keyframe] });
 	}
 
 	/**
@@ -495,29 +508,59 @@ class KonvaTimelineKeyframe {
 		this.flag.getText().text(milliseconds_to_hhmmssms_format(time).slice(-6));
 		this.keyframe.set_time(time);
 	}
+
+	/**
+	 *
+	 * @param {ConditionalJump[]} cjumps
+	 */
+	update_cjump_flags(cjumps) {
+		const to_delete = new Set(this.linked_cjump_flags);
+		for (const cjump of cjumps) {
+			const cjf = this.timeline_stage.cjump_flags.get(cjump.jump_to) ?? new KonvaCJumpFlag(this.timeline_stage, cjump.jump_to);
+			to_delete.delete(cjf);
+			this.linked_cjump_flags.add(cjf);
+			cjf.associated_keyframes.set(this.keyframe, cjump);
+			this.timeline_stage.cjump_flags.set(cjump.jump_to, cjf);
+		}
+		for (const cjf of to_delete) {
+			cjf.associated_keyframes.delete(this.keyframe);
+			if (cjf.associated_keyframes.size == 0) cjf.destroy();
+		}
+
+	}
 }
 
-class KonvaCjumpFlag {
+// exported for use in select
+export class KonvaCJumpFlag {
+	/** @type {Map<MAHKeyframeFE, ConditionalJump>} */
+	associated_keyframes = new Map();
+
 	/**
 	 *
 	 * @param {KonvaTimelineStage} timeline_stage
-	 * @param {CjumpRelatedStateData} cjump
+	 * @param {number} jump_to_time
 	 */
-	constructor(timeline_stage, cjump) {
-		// i need to rework select logic to accept non-keyframe objects or figure something else out. I think this should just exist as a GUI element and not be really a "selectable" part of the pattern design
+	constructor(timeline_stage, jump_to_time) {
 		this.timeline_stage = timeline_stage;
-		this.cjump = cjump;
 
-		this.ycoord = timeline_stage.fullHeight/2;
+		this.listener_abort = new AbortController();
+
+		this.ycoord = minor_gridline_start + cjump_flag_size;
+
 
 		this.flag = new Konva.Label({
-			x: timeline_stage.milliseconds_to_x_coord(cjump.time),
+			x: 0,
 			y: this.ycoord,
 			draggable: true,
 			opacity: 0.85,
 		});
 		this.flag.add(new Konva.Tag({
 			fill: getComputedStyle(document.body).getPropertyValue("--cjump-flag-fill"),
+			pointerDirection: "right",
+			pointerWidth: 5,
+			pointerHeight: cjump_flag_size,
+			cornerRadius: 1,
+			// lineJoin: "round",
 			shadowColor: "black",
 			shadowBlur: 2,
 			shadowOffsetX: 1,
@@ -525,14 +568,14 @@ class KonvaCjumpFlag {
 			shadowOpacity: 0.5,
 		}));
 		this.flag.add(new Konva.Text({
-			text: cjump.name,
+			text: "",
 			fontSize: 12,
 			padding: 5,
 			fill: "white",
 		}));
 
-		this.flag.on("click", _ev => {
-			this.select_this();
+		this.flag.on("click", ev => {
+			this.select_this(ev.evt.ctrlKey, false);
 		});
 		this.flag.on("mouseenter", _ev => {
 			document.body.style.cursor = "pointer";
@@ -545,6 +588,70 @@ class KonvaCjumpFlag {
 		});
 		this.flag.on("dragmove", _ev => {
 			this.update_time({ time: this.timeline_stage.raw_x_to_t({ raw_x: this.flag.x(), snap: true }) });
+		});
+
+		timeline_stage.pattern_design.state_change_events.addEventListener("item_select", ev => {
+			if (ev.detail.cjump_flag != this) return;
+			this.update_select(true);
+		}, { signal: this.listener_abort.signal });
+
+		timeline_stage.pattern_design.state_change_events.addEventListener("item_deselect", ev => {
+			if (ev.detail.cjump_flag != this) return;
+			this.update_select(false);
+		}, { signal: this.listener_abort.signal });
+
+		timeline_stage.scrolling_layer.add(this.flag);
+
+		this.update_time({ time: jump_to_time });
+	}
+
+	destroy() {
+		this.listener_abort.abort();
+		this.flag.destroy();
+	}
+
+	/**
+	 *
+	 * @param {boolean} ctrlKey
+	 * @param {boolean} dont_deselect
+	 */
+	select_this(ctrlKey, dont_deselect) {
+		if (this.timeline_stage.pattern_design.is_item_selected({ cjump_flag: this })) {
+			if (ctrlKey && !dont_deselect) this.timeline_stage.pattern_design.deselect_items({ cjump_flags: [this] });
+			return;
+		}
+
+		if (!ctrlKey) this.timeline_stage.pattern_design.deselect_all_items();
+		this.timeline_stage.pattern_design.select_items({ cjump_flags: [this] });
+	}
+
+	/**
+	 *
+	 * @param {boolean} selected
+	 */
+	update_select(selected) {
+		const fill = selected?"--cjump-flag-fill-selected":"--cjump-flag-fill";
+		this.flag.getTag().fill(getComputedStyle(document.body).getPropertyValue(fill));
+		if (selected) this.timeline_stage.transformer.nodes(this.timeline_stage.transformer.nodes().concat([this.flag]));
+		else this.timeline_stage.transformer.nodes(this.timeline_stage.transformer.nodes().filter(n => n != this.flag));
+	}
+
+	update_time({ time }) {
+		const x = this.timeline_stage.milliseconds_to_x_coord(time);
+		this.flag.x(x);
+		this.flag.y(this.ycoord);
+		this.flag.getText().text(milliseconds_to_hhmmssms_format(time).slice(-6));
+		for (const [kf, cjump] of this.associated_keyframes) {
+			cjump.jump_to = time;
+		}
+	}
+
+	delete_cjumps_to_self() {
+		return [...this.associated_keyframes].map(([kf, cjump]) => {
+			if ("cjumps" in kf) {
+				kf.cjumps = kf.cjumps.filter(cj => cj != cjump);
+			}
+			return kf;
 		});
 	}
 

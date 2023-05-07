@@ -51,6 +51,9 @@
     --keyframe-flag-fill-selected: var(--control-point-stroke-selected);
     --keyframe-flag-shadow: rgba(0,0,0,0.5);
 
+    --cjump-flag-fill: hsl(150 35% 55% / 1);
+    --cjump-flag-fill-selected: hsl(204 35% 55% / 1);
+
     --timeline-select-rect-fill: var(--control-point-select-rect-fill);
     --timeline-major-gridline-stroke: hsl(var(--bg-hue), var(--bg-sat), 12%);
     --timeline-major-gridline-text: hsl(var(--bg-hue), var(--bg-sat), 2%);
@@ -395,6 +398,13 @@ div.parametereditor div.userparameters > * {
 }
 div.parametereditor div.userparameters > user-param-control span:nth-child(2) {
     font-weight: bold;
+}
+.hide {
+    display: none;
+}
+div.parametereditor span.helpmsg {
+    grid-column: 1 / -1;
+    color: var(--text-low-priority);
 }
 div.parametereditor div.timecontrol {
     display: grid;

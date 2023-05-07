@@ -3,8 +3,6 @@
 
 import { notnull } from "./util.mjs";
 
-const UPARAM_CLICK_EV_HANDLER_SYMBOL = Symbol("UPARAM_CLICK_EV_HANDLER_SYMBOL");
-
 export class ParameterEditor {
 	/**
 	 *
@@ -15,6 +13,7 @@ export class ParameterEditor {
 		this._pattern_design = pattern_design;
 		this._patterneditor_div = patterneditor_div;
 		this._userparameters_div = notnull(this._patterneditor_div.querySelector("div.userparameters"));
+		this._userparam_helpmsg_span = notnull(this._patterneditor_div.querySelector("span.helpmsg"));
 
 		{ //init timecontrol
 			this._timecontrol_div = notnull(document.querySelector("div.timecontrol"));
@@ -92,6 +91,12 @@ export class ParameterEditor {
 			up_el.linked_keyframes = keyframes;
 
 			this._userparameters_div.appendChild(up_el);
+		}
+		// if no user parameters, show a message instead
+		if ([...this._userparameters_div.children].filter(el => el instanceof UserParamControl).length === 0) {
+			this._userparam_helpmsg_span.classList.remove("hide");
+		} else {
+			this._userparam_helpmsg_span.classList.add("hide");
 		}
 		this.#_update_user_parameters_values();
 	}
@@ -191,8 +196,8 @@ class UserParamControl extends HTMLElement {
 	}
 
 	select_linked() {
-		this.#_pattern_design.deselect_all_keyframes();
-		this.#_pattern_design.select_keyframes(this.linked_keyframes);
+		this.#_pattern_design.deselect_all_items();
+		this.#_pattern_design.select_items({ keyframes: this.linked_keyframes });
 	}
 }
 

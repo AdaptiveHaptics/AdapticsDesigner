@@ -4,6 +4,7 @@
 /** @typedef {import("./keyframes/index.mjs").MAHKeyframeFE} MAHKeyframeFE */
 /** @typedef {import("../pattern-evaluator.mjs").PatternEvaluatorParameters} PatternEvaluatorParameters */
 /** @typedef {import("../pattern-evaluator.mjs").NextEvalParams} NextEvalParams */
+/** @typedef {import("../konvapanes/timeline-stage.mjs").KonvaCJumpFlag} KonvaCJumpFlag */
 /**
  * @template T
  * @template {keyof T} K
@@ -30,8 +31,8 @@ import { create_correct_keyframefe_wrapper, MAHKeyframePauseFE, MAHKeyframeStand
  * @property {{ keyframe: MAHKeyframeFE }} kf_delete
  * @property {{ keyframe: MAHKeyframeFE }} kf_update
  * @property {{}} rerender
- * @property {{ keyframe: MAHKeyframeFE }} kf_select
- * @property {{ keyframe: MAHKeyframeFE }} kf_deselect
+ * @property {{ keyframe: MAHKeyframeFE, cjump_flag: undefined } | { keyframe: undefined, cjump_flag: KonvaCJumpFlag }} item_select
+ * @property {{ keyframe: MAHKeyframeFE, cjump_flag: undefined } | { keyframe: undefined, cjump_flag: KonvaCJumpFlag }} item_deselect
  * @property {{ keyframe: MAHKeyframeFE }} kf_reorder
  * @property {{ committed: boolean }} commit_update
  * @property {{ }} playback_update
@@ -262,42 +263,56 @@ export class MAHPatternDesignFE {
 
 	/** @type {Set<MAHKeyframeFE>} */
 	selected_keyframes = new Set();
+	/** @type {Set<KonvaCJumpFlag>} */
+	selected_cjump_flags = new Set();
+
 
 	/**
 	 *
-	 * @param {MAHKeyframeFE[]} selected_keyframes
+	 * @param {Object} param0
+	 * @param {MAHKeyframeFE[]=} param0.keyframes
+	 * @param {KonvaCJumpFlag[]=} param0.cjump_flags
 	 */
-	select_keyframes(selected_keyframes) {
-		for (const keyframe of selected_keyframes) {
+	select_items({ keyframes = [], cjump_flags = [] }) {
+		for (const keyframe of keyframes) {
 			this.selected_keyframes.add(keyframe);
-			const change_event = new StateChangeEvent("kf_select", { detail: { keyframe } });
+			const change_event = new StateChangeEvent("item_select", { detail: { keyframe, cjump_flag: undefined } });
+			this.state_change_events.dispatchEvent(change_event);
+		}
+		for (const cjump_flag of cjump_flags) {
+			this.selected_cjump_flags.add(cjump_flag);
+			const change_event = new StateChangeEvent("item_select", { detail: { keyframe: undefined, cjump_flag } });
 			this.state_change_events.dispatchEvent(change_event);
 		}
 	}
-	/**
-	 *
-	 * @param {MAHKeyframeFE[]} deselected_keyframes
-	 */
-	deselect_keyframes(deselected_keyframes) {
-		for (const keyframe of deselected_keyframes) {
+	deselect_items({ keyframes = [], cjump_flags = [] }) {
+		for (const keyframe of keyframes) {
 			this.selected_keyframes.delete(keyframe);
-			const change_event = new StateChangeEvent("kf_deselect", { detail: { keyframe } });
+			const change_event = new StateChangeEvent("item_deselect", { detail: { keyframe, cjump_flag: undefined } });
+			this.state_change_events.dispatchEvent(change_event);
+		}
+		for (const cjump_flag of cjump_flags) {
+			this.selected_cjump_flags.delete(cjump_flag);
+			const change_event = new StateChangeEvent("item_deselect", { detail: { keyframe: undefined, cjump_flag } });
 			this.state_change_events.dispatchEvent(change_event);
 		}
 	}
 	select_all_keyframes() {
-		this.select_keyframes(this.filedata.keyframes);
+		this.select_items({ keyframes: this.filedata.keyframes });
 	}
-	deselect_all_keyframes() {
-		this.deselect_keyframes([...this.selected_keyframes]);
+	deselect_all_items() {
+		this.deselect_items({ keyframes: [...this.selected_keyframes], cjump_flags: [...this.selected_cjump_flags] });
 	}
 	/**
-	 *
-	 * @param {MAHKeyframeFE} keyframe
+	 * @param {Object} param0
+	 * @param {MAHKeyframeFE=} param0.keyframe
+	 * @param {KonvaCJumpFlag=} param0.cjump_flag
 	 * @returns {boolean}
 	 */
-	is_keyframe_selected(keyframe) {
-		return this.selected_keyframes.has(keyframe);
+	is_item_selected({ keyframe, cjump_flag }) {
+		if (keyframe) return this.selected_keyframes.has(keyframe);
+		if (cjump_flag) return this.selected_cjump_flags.has(cjump_flag);
+		return false;
 	}
 
 	group_select_logic(selected_keyframes, linked_keyframes, { shiftKey = false, ctrlKey = false, altKey = false }) {
@@ -306,9 +321,9 @@ export class MAHPatternDesignFE {
 		if (altKey) { keyframes = [...selected_keyframes, ...linked_keyframes]; }
 		else keyframes = [...selected_keyframes];
 
-		if (!ctrlKey) this.deselect_all_keyframes();
-		if (ctrlKey && shiftKey) this.deselect_keyframes(keyframes);
-		else this.select_keyframes(keyframes);
+		if (!ctrlKey) this.deselect_all_items();
+		if (ctrlKey && shiftKey) this.deselect_items({ keyframes });
+		else this.select_items({ keyframes });
 	}
 
 
@@ -379,12 +394,21 @@ export class MAHPatternDesignFE {
 	 * @param {MAHKeyframeFE[]} keyframes
 	 */
 	delete_keyframes(keyframes) {
-		this.deselect_all_keyframes();
+		this.deselect_all_items();
 		for (const keyframe of keyframes) {
 			const index = this.get_sorted_keyframe_index(keyframe);
 			this.filedata.keyframes.splice(index, 1);
 		}
 		return keyframes;
+	}
+
+	async delete_selected_items() {
+		if (this.selected_keyframes.size == 0 && this.selected_cjump_flags.size == 0) return;
+		this.save_state();
+		const selected_cjump_flags = [...this.selected_cjump_flags];
+		const updated_keyframes = selected_cjump_flags.flatMap(cjf => cjf.delete_cjumps_to_self());
+		const deleted_keyframes = this.delete_keyframes([...this.selected_keyframes]);
+		this.commit_operation({ updated_keyframes, deleted_keyframes });
 	}
 
 	/**
@@ -538,6 +562,14 @@ export class MAHPatternDesignFE {
 	}
 
 
+	async cut_selected_to_clipboard() {
+		const selected_keyframes = [...this.selected_keyframes];
+		await this.copy_selected_to_clipboard();
+		this.save_state();
+		const deleted_keyframes = this.delete_keyframes(selected_keyframes);
+		this.commit_operation({ deleted_keyframes });
+	}
+
 	async copy_selected_to_clipboard() {
 		/** @type {MidAirHapticsClipboardFormat} */
 		const clipboard_data = {
@@ -551,7 +583,7 @@ export class MAHPatternDesignFE {
 		// });
 		// navigator.clipboard.write([ci]);
 		await navigator.clipboard.writeText(JSON.stringify(clipboard_data, null, "\t"));
-		this.deselect_all_keyframes();
+		this.deselect_all_items();
 	}
 
 	async paste_clipboard() {
@@ -590,7 +622,7 @@ export class MAHPatternDesignFE {
 				return this.insert_new_keyframe(kf);
 			});
 			this.commit_operation({ new_keyframes, deleted_keyframes });
-			this.select_keyframes(new_keyframes);
+			this.select_items({ keyframes: new_keyframes });
 		} catch (e) {
 			alert("Could not find MidAirHapticsClipboardFormat data in clipboard");
 			throw e;

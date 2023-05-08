@@ -489,7 +489,6 @@ class KonvaTimelineKeyframe {
 			y: this.ycoord+cjump_arrow_size,
 			sides: 3,
 			radius: cjump_arrow_size,
-			zIndex: -1,
 			fill: getComputedStyle(document.body).getPropertyValue("--cjump-arrow-fill"),
 			visible: false,
 		};

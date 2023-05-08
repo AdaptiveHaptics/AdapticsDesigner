@@ -592,7 +592,7 @@ class KonvaPatternControlPoint {
 		if (linked_keyframe) this.linked_keyframes.add(linked_keyframe);
 		else this.linked_keyframes.clear();
 
-		if (this.has_linked()) {
+		{ // linked pause or stop
 			const pause_keyframe = [...this.linked_keyframes].find(kf => kf.type == "pause");
 			this.linked_pause_group.visible(!!pause_keyframe);
 			if (pause_keyframe) {

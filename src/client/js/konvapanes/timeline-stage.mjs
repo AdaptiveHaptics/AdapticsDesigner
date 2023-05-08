@@ -18,7 +18,13 @@ const keyframe_rect_padding_top = 2;
 const keyframe_rect_y = timestamp_rect_height - keyframe_rect_padding_top;
 const keyframe_rect_height = keyframe_flag_size + keyframe_rect_padding_top;
 const minor_gridline_start = keyframe_rect_y + keyframe_rect_height;
+const keyframe_flag_ycoord = minor_gridline_start + 3;
+const cjump_arrow_size = 7;
 const cjump_flag_size = 22;
+const cjump_flag_y = keyframe_flag_ycoord + cjump_arrow_size + cjump_flag_size;
+const cjump_flag_rect_padding = 2;
+const cjump_flag_rect_y = cjump_flag_y - cjump_flag_size/2 - cjump_flag_rect_padding/2;
+const cjump_flag_rect_height = cjump_flag_size + cjump_flag_rect_padding;
 
 export class KonvaTimelineStage extends KonvaResizeScrollStage {
 	static major_gridline_millisecond_presets = [10 / 10, 10 / 8, 10 / 5, 10 / 4, 10 / 2];
@@ -47,7 +53,8 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 	}
 
 	transformer = new Konva.Transformer();
-	selection_rect = new Konva.Rect();
+	selection_rect_kf = new Konva.Rect();
+	selection_rect_cjump = new Konva.Rect();
 	timestamp_rect = new Konva.Rect();
 	keyframe_rect = new Konva.Rect();
 	playback_head = new Konva.Line();
@@ -87,44 +94,71 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 		});
 
 		{ //initialize selection_rect
-			let x1, x2;
+			let x1, x2, y1, y2;
+			const include_cjump_flags_in_selection_rect = () => {
+				return y1 > cjump_flag_rect_y || y2 > cjump_flag_rect_y;
+			};
 			this.k_stage.on("pointerdown", ev => {
-				if (!(ev.target == this.k_stage || ev.target == this.keyframe_rect)) return;
+				if (!(ev.target == this.k_stage || ev.target == this.keyframe_rect || ev.target == this.cjump_flag_rect)) return;
 				// ev.evt.preventDefault();
 				x1 = notnull(this.scrolling_layer.getRelativePointerPosition()).x;
+				y1 = notnull(this.scrolling_layer.getRelativePointerPosition()).y;
 				x2 = notnull(this.scrolling_layer.getRelativePointerPosition()).x;
+				y2 = notnull(this.scrolling_layer.getRelativePointerPosition()).y;
 
-				this.selection_rect.visible(true);
-				this.selection_rect.width(0);
-				this.selection_rect.height(0);
+				this.selection_rect_kf.visible(true);
+				this.selection_rect_kf.width(0);
+				this.selection_rect_kf.height(0);
+
+				this.selection_rect_cjump.visible(true);
+				this.selection_rect_cjump.width(0);
+				this.selection_rect_cjump.height(0);
 			});
 			this.k_stage.on("pointermove", ev => {
 				// do nothing if we didn't start selection
-				if (!this.selection_rect.visible()) return;
+				if (!this.selection_rect_kf.visible()) return;
 				ev.evt.preventDefault();
 				x2 = notnull(this.scrolling_layer.getRelativePointerPosition()).x;
+				y2 = notnull(this.scrolling_layer.getRelativePointerPosition()).y;
 
-				this.selection_rect.setAttrs({
+				this.selection_rect_kf.setAttrs({
 					x: Math.min(x1, x2),
 					y: keyframe_rect_y,
 					width: Math.abs(x2 - x1),
 					height: keyframe_rect_height,
 				});
+
+				if (include_cjump_flags_in_selection_rect()) {
+					this.selection_rect_cjump.setAttrs({
+						x: Math.min(x1, x2),
+						y: cjump_flag_rect_y,
+						width: Math.abs(x2 - x1),
+						height: cjump_flag_rect_height,
+					});
+				} else {
+					this.selection_rect_cjump.width(0);
+					this.selection_rect_cjump.height(0);
+				}
 			});
 			document.body.addEventListener("pointerup", ev => {
 				// do nothing if we didn't start selection
-				if (!this.selection_rect.visible()) return;
+				if (!this.selection_rect_kf.visible()) return;
 				ev.preventDefault();
 
-				this.selection_rect.visible(false);
+				this.selection_rect_kf.visible(false);
+				this.selection_rect_cjump.visible(false);
 
 				// const box = this.selection_rect.getSelfRect();
+				const time_low = this.x_coord_to_milliseconds(Math.min(x1, x2));
+				const time_high = this.x_coord_to_milliseconds(Math.max(x1, x2));
 				const keyframes_in_box = this.pattern_design.filedata.keyframes.filter(kf => {
-					const time_low = this.x_coord_to_milliseconds(Math.min(x1, x2));
-					const time_high = this.x_coord_to_milliseconds(Math.max(x1, x2));
 					return time_low <= kf.time && kf.time <= time_high;
 				});
-				this.pattern_design.group_select_logic(keyframes_in_box, [], { shiftKey: ev.shiftKey, ctrlKey: ev.ctrlKey, altKey: ev.altKey });
+				const cjump_flags_in_box = include_cjump_flags_in_selection_rect() ? [...this.cjump_flags].filter(cjf => {
+					return time_low <= cjf.current_time && cjf.current_time <= time_high;
+				}) : [];
+
+				this.pattern_design.group_select_logic({ keyframes: keyframes_in_box, cjump_flags: cjump_flags_in_box }, {}, { shiftKey: ev.shiftKey, ctrlKey: ev.ctrlKey, altKey: ev.altKey });
 			});
 		}
 
@@ -183,10 +217,16 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 			const new_keyframe = this.pattern_design.insert_new_keyframe({ type: "standard", time: t });
 			this.pattern_design.commit_operation({ new_keyframes: [new_keyframe] });
 
-			this.selection_rect.visible(false);
+			this.selection_rect_kf.visible(false);
 			if (!ev.evt.ctrlKey) this.pattern_design.deselect_all_items();
 			this.pattern_design.select_items({ keyframes: [ new_keyframe ] });
 		});
+
+		this.cjump_flag_rect = new Konva.Rect({
+			x: 0, y: cjump_flag_rect_y, width: this.fullWidth, height: cjump_flag_rect_height,
+			fill: getComputedStyle(document.body).getPropertyValue("--timeline-minor-gridline-stroke")
+		});
+		this.scrolling_layer.add(this.cjump_flag_rect);
 
 		{ //init transformer
 			this.transformer = new Konva.Transformer({
@@ -222,12 +262,17 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 		}
 
 		{ //initialize selection_rect
-			this.selection_rect = new Konva.Rect({
+			this.selection_rect_kf = new Konva.Rect({
 				fill: getComputedStyle(document.body).getPropertyValue("--timeline-select-rect-fill"),
 				visible: false,
 			});
+			this.scrolling_layer.add(this.selection_rect_kf);
 
-			this.scrolling_layer.add(this.selection_rect);
+			this.selection_rect_cjump = new Konva.Rect({
+				fill: getComputedStyle(document.body).getPropertyValue("--timeline-select-rect-fill"),
+				visible: false,
+			});
+			this.scrolling_layer.add(this.selection_rect_cjump);
 		}
 
 
@@ -335,7 +380,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 }
 
 class KonvaTimelineKeyframe {
-	ycoord = minor_gridline_start + 3;
+	ycoord = keyframe_flag_ycoord;
 
 	/**
 	 *
@@ -437,7 +482,26 @@ class KonvaTimelineKeyframe {
 			listening: false,
 			...shadow_settings,
 		});
-		timeline_stage.scrolling_layer.add(this.line);
+
+		/** @type {import("konva/lib/shapes/RegularPolygon.js").RegularPolygonConfig} */
+		const cjump_arrow_config = {
+			x: 10,
+			y: this.ycoord+cjump_arrow_size,
+			sides: 3,
+			radius: cjump_arrow_size,
+			zIndex: -1,
+			fill: getComputedStyle(document.body).getPropertyValue("--cjump-arrow-fill"),
+			visible: false,
+		};
+		this.cjump_arrow_left = new Konva.RegularPolygon({
+			rotation: -90,
+			...cjump_arrow_config
+		});
+		this.cjump_arrow_right = new Konva.RegularPolygon({
+			rotation: 90,
+			...cjump_arrow_config
+		});
+
 
 		this.listener_abort = new AbortController();
 		timeline_stage.pattern_design.state_change_events.addEventListener("kf_delete", ev => {
@@ -462,6 +526,9 @@ class KonvaTimelineKeyframe {
 			this.update_select(false);
 		}, { signal: this.listener_abort.signal });
 
+		timeline_stage.scrolling_layer.add(this.cjump_arrow_left);
+		timeline_stage.scrolling_layer.add(this.cjump_arrow_right);
+		timeline_stage.scrolling_layer.add(this.line);
 		timeline_stage.scrolling_layer.add(this.flag);
 
 		keyframe[KonvaTimelineKeyframeSymbol] = this;
@@ -509,6 +576,10 @@ class KonvaTimelineKeyframe {
 		this.flag.x(x);
 		this.flag.y(this.ycoord);
 		this.line.x(x-this.line.width()/2);
+
+		this.cjump_arrow_left.x(x-cjump_arrow_size*0.63);
+		this.cjump_arrow_right.x(x+cjump_arrow_size*0.63);
+
 		this.flag.getText().text(milliseconds_to_hhmmssms_format(time).slice(-6));
 		this.keyframe.set_time(time);
 	}
@@ -550,10 +621,30 @@ class KonvaTimelineKeyframe {
 			if (cjf.associated_keyframes.size == 0) cjf.destroy();
 		}
 
+		// add or remove the cjump arrows
+		let add_left = false;
+		let add_right = false;
+		if ("cjumps" in this.keyframe) {
+			for (const cj of this.keyframe.cjumps) {
+				if (cj.jump_to > this.keyframe.time) {
+					add_right = true;
+				} else {
+					add_left = true;
+				}
+			}
+		}
+
+		if (add_left) this.cjump_arrow_left.visible(true);
+		else this.cjump_arrow_left.visible(false);
+		if (add_right) this.cjump_arrow_right.visible(true);
+		else this.cjump_arrow_right.visible(false);
 	}
 }
 
-// exported for use in select
+/**
+ * Movable destination flag for conditional jumps
+ */
+// exported for use in select code
 export class KonvaCJumpFlag {
 	/** @type {Map<MAHKeyframeFE, Set<ConditionalJump>>} */
 	associated_keyframes = new Map();
@@ -569,7 +660,7 @@ export class KonvaCJumpFlag {
 
 		this.listener_abort = new AbortController();
 
-		this.ycoord = minor_gridline_start + cjump_flag_size;
+		this.ycoord = cjump_flag_y;
 
 
 		this.flag = new Konva.Label({
@@ -599,7 +690,14 @@ export class KonvaCJumpFlag {
 		}));
 
 		this.flag.on("click", ev => {
-			this.select_this(ev.evt.ctrlKey, false);
+			if (ev.evt.detail == 2) {
+				console.log("double click");
+				this.timeline_stage.pattern_design.deselect_all_items();
+				this.timeline_stage.pattern_design.select_items({ keyframes: [...this.associated_keyframes.keys()] });
+			} else {
+				console.log("click");
+				this.select_this(ev.evt.ctrlKey, false);
+			}
 		});
 		this.flag.on("mouseenter", _ev => {
 			document.body.style.cursor = "pointer";
@@ -669,8 +767,8 @@ export class KonvaCJumpFlag {
 		const x = this.timeline_stage.milliseconds_to_x_coord(time);
 		this.flag.x(x);
 		this.flag.y(this.ycoord);
-		this.flag.getText().text(milliseconds_to_hhmmssms_format(time).slice(-6));
-		for (const [kf, cjset] of this.associated_keyframes) {
+		this.flag.getText().text("Dest. "+milliseconds_to_hhmmssms_format(time).slice(-6));
+		for (const [_kf, cjset] of this.associated_keyframes) {
 			for (const cjump of cjset) {
 				cjump.jump_to = time;
 			}

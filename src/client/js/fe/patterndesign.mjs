@@ -267,11 +267,10 @@ export class MAHPatternDesignFE {
 	selected_cjump_flags = new Set();
 
 
+	/** @typedef {{ keyframes?: MAHKeyframeFE[], cjump_flags?: KonvaCJumpFlag[] }} SelectItemsStruct */
 	/**
 	 *
-	 * @param {Object} param0
-	 * @param {MAHKeyframeFE[]=} param0.keyframes
-	 * @param {KonvaCJumpFlag[]=} param0.cjump_flags
+	 * @param {SelectItemsStruct} param0
 	 */
 	select_items({ keyframes = [], cjump_flags = [] }) {
 		for (const keyframe of keyframes) {
@@ -285,6 +284,10 @@ export class MAHPatternDesignFE {
 			this.state_change_events.dispatchEvent(change_event);
 		}
 	}
+	/**
+	 *
+	 * @param {SelectItemsStruct} param0
+	 */
 	deselect_items({ keyframes = [], cjump_flags = [] }) {
 		for (const keyframe of keyframes) {
 			this.selected_keyframes.delete(keyframe);
@@ -315,15 +318,25 @@ export class MAHPatternDesignFE {
 		return false;
 	}
 
-	group_select_logic(selected_keyframes, linked_keyframes, { shiftKey = false, ctrlKey = false, altKey = false }) {
-		let keyframes = [];
+	/**
+	 *
+	 * @param {SelectItemsStruct} selected
+	 * @param {SelectItemsStruct} linked
+	 */
+	group_select_logic(selected, linked, { shiftKey = false, ctrlKey = false, altKey = false }) {
+		let to_select = {};
 
-		if (altKey) { keyframes = [...selected_keyframes, ...linked_keyframes]; }
-		else keyframes = [...selected_keyframes];
+		if (altKey) { // merge selected and linked
+			const keys = new Set([...Object.keys(selected), ...Object.keys(linked)]);
+			for (const key of keys) {
+				to_select[key] = [...(selected[key] ?? []), ...(linked[key] ?? [])];
+			}
+		}
+		else Object.assign(to_select, selected);
 
 		if (!ctrlKey) this.deselect_all_items();
-		if (ctrlKey && shiftKey) this.deselect_items({ keyframes });
-		else this.select_items({ keyframes });
+		if (ctrlKey && shiftKey) this.deselect_items(to_select);
+		else this.select_items(to_select);
 	}
 
 

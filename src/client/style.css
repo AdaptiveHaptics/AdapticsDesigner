@@ -51,8 +51,9 @@
     --keyframe-flag-fill-selected: var(--control-point-stroke-selected);
     --keyframe-flag-shadow: rgba(0,0,0,0.5);
 
-    --cjump-flag-fill: hsl(150 35% 55% / 1);
+    --cjump-flag-fill: hsl(261, 35%, 55%);
     --cjump-flag-fill-selected: hsl(204 35% 55% / 1);
+    --cjump-arrow-fill: var(--cjump-flag-fill);
 
     --timeline-select-rect-fill: var(--control-point-select-rect-fill);
     --timeline-major-gridline-stroke: hsl(var(--bg-hue), var(--bg-sat), 12%);

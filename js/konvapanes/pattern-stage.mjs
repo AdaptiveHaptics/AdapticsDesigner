@@ -119,7 +119,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 					const cp = KonvaPatternControlPoint.get_control_point_from_keyframe(kf);
 					cp?.linked_keyframes.forEach(kf => linked_keyframes.push(kf));
 				}
-				this.pattern_design.group_select_logic(keyframes_in_box, linked_keyframes, { shiftKey: ev.shiftKey, ctrlKey: ev.ctrlKey, altKey: ev.altKey });
+				this.pattern_design.group_select_logic({ keyframes: keyframes_in_box }, { keyframes: linked_keyframes }, { shiftKey: ev.shiftKey, ctrlKey: ev.ctrlKey, altKey: ev.altKey });
 			});
 		}
 

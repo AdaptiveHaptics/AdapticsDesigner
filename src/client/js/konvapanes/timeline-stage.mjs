@@ -42,7 +42,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 	}
 	minor_gridlines_per_major = 4;
 
-	x_axis_left_padding_pixels = 30;
+	x_axis_left_padding_pixels = 50;
 
 	milliseconds_snapping() {
 		return this.milliseconds_per_major_gridline/20;

@@ -626,6 +626,11 @@ export class MAHPatternDesignFE {
 			const new_keyframes = clipboard_parsed.keyframes.map(kf => {
 				console.log(kf.time);
 				kf.time += paste_time_offset;
+				if ("cjumps" in kf) {
+					for (const cjump of kf.cjumps) {
+						cjump.jump_to += paste_time_offset;
+					}
+				}
 				console.log(kf.time);
 				if ("coords" in kf) {
 					kf.coords.coords.x += 5;

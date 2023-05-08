@@ -23,7 +23,7 @@ export class ParameterEditor {
 				if (Number.isFinite(v)) {
 					this._pattern_design.update_pattern_time(Math.max(v, 0));
 				} else {
-					this._timecontrol_input.value = this._pattern_design.evaluator_params.time.toFixed(0);
+					this._timecontrol_input.value = this._pattern_design.last_eval[0].pattern_time.toFixed(0);
 				}
 			});
 			/** @type {HTMLButtonElement} */
@@ -112,7 +112,7 @@ export class ParameterEditor {
 	}
 
 	#_update_playback_controls() {
-		this._timecontrol_input.value = this._pattern_design.evaluator_params.time.toFixed(0);
+		this._timecontrol_input.value = this._pattern_design.last_eval[0].pattern_time.toFixed(0);
 		if (this._pattern_design.is_playing()) {
 			this._timecontrol_play.style.display = "none";
 			this._timecontrol_pause.style.display = "";

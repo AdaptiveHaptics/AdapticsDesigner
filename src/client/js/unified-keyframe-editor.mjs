@@ -295,7 +295,7 @@ export class UnifiedKeyframeEditor {
 				case "circle":
 					kf.brush.brush = {
 						name: this.brush_type_select.value,
-						params: { radius: 1 }
+						params: { radius: 1, am_freq: 0 }
 					};
 					break;
 				case "line":
@@ -304,7 +304,8 @@ export class UnifiedKeyframeEditor {
 						params: {
 							length: 5,
 							thickness: 1,
-							rotation: 0
+							rotation: 0,
+							am_freq: 0,
 						}
 					};
 					break;

@@ -379,7 +379,7 @@ class KonvaPlaybackVis {
 		const color = getComputedStyle(document.body).getPropertyValue("--pattern-playback-vis");
 
 		const last_eval = this.pattern_stage.pattern_design.last_eval;
-		const last_eval_layer_coords = last_eval.map(p => this.pattern_stage.pattern_coords_to_layer_coords(p.coords));
+		const last_eval_layer_coords = last_eval.map(p => this.pattern_stage.pattern_coords_to_layer_coords(p.ul_control_point.coords));
 
 		this.playback_vis.points([last_eval_layer_coords[0].x, last_eval_layer_coords[0].y, ...last_eval_layer_coords.flatMap(c => [c.x, c.y])]);
 

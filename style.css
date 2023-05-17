@@ -39,7 +39,8 @@
     --control-point-stop: var(--stop-color);
     --control-point-stop-selected: var(--selected-keyframe-color);
 
-    --pattern-playback-vis: #74d4ec;
+    --pattern-playback-vis-high: #74d4ec;
+    --pattern-playback-vis-low: #126f87;
 
     --pattern-boundary: var(--background-tertiary);
     --pattern-axis: hsl(var(--bg-hue), var(--bg-sat), 17%);

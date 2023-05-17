@@ -17,7 +17,7 @@
  */
 
 /** @type {import("../../../shared/types").REVISION_STRING} */
-const MAH_$REVISION = "0.0.6-alpha.1";
+const MAH_$REVISION = "0.0.7-alpha.1";
 
 import { DeviceWSController } from "../device-ws-controller.mjs";
 import { PatternEvaluator } from "../pattern-evaluator.mjs";
@@ -90,7 +90,7 @@ export class MAHPatternDesignFE {
 
 
 		this.state_change_events = new StateChangeEventTarget();
-		this.state_change_events.addEventListener("rerender", ev => console.info(ev));
+		// this.state_change_events.addEventListener("rerender", ev => console.info(ev));
 
 		//pattern eval
 		/** @type {PatternEvaluatorParameters}  */
@@ -742,7 +742,8 @@ MAHPatternDesignFE.DEFAULT = ["test.json", {
 				brush: {
 					name: "circle",
 					params: {
-						radius: 1.00
+						radius: 1.00,
+						am_freq: 0,
 					}
 				},
 				transition: {

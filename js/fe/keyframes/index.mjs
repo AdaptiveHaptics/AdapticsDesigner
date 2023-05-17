@@ -243,7 +243,8 @@ export class NewKeyframeCommon {
 		brush: {
 			name: "circle",
 			params: {
-				radius: 1.00
+				radius: 1.00,
+				am_freq: 0,
 			}
 		},
 		transition: {

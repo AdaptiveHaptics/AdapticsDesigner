@@ -12,7 +12,7 @@
 export type TupleOf_MidAirHapticsAnimationFileFormatAnd_PatternEvaluatorParametersAnd_BrushAtAnimLocalTimeAnd_ArrayOf_BrushAtAnimLocalTime =
   [MidAirHapticsAnimationFileFormat, PatternEvaluatorParameters, BrushAtAnimLocalTime, BrushAtAnimLocalTime[]];
 export type MidAirHapticsAnimationFileFormatDataFormatName = "MidAirHapticsAnimationFileFormat";
-export type DataFormatRevision = "0.0.6-alpha.1";
+export type DataFormatRevision = "0.0.7-alpha.1";
 export type MAHKeyframe =
   | {
       brush?: BrushWithTransition | null;
@@ -37,12 +37,20 @@ export type MAHBrush =
   | {
       name: "circle";
       params: {
+        /**
+         * AM frequency in HZ
+         */
+        am_freq: number;
         radius: number;
       };
     }
   | {
       name: "line";
       params: {
+        /**
+         * AM frequency in HZ
+         */
+        am_freq: number;
         length: number;
         rotation: number;
         thickness: number;
@@ -143,13 +151,16 @@ export interface PatternEvaluatorParameters {
   };
 }
 export interface BrushAtAnimLocalTime {
-  coords: MAHCoords;
-  intensity: number;
   next_eval_params: NextEvalParams;
   pattern_time: number;
   stop: boolean;
+  ul_control_point: UltraleapControlPoint;
 }
 export interface NextEvalParams {
   last_cjump_eval_time: number;
   time_offset: number;
+}
+export interface UltraleapControlPoint {
+  coords: MAHCoords;
+  intensity: number;
 }

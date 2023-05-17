@@ -540,6 +540,8 @@ class KonvaTimelineKeyframe {
 	destroy() {
 		this.flag.destroy();
 		this.line.destroy();
+		this.cjump_arrow_left.destroy();
+		this.cjump_arrow_right.destroy();
 		this.listener_abort.abort();
 	}
 

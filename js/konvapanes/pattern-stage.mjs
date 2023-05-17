@@ -376,15 +376,28 @@ class KonvaPlaybackVis {
 	}
 
 	update() {
-		const color = getComputedStyle(document.body).getPropertyValue("--pattern-playback-vis");
-
 		const last_eval = this.pattern_stage.pattern_design.last_eval;
-		const last_eval_layer_coords = last_eval.map(p => this.pattern_stage.pattern_coords_to_layer_coords(p.coords));
+		const last_eval_layer_coords = last_eval.map(p => this.pattern_stage.pattern_coords_to_layer_coords(p.ul_control_point.coords));
+
+		const avg_intensity = last_eval.reduce((acc, p) => acc + p.ul_control_point.intensity, 0) / last_eval.length;
+
+		const low_color = getComputedStyle(document.body).getPropertyValue("--pattern-playback-vis-low");
+		const high_color = getComputedStyle(document.body).getPropertyValue("--pattern-playback-vis-high");
+
+		const low_color_components = notnull(low_color.substring(1).match(/../g)).map(c => parseInt(c, 16));
+		const high_color_components = notnull(high_color.substring(1).match(/../g)).map(c => parseInt(c, 16));
+
+		//mix the two colors (in hex format) based on the average intensity
+		const color_mix = "#" + Array.from({length: 3}, (_, i) => {
+			const low_int = low_color_components[i];
+			const high_int = high_color_components[i];
+			const mix_int = Math.round(low_int + (high_int - low_int) * avg_intensity);
+			return mix_int.toString(16).padStart(2, "0");
+		}).join("");
 
 		this.playback_vis.points([last_eval_layer_coords[0].x, last_eval_layer_coords[0].y, ...last_eval_layer_coords.flatMap(c => [c.x, c.y])]);
-
 		this.playback_vis.strokeWidth(10);
-		this.playback_vis.stroke(color);
+		this.playback_vis.stroke(color_mix);
 	}
 }
 

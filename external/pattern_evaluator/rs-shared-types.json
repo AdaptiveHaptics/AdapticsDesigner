@@ -25,20 +25,12 @@
     "BrushAtAnimLocalTime": {
       "type": "object",
       "required": [
-        "coords",
-        "intensity",
         "next_eval_params",
         "pattern_time",
-        "stop"
+        "stop",
+        "ul_control_point"
       ],
       "properties": {
-        "coords": {
-          "$ref": "#/definitions/MAHCoords"
-        },
-        "intensity": {
-          "type": "number",
-          "format": "double"
-        },
         "next_eval_params": {
           "$ref": "#/definitions/NextEvalParams"
         },
@@ -48,6 +40,9 @@
         },
         "stop": {
           "type": "boolean"
+        },
+        "ul_control_point": {
+          "$ref": "#/definitions/UltraleapControlPoint"
         }
       }
     },
@@ -100,7 +95,7 @@
     "DataFormatRevision": {
       "type": "string",
       "enum": [
-        "0.0.6-alpha.1"
+        "0.0.7-alpha.1"
       ]
     },
     "IntensityWithTransition": {
@@ -136,9 +131,15 @@
             "params": {
               "type": "object",
               "required": [
+                "am_freq",
                 "radius"
               ],
               "properties": {
+                "am_freq": {
+                  "description": "AM frequency in HZ",
+                  "type": "number",
+                  "format": "double"
+                },
                 "radius": {
                   "type": "number",
                   "format": "double"
@@ -163,11 +164,17 @@
             "params": {
               "type": "object",
               "required": [
+                "am_freq",
                 "length",
                 "rotation",
                 "thickness"
               ],
               "properties": {
+                "am_freq": {
+                  "description": "AM frequency in HZ",
+                  "type": "number",
+                  "format": "double"
+                },
                 "length": {
                   "type": "number",
                   "format": "double"
@@ -617,6 +624,22 @@
         "plane",
         "palm"
       ]
+    },
+    "UltraleapControlPoint": {
+      "type": "object",
+      "required": [
+        "coords",
+        "intensity"
+      ],
+      "properties": {
+        "coords": {
+          "$ref": "#/definitions/MAHCoords"
+        },
+        "intensity": {
+          "type": "number",
+          "format": "double"
+        }
+      }
     }
   }
 }

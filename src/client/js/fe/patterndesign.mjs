@@ -491,6 +491,7 @@ export class MAHPatternDesignFE {
 	update_pattern_time(time) {
 		if (this.is_playing()) return; //ignore during playback
 		this.evaluator_next_eval_params = PatternEvaluator.default_next_eval_params();
+		this.evaluator_next_eval_params.last_eval_pattern_time = time;
 		this.#_update_pattern_time(time);
 	}
 	/**

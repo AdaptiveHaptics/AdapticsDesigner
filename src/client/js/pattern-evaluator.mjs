@@ -4,8 +4,8 @@
  * @typedef {import("../../shared/util").DeepImmutable<T>} DeepImmutable
  */
 
-/** @typedef {{ time: number, user_parameters: Map<string, number> }} PatternEvaluatorParameters */
 /** @typedef {import("../external/pattern_evaluator/rs-shared-types").PatternEvaluatorParameters} WASMPatternEvaluatorParameters */
+/** @typedef {{ time: number, user_parameters: Map<string, number>, transform: WASMPatternEvaluatorParameters["transform"] }} PatternEvaluatorParameters */
 /** @typedef {import("../external/pattern_evaluator/rs-shared-types").BrushAtAnimLocalTime} BrushAtAnimLocalTime */
 /** @typedef {import("../external/pattern_evaluator/rs-shared-types").NextEvalParams} NextEvalParams */
 
@@ -44,7 +44,7 @@ export class PatternEvaluator {
 	 */
 	eval_brush_at_anim_local_time(p, nep) {
 		/** @type {WASMPatternEvaluatorParameters} */
-		const json_safe_p = { time: p.time, user_parameters: Object.fromEntries(p.user_parameters) };
+		const json_safe_p = { time: p.time, user_parameters: Object.fromEntries(p.user_parameters), transform: p.transform };
 		return JSON.parse(this.#_internal.eval_brush_at_anim_local_time(JSON.stringify(json_safe_p), JSON.stringify(nep)));
 	}
 
@@ -56,7 +56,7 @@ export class PatternEvaluator {
 	 */
 	eval_brush_at_anim_local_time_for_max_t(p, nep) {
 		/** @type {WASMPatternEvaluatorParameters} */
-		const json_safe_p = { time: p.time, user_parameters: Object.fromEntries(p.user_parameters) };
+		const json_safe_p = { time: p.time, user_parameters: Object.fromEntries(p.user_parameters), transform: p.transform };
 		return JSON.parse(this.#_internal.eval_brush_at_anim_local_time_for_max_t(JSON.stringify(json_safe_p), JSON.stringify(nep)));
 	}
 

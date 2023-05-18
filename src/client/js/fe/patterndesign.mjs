@@ -94,7 +94,7 @@ export class MAHPatternDesignFE {
 
 		//pattern eval
 		/** @type {PatternEvaluatorParameters}  */
-		this.evaluator_params = { time: 0, user_parameters: new Map() };
+		this.evaluator_params = { time: 0, user_parameters: new Map(), transform: { geo_matrix: [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1 ,0], [0, 0, 0, 1]], intensity_factor: 1, } };
 		/** @type {NextEvalParams} */
 		this.evaluator_next_eval_params = PatternEvaluator.default_next_eval_params();
 		this.pattern_evaluator = new PatternEvaluator(this.filedata);

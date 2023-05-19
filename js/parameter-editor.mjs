@@ -23,7 +23,7 @@ export class ParameterEditor {
 				if (Number.isFinite(v)) {
 					this._pattern_design.update_pattern_time(Math.max(v, 0));
 				} else {
-					this._timecontrol_input.value = this._pattern_design.last_eval[0].pattern_time.toFixed(0);
+					this.#_update_playback_controls();
 				}
 			});
 			/** @type {HTMLButtonElement} */
@@ -53,6 +53,36 @@ export class ParameterEditor {
 			});
 
 			this.#_update_playback_controls();
+		}
+
+		{ // init transformcontrol
+			this._transformcontrol_div = notnull(document.querySelector("div.transformcontrol"));
+			/** @type {HTMLInputElement} */
+			this._speedcontrol_input = notnull(this._transformcontrol_div.querySelector("input[name=speed]"));
+			this._speedcontrol_input.addEventListener("change", _ => {
+				const v = parseFloat(this._speedcontrol_input.value) / 100;
+				if (Number.isFinite(v)) {
+					this._pattern_design.update_evaluator_transform({ playback_speed: v });
+				} else {
+					this.#_update_transform_controls();
+				}
+			});
+
+			/** @type {HTMLInputElement} */
+			this._intensitycontrol_input = notnull(this._transformcontrol_div.querySelector("input[name=intensity]"));
+			this._intensitycontrol_input.addEventListener("change", _ => {
+				const v = parseFloat(this._intensitycontrol_input.value) / 100;
+				if (Number.isFinite(v)) {
+					this._pattern_design.update_evaluator_transform({ intensity_factor: v });
+				} else {
+					this.#_update_transform_controls();
+				}
+			});
+
+			this._pattern_design.state_change_events.addEventListener("parameters_update", ev => {
+				if (!ev.detail.time) this.#_update_transform_controls();
+			});
+
 		}
 
 		{ //init userparameters
@@ -121,6 +151,12 @@ export class ParameterEditor {
 			this._timecontrol_pause.style.display = "none";
 		}
 	}
+
+	#_update_transform_controls() {
+		this._speedcontrol_input.value = (this._pattern_design.evaluator_params.transform.playback_speed*100).toFixed(0);
+		this._intensitycontrol_input.value = (this._pattern_design.evaluator_params.transform.intensity_factor*100).toFixed(0);
+	}
+
 
 }
 

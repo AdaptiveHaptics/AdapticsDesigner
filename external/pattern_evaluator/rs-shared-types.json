@@ -584,11 +584,11 @@
     "NextEvalParams": {
       "type": "object",
       "required": [
-        "last_cjump_eval_time",
+        "last_eval_pattern_time",
         "time_offset"
       ],
       "properties": {
-        "last_cjump_eval_time": {
+        "last_eval_pattern_time": {
           "type": "number",
           "format": "double"
         },
@@ -602,6 +602,7 @@
       "type": "object",
       "required": [
         "time",
+        "transform",
         "user_parameters"
       ],
       "properties": {
@@ -609,12 +610,47 @@
           "type": "number",
           "format": "double"
         },
+        "transform": {
+          "$ref": "#/definitions/PatternTransformation"
+        },
         "user_parameters": {
           "type": "object",
           "additionalProperties": {
             "type": "number",
             "format": "double"
           }
+        }
+      }
+    },
+    "PatternTransformation": {
+      "type": "object",
+      "required": [
+        "geo_matrix",
+        "intensity_factor",
+        "playback_speed"
+      ],
+      "properties": {
+        "geo_matrix": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "format": "double"
+            },
+            "maxItems": 4,
+            "minItems": 4
+          },
+          "maxItems": 4,
+          "minItems": 4
+        },
+        "intensity_factor": {
+          "type": "number",
+          "format": "double"
+        },
+        "playback_speed": {
+          "type": "number",
+          "format": "double"
         }
       }
     },

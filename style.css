@@ -408,6 +408,15 @@ div.parametereditor span.helpmsg {
     grid-column: 1 / -1;
     color: var(--text-low-priority);
 }
+div.parametereditor div.transformcontrol {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1ex;
+    align-items: center;
+}
+div.parametereditor div.transformcontrol > label {
+    display: contents;
+}
 div.parametereditor div.timecontrol {
     display: grid;
     grid-template-columns: auto 1fr;

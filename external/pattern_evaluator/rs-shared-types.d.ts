@@ -146,9 +146,24 @@ export interface IntensityWithTransition {
 }
 export interface PatternEvaluatorParameters {
   time: number;
+  transform: PatternTransformation;
   user_parameters: {
     [k: string]: number;
   };
+}
+export interface PatternTransformation {
+  /**
+   * @minItems 4
+   * @maxItems 4
+   */
+  geo_matrix: [
+    [number, number, number, number],
+    [number, number, number, number],
+    [number, number, number, number],
+    [number, number, number, number]
+  ];
+  intensity_factor: number;
+  playback_speed: number;
 }
 export interface BrushAtAnimLocalTime {
   next_eval_params: NextEvalParams;
@@ -157,7 +172,7 @@ export interface BrushAtAnimLocalTime {
   ul_control_point: UltraleapControlPoint;
 }
 export interface NextEvalParams {
-  last_cjump_eval_time: number;
+  last_eval_pattern_time: number;
   time_offset: number;
 }
 export interface UltraleapControlPoint {

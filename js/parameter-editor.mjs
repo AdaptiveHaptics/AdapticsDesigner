@@ -82,7 +82,7 @@ export class ParameterEditor {
 			this._pattern_design.state_change_events.addEventListener("parameters_update", ev => {
 				if (!ev.detail.time) this.#_update_transform_controls();
 			});
-
+			this.#_update_transform_controls();
 		}
 
 		{ //init userparameters

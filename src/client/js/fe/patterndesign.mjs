@@ -1,6 +1,7 @@
 /** @typedef {import("../../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../../shared/types").MAHKeyframe} MAHKeyframe */
 /** @typedef {import("../../../shared/types").MidAirHapticsClipboardFormat} MidAirHapticsClipboardFormat */
+/** @typedef {import("../../../shared/types").PatternTransformation} PatternTransformation */
 /** @typedef {import("./keyframes/index.mjs").MAHKeyframeFE} MAHKeyframeFE */
 /** @typedef {import("../pattern-evaluator.mjs").PatternEvaluatorParameters} PatternEvaluatorParameters */
 /** @typedef {import("../pattern-evaluator.mjs").NextEvalParams} NextEvalParams */
@@ -94,7 +95,7 @@ export class MAHPatternDesignFE {
 
 		//pattern eval
 		/** @type {PatternEvaluatorParameters}  */
-		this.evaluator_params = { time: 0, user_parameters: new Map(), transform: { geo_matrix: [[1, 0, 0, 0], [0, 1, 0, 0], [0, 0, 1 ,0], [0, 0, 0, 1]], intensity_factor: 1, } };
+		this.evaluator_params = { time: 0, user_parameters: new Map(), transform: PatternEvaluator.default_pattern_transformation() };
 		/** @type {NextEvalParams} */
 		this.evaluator_next_eval_params = PatternEvaluator.default_next_eval_params();
 		this.pattern_evaluator = new PatternEvaluator(this.filedata);
@@ -510,6 +511,15 @@ export class MAHPatternDesignFE {
 	 */
 	update_evaluator_user_params(param, value) {
 		this.evaluator_params.user_parameters.set(param, value);
+		const ce = new StateChangeEvent("parameters_update", { detail: { time: false } });
+		this.state_change_events.dispatchEvent(ce);
+	}
+	/**
+	 *
+	 * @param {Partial<PatternTransformation>} transform
+	 */
+	update_evaluator_transform(transform) {
+		this.evaluator_params.transform = Object.assign(this.evaluator_params.transform, transform);
 		const ce = new StateChangeEvent("parameters_update", { detail: { time: false } });
 		this.state_change_events.dispatchEvent(ce);
 	}

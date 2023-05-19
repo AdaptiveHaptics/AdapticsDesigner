@@ -8,6 +8,7 @@
 /** @typedef {{ time: number, user_parameters: Map<string, number>, transform: WASMPatternEvaluatorParameters["transform"] }} PatternEvaluatorParameters */
 /** @typedef {import("../external/pattern_evaluator/rs-shared-types").BrushAtAnimLocalTime} BrushAtAnimLocalTime */
 /** @typedef {import("../external/pattern_evaluator/rs-shared-types").NextEvalParams} NextEvalParams */
+/** @typedef {import("../external/pattern_evaluator/rs-shared-types").PatternTransformation} PatternTransformation */
 
 import init, { PatternEvaluator as PatternEvaluatorWASM  } from "../external/pattern_evaluator/pattern_evaluator.js";
 
@@ -66,5 +67,13 @@ export class PatternEvaluator {
 	 */
 	static default_next_eval_params() {
 		return JSON.parse(PatternEvaluatorWASM.default_next_eval_params());
+	}
+
+	/**
+	 *
+	 * @returns {PatternTransformation}
+	 */
+	static default_pattern_transformation() {
+		return JSON.parse(PatternEvaluatorWASM.default_pattern_transformation());
 	}
 }

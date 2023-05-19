@@ -10,6 +10,7 @@ import {
     CoordsWithTransition,
     IntensityWithTransition,
     ConditionalJump,
+    PatternTransformation,
     DataFormatRevision
 } from "../external/pattern_evaluator/rs-shared-types";
 export {
@@ -24,6 +25,7 @@ export {
     CoordsWithTransition,
     IntensityWithTransition,
     ConditionalJump,
+    PatternTransformation,
 };
 import { SharedProperties } from "./util";
 

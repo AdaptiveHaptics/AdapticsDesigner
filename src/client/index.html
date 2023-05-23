@@ -88,9 +88,17 @@
 					<form class="pattern">
 						<h2>Pattern Transforms</h2>
 						<div class="transformcontrol">
-							<label><span class="labeltext">Speed <span class="unit">%</span></span><input type="number" name="speed" min="0" step="25"></label>
+							<label><span class="labeltext">Speed <span class="unit">%</span></span><input type="number" name="playback_speed" min="0" step="25"></label>
 							<label><span class="labeltext">Intensity <span class="unit">%</span></span><input type="number" name="intensity" min="0" step="10"></label>
-							<label><span class="labeltext">TODO: geometric</span><input type="number" name="geo_todo" min="0" step="0.25"></label>
+							<label><span class="labeltext">Rotation <span class="unit">deg</span></span><input type="number" name="rotation" min="0" max="360" step="15"></label>
+							<h3>Scale</h3>
+							<label><span class="labeltext">Scale x <span class="unit">×</span></span><input type="number" name="scale_x" step="0.25"></label>
+							<label><span class="labeltext">Scale y <span class="unit">×</span></span><input type="number" name="scale_y" step="0.25"></label>
+							<label><span class="labeltext">Scale z <span class="unit">×</span></span><input type="number" name="scale_z" step="0.25"></label>
+							<h3>Translate</h3>
+							<label><span class="labeltext">Translate x <span class="unit">mm</span></span><input type="number" name="translate_x" step="0.25"></label>
+							<label><span class="labeltext">Translate y <span class="unit">mm</span></span><input type="number" name="translate_y" step="0.25"></label>
+							<label><span class="labeltext">Translate z <span class="unit">mm</span></span><input type="number" name="translate_z" step="0.25"></label>
 						</div>
 					</form>
 					<div class="ukfecontainer">

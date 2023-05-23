@@ -276,6 +276,9 @@ form.pattern div.transformcontrol {
 form.pattern div.transformcontrol > label {
     display: contents;
 }
+form.pattern div.transformcontrol > h3 {
+    grid-column: 1/-1;
+}
 div.ukfecontainer {
     background-color: var(--background-tertiary-alt);
 }
@@ -285,7 +288,7 @@ div.ukfecontainer > h1 {
 }
 div.ukfecontainer > div.helptext {
     color: var(--text-low-priority);
-    padding: 1ex;
+    padding: 2ex;
     display: none;
 }
 div.ukfecontainer.noneselected > div.helptext {

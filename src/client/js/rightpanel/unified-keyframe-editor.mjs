@@ -375,7 +375,7 @@ export class UnifiedKeyframeEditor {
 				condition: {
 					parameter: "foo",
 					operator: {
-						name: "lt",
+						name: "lt_eq",
 						params: {}
 					},
 					value: 0,

@@ -5,6 +5,7 @@
 /** @typedef {import("./keyframes/index.mjs").MAHKeyframeFE} MAHKeyframeFE */
 /** @typedef {import("../pattern-evaluator.mjs").PatternEvaluatorParameters} PatternEvaluatorParameters */
 /** @typedef {import("../pattern-evaluator.mjs").NextEvalParams} NextEvalParams */
+/** @typedef {import("../pattern-evaluator.mjs").GeometricTransformMatrix} GeometricTransformMatrix */
 /** @typedef {import("../konvapanes/timeline-stage.mjs").KonvaCJumpFlag} KonvaCJumpFlag */
 /**
  * @template T
@@ -18,7 +19,7 @@
  */
 
 /** @type {import("../../../shared/types").REVISION_STRING} */
-const MAH_$REVISION = "0.0.7-alpha.1";
+const MAH_$REVISION = "0.0.8-alpha.1";
 
 import { DeviceWSController } from "../device-ws-controller.mjs";
 import { PatternEvaluator } from "../pattern-evaluator.mjs";
@@ -39,6 +40,7 @@ import { create_correct_keyframefe_wrapper, MAHKeyframePauseFE, MAHKeyframeStand
  * @property {{ }} playback_update
  * @property {{ time: boolean }} parameters_update
  * @property {{ }} playstart_update
+ * @property {{ }} pattern_transform_update
  */
 
 /**
@@ -95,7 +97,7 @@ export class MAHPatternDesignFE {
 
 		//pattern eval
 		/** @type {PatternEvaluatorParameters}  */
-		this.evaluator_params = { time: 0, user_parameters: new Map(), transform: PatternEvaluator.default_pattern_transformation() };
+		this.evaluator_params = { time: 0, user_parameters: new Map(), geometric_transform: PatternEvaluator.default_geo_transform_matrix() };
 		/** @type {NextEvalParams} */
 		this.evaluator_next_eval_params = PatternEvaluator.default_next_eval_params();
 		this.pattern_evaluator = new PatternEvaluator(this.filedata);
@@ -175,9 +177,10 @@ export class MAHPatternDesignFE {
 	 * 	new_keyframes?: MAHKeyframeFE[] | Set<MAHKeyframeFE>
 	 * 	updated_keyframes?: MAHKeyframeFE[] | Set<MAHKeyframeFE>
 	 * 	deleted_keyframes?: MAHKeyframeFE[] | Set<MAHKeyframeFE>
+	 * 	pattern_transform?: boolean,
 	 * }} param0
 	 */
-	commit_operation({ rerender, new_keyframes, updated_keyframes, deleted_keyframes }) {
+	commit_operation({ rerender, pattern_transform, new_keyframes, updated_keyframes, deleted_keyframes }) {
 		if (this.committed) {
 			alert("commit_operation before save");
 			throw new Error("commit_operation before save");
@@ -211,6 +214,11 @@ export class MAHPatternDesignFE {
 				const change_event = new StateChangeEvent("kf_update", { detail: { keyframe } });
 				this.state_change_events.dispatchEvent(change_event);
 			}
+		}
+
+		if (pattern_transform) {
+			const change_event = new StateChangeEvent("pattern_transform_update", { detail: {} });
+			this.state_change_events.dispatchEvent(change_event);
 		}
 	}
 
@@ -516,10 +524,10 @@ export class MAHPatternDesignFE {
 	}
 	/**
 	 *
-	 * @param {Partial<PatternTransformation>} transform
+	 * @param {GeometricTransformMatrix} transform_matrix
 	 */
-	update_evaluator_transform(transform) {
-		this.evaluator_params.transform = Object.assign(this.evaluator_params.transform, transform);
+	update_evaluator_geo_transform(transform_matrix) {
+		this.evaluator_params.geometric_transform = transform_matrix;
 		const ce = new StateChangeEvent("parameters_update", { detail: { time: false } });
 		this.state_change_events.dispatchEvent(ce);
 	}
@@ -719,9 +727,6 @@ MAHPatternDesignFE.DEFAULT = ["test.json", {
 
 	name: "test",
 
-	projection: "plane",
-	update_rate: 1,
-
 	keyframes: [
 		{
 			type: "standard",
@@ -764,5 +769,23 @@ MAHPatternDesignFE.DEFAULT = ["test.json", {
 			},
 			cjumps: [],
 		}
-	]
+	],
+
+	pattern_transform: {
+		playback_speed: 100,
+		intensity_factor: 100,
+		geometric_transforms: {
+			rotation: 0,
+			scale: {
+				x: 1,
+				y: 1,
+				z: 1,
+			},
+			translate: {
+				x: 0,
+				y: 0,
+				z: 0,
+			},
+		}
+	}
 }];

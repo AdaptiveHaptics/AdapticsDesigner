@@ -379,7 +379,8 @@ class KonvaPlaybackVis {
 		const last_eval = this.pattern_stage.pattern_design.last_eval;
 		const last_eval_layer_coords = last_eval.map(p => this.pattern_stage.pattern_coords_to_layer_coords(p.ul_control_point.coords));
 
-		const avg_intensity = last_eval.reduce((acc, p) => acc + p.ul_control_point.intensity, 0) / last_eval.length;
+		const avg_intensity =
+			Math.max(Math.min(last_eval.reduce((acc, p) => acc + p.ul_control_point.intensity, 0) / last_eval.length, 1), 0);
 
 		const low_color = getComputedStyle(document.body).getPropertyValue("--pattern-playback-vis-low");
 		const high_color = getComputedStyle(document.body).getPropertyValue("--pattern-playback-vis-high");

@@ -46,9 +46,14 @@
 			</div>
 			<div class="gutter column centerright"></div>
 			<div class="right">
-				<div class="unifiedkeyframeeditor betterscroll">
+				<div class="tabs">
+					<button class="tab active" data-tabpanel="help">Editor Help</button>
+					<button class="tab" data-tabpanel="pattern">Pattern Transforms</button>
+					<button class="tab" data-tabpanel="ukfecontainer">Keyframe Editor</button>
+				</div>
+				<div class="tabpanelcontainer betterscroll">
 					<div class="help">
-						<h1>Help</h1>
+						<h1>Editor Help</h1>
 						<p>
 							<h4>To create a new keyframe, <code>Double Click</code></h4>
 							<ul>
@@ -57,11 +62,12 @@
 							</ul>
 						</p>
 						<p>
-							<h4>To select all, <code>Ctrl+a</code></h4>
+							<h4>To select all, focus* an editor pane and <code>Ctrl+a</code></h4>
 							<ul>
 								<li>with Pattern Pane focused, only select keyframes with coordinates</li>
-								<li>otherwise, select all keyframes</li>
+								<li>with the Timeline Pane focused, select all keyframes</li>
 							</ul>
+							<sub>* Focus a pane by clicking within it. Focus is indicated by a light steel blue border</sub>
 						</p>
 						<p>
 							<h4>Clicking a control point/keyframe:</h4>
@@ -79,127 +85,142 @@
 							</ul>
 						</p>
 					</div>
-					<form>
-						<h1>Keyframe Editor</h1>
-						<div class="typecontainer">
-							<label>Type</label>
-							<select name="keyframetype" class="keyframe type">
-								<option hidden disabled selected value="multipletypes">multiple types</option>
-								<option value="standard" title="Standard keyframe with coords, brush, intensity, and transitions">standard</option>
-								<option value="pause" title="Holds brush at the previous keyframe's position">hold position</option>
-								<option value="stop" title="Stops the animation, and pauses playback on the device">stop</option>
-							</select>
+					<form class="pattern">
+						<h2>Pattern Transforms</h2>
+						<div class="transformcontrol">
+							<label><span class="labeltext">Speed <span class="unit">%</span></span><input type="number" name="speed" min="0" step="25"></label>
+							<label><span class="labeltext">Intensity <span class="unit">%</span></span><input type="number" name="intensity" min="0" step="10"></label>
+							<label><span class="labeltext">TODO: geometric</span><input type="number" name="geo_todo" min="0" step="0.25"></label>
 						</div>
-						<details class="coords">
-							<summary>Coords</summary>
-							<div>
-								<div class="coordsconfig labelinputgrid">
-									<label><span class="labeltext">x <span class="unit">mm</span></span><input type="number" name="x" min="-100" max="100"></label>
-									<label><span class="labeltext">y <span class="unit">mm</span></span><input type="number" name="y" min="-100" max="100"></label>
-									<label><span class="labeltext">z <span class="unit">mm</span></span><input disabled type="number" name="z" min="0" max="100"></label>
+					</form>
+					<div class="ukfecontainer">
+						<h1>Keyframe Editor</h1>
+						<div class="helptext">
+							<div>Select one or more keyframes to edit them here.</div>
+							<div>The selected keyframes' properties will be "unioned" together.</div>
+							<div>If some properties are different, the field may be blank or display "multiple types".</div>
+						</div>
+						<form class="ukfe">
+							<div class="typecontainer">
+								<label>Type</label>
+								<select name="keyframetype" class="keyframe type">
+									<option hidden disabled selected value="multipletypes">multiple types</option>
+									<option value="standard" title="Standard keyframe with coords, brush, intensity, and transitions">standard</option>
+									<option value="pause" title="Holds brush at the previous keyframe's position">hold position</option>
+									<option value="stop" title="Stops the animation, and pauses playback on the device">stop</option>
+								</select>
+							</div>
+							<details class="coords">
+								<summary>Coords</summary>
+								<div>
+									<div class="coordsconfig labelinputgrid">
+										<label><span class="labeltext">x <span class="unit">mm</span></span><input type="number" name="x" min="-100" max="100"></label>
+										<label><span class="labeltext">y <span class="unit">mm</span></span><input type="number" name="y" min="-100" max="100"></label>
+										<label><span class="labeltext">z <span class="unit">mm</span></span><input disabled type="number" name="z" min="0" max="100"></label>
+									</div>
+									<div class="transition">
+										<span>Transition</span>
+										<div class="transitionconfig">
+											<select name="coordstransitiontype" class="coords transition type">
+												<option hidden disabled selected value="multipletypes">multiple types</option>
+												<option value="linear" title="Linear interpolation between the keyframes">linear</option>
+												<option value="step" title="Step/Jump between the keyframes">step</option>
+											</select>
+										</div>
+									</div>
+								</div>
+							</details>
+							<details class="brush">
+								<summary>Brush</summary>
+								<div class="brushconfig labelinputgrid">
+									<label><span class="labeltext">Brush Type</span></label>
+									<select name="brushtype" class="brush type">
+										<option hidden disabled selected value="multipletypes">multiple types</option>
+										<option disabled value="omitted">omitted</option>
+										<option value="circle">circle</option>
+										<option value="line">line</option>
+									</select>
+									<label><span class="labeltext">radius <span class="unit">mm</span></span><input type="number" name="radius" min="0" max="100"></label>
+									<label><span class="labeltext">length <span class="unit">mm</span></span><input type="number" name="length" min="0" max="100"></label>
+									<!-- <label><span class="labeltext">thickness <span class="unit">mm</span></span><input disabled type="number" name="thickness" min="0" max="100"></label> -->
+									<label><span class="labeltext">rotation <span class="unit">deg</span></span><input type="number" name="rotation" min="0"></label>
+									<label><span class="labeltext">AM Frequency <span class="unit">hz</span></span><input type="number" name="am_freq" min="0" max="500"></label>
 								</div>
 								<div class="transition">
 									<span>Transition</span>
 									<div class="transitionconfig">
-										<select name="coordstransitiontype" class="coords transition type">
+										<select disabled name="brushtransitiontype" class="brush transition type">
+											<option hidden disabled selected value="multipletypes">multiple types</option>
+											<option disabled value="linear" title="Linear interpolation between the keyframes">linear</option>
+											<option disabled value="step" title="Step/Jump between the keyframes">step</option>
+										</select>
+									</div>
+								</div>
+							</details>
+							<details class="intensity">
+								<summary>Intensity</summary>
+								<div class="intensityconfig labelinputgrid">
+									<label><span class="labeltext">Intensity Type</span></label>
+									<select name="intensitytype" class="intensity type">
+										<option hidden disabled selected value="multipletypes">multiple types</option>
+										<option disabled value="omitted">omitted</option>
+										<option value="constant">constant</option>
+										<option value="random">random</option>
+									</select>
+									<label><span class="labeltext">value</span><input type="number" name="value" min="0" max="1" step="0.05"></label>
+									<label><span class="labeltext">min</span><input type="number" name="min" min="0" max="1" step="0.05"></label>
+									<label><span class="labeltext">max</span><input type="number" name="max" min="0" max="1" step="0.05"></label>
+								</div>
+								<div class="transition">
+									<span>Transition</span>
+									<div class="transitionconfig">
+										<select name="intensitytransitiontype" class="intensity transition type">
 											<option hidden disabled selected value="multipletypes">multiple types</option>
 											<option value="linear" title="Linear interpolation between the keyframes">linear</option>
 											<option value="step" title="Step/Jump between the keyframes">step</option>
 										</select>
 									</div>
 								</div>
-							</div>
-						</details>
-						<details class="brush">
-							<summary>Brush</summary>
-							<div class="brushconfig labelinputgrid">
-								<label><span class="labeltext">Brush Type</span></label>
-								<select name="brushtype" class="brush type">
-									<option hidden disabled selected value="multipletypes">multiple types</option>
-									<option disabled value="omitted">omitted</option>
-									<option value="circle">circle</option>
-									<option value="line">line</option>
-								</select>
-								<label><span class="labeltext">radius <span class="unit">mm</span></span><input type="number" name="radius" min="0" max="100"></label>
-								<label><span class="labeltext">length <span class="unit">mm</span></span><input type="number" name="length" min="0" max="100"></label>
-								<!-- <label><span class="labeltext">thickness <span class="unit">mm</span></span><input disabled type="number" name="thickness" min="0" max="100"></label> -->
-								<label><span class="labeltext">rotation <span class="unit">deg</span></span><input type="number" name="rotation" min="0"></label>
-								<label><span class="labeltext">AM Frequency <span class="unit">hz</span></span><input type="number" name="am_freq" min="0" max="500"></label>
-							</div>
-							<div class="transition">
-								<span>Transition</span>
-								<div class="transitionconfig">
-									<select disabled name="brushtransitiontype" class="brush transition type">
-										<option hidden disabled selected value="multipletypes">multiple types</option>
-										<option disabled value="linear" title="Linear interpolation between the keyframes">linear</option>
-										<option disabled value="step" title="Step/Jump between the keyframes">step</option>
-									</select>
-								</div>
-							</div>
-						</details>
-						<details class="intensity">
-							<summary>Intensity</summary>
-							<div class="intensityconfig labelinputgrid">
-								<label><span class="labeltext">Intensity Type</span></label>
-								<select name="intensitytype" class="intensity type">
-									<option hidden disabled selected value="multipletypes">multiple types</option>
-									<option disabled value="omitted">omitted</option>
-									<option value="constant">constant</option>
-									<option value="random">random</option>
-								</select>
-								<label><span class="labeltext">value</span><input type="number" name="value" min="0" max="1" step="0.05"></label>
-								<label><span class="labeltext">min</span><input type="number" name="min" min="0" max="1" step="0.05"></label>
-								<label><span class="labeltext">max</span><input type="number" name="max" min="0" max="1" step="0.05"></label>
-							</div>
-							<div class="transition">
-								<span>Transition</span>
-								<div class="transitionconfig">
-									<select name="intensitytransitiontype" class="intensity transition type">
-										<option hidden disabled selected value="multipletypes">multiple types</option>
-										<option value="linear" title="Linear interpolation between the keyframes">linear</option>
-										<option value="step" title="Step/Jump between the keyframes">step</option>
-									</select>
-								</div>
-							</div>
-						</details>
-						<details class="cjump">
-							<summary>Conditional Jump</summary>
-							<div class="cjumpconfig">
-								<div class="table">
-									<div class="thead">
-										<div>
-											<div style="visibility: hidden;">⋮⋮</div>
-											<div><span class="labeltext">Parameter</span></div>
-											<div><span class="labeltext">Operator</span></div>
-											<div><span class="labeltext">Value</span></div>
-											<div><span class="labeltext">Jump To Time <span class="unit">ms</span></span></div>
-											<button class="remove" style="visibility: hidden;">✖</button>
+							</details>
+							<details class="cjump">
+								<summary>Conditional Jump</summary>
+								<div class="cjumpconfig">
+									<div class="table">
+										<div class="thead">
+											<div>
+												<div style="visibility: hidden;">⋮⋮</div>
+												<div><span class="labeltext">Parameter</span></div>
+												<div><span class="labeltext">Operator</span></div>
+												<div><span class="labeltext">Value</span></div>
+												<div><span class="labeltext">Jump To Time <span class="unit">ms</span></span></div>
+												<button class="remove" style="visibility: hidden;">✖</button>
+											</div>
+										</div>
+										<div class="tbody cjumps-container">
+											<!--  template.cjump clones into here  -->
 										</div>
 									</div>
-									<div class="tbody cjumps-container">
-										<!--  template.cjump clones into here  -->
-									</div>
+									<button class="add">+ Add Conditional Jump</button>
+									<template class="cjumprow">
+										<div class="cjump">
+											<div class="draghandle">⋮⋮</div>
+											<input type="text" name="parameter">
+											<select name="conditionoperatortype" class="conditionoperator type">
+												<option hidden disabled selected value="multipletypes">multiple types</option>
+												<option value="lt">&lt;</option>
+												<option value="lt_eq">&lt;=</option>
+												<option value="gt">&gt;</option>
+												<option value="gt_eq">&gt;=</option>
+											</select>
+											<input type="number" name="value" step="0.05">
+											<input type="number" name="jump_to" min="0">
+											<button class="remove">✖</button>
+										</div>
+									</template>
 								</div>
-								<button class="add">+ Add Conditional Jump</button>
-								<template class="cjumprow">
-									<div class="cjump">
-										<div class="draghandle">⋮⋮</div>
-										<input type="text" name="parameter">
-										<select name="conditionoperatortype" class="conditionoperator type">
-											<option hidden disabled selected value="multipletypes">multiple types</option>
-											<option value="lt">&lt;</option>
-											<option value="lt_eq">&lt;=</option>
-											<option value="gt">&gt;</option>
-											<option value="gt_eq">&gt;=</option>
-										</select>
-										<input type="number" name="value" step="0.05">
-										<input type="number" name="jump_to" min="0">
-										<button class="remove">✖</button>
-									</div>
-								</template>
-							</div>
-						</details>
-					</form>
+							</details>
+						</form>
+					</div>
 				</div>
 			</div>
 			<div class="gutter row topbottom"></div>
@@ -212,12 +233,6 @@
 						<button class="reset">⏮</button>
 						<button class="play">⏵</button>
 						<button class="pause" style="display: none;">⏸</button>
-					</div>
-					<h2>Pattern Transforms</h2>
-					<div class="transformcontrol">
-						<label><span class="labeltext">Speed <span class="unit">%</span></span><input type="number" name="speed" min="0" step="25"></label>
-						<label><span class="labeltext">Intensity <span class="unit">%</span></span><input type="number" name="intensity" min="0" step="10"></label>
-						<label><span class="labeltext">TODO: geometric</span><input type="number" name="geo_todo" min="0" step="0.25"></label>
 					</div>
 					<h2>User/Dynamic</h2>
 					<div class="userparameters">

@@ -1,22 +1,22 @@
-/** @typedef {import("./fe/keyframes/index.mjs").MAHKeyframeFE} MAHKeyframeFE */
-/** @typedef {import("./fe/patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
-/** @typedef {import("../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
-/** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
+/** @typedef {import("../fe/keyframes/index.mjs").MAHKeyframeFE} MAHKeyframeFE */
+/** @typedef {import("../fe/patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
+/** @typedef {import("../../../shared/types.js").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
+/** @typedef {import("../../../shared/types.js").MAHKeyframe} MAHKeyframe */
 
-import { BoundsCheck } from "./fe/keyframes/bounds-check.mjs";
-import { supports_coords, supports_brush, supports_intensity, supports_cjump } from "./fe/keyframes/index.mjs";
-import { notnull } from "./util.mjs";
-import Sortable from "../thirdparty/sortable.complete.esm.js";
+import { BoundsCheck } from "../fe/keyframes/bounds-check.mjs";
+import { supports_coords, supports_brush, supports_intensity, supports_cjump } from "../fe/keyframes/index.mjs";
+import { notnull } from "../util.mjs";
+import Sortable from "../../thirdparty/sortable.complete.esm.js";
 
 export class UnifiedKeyframeEditor {
 	/**
 	 *
 	 * @param {MAHPatternDesignFE} pattern_design
-	 * @param {HTMLDivElement} unifiedkeyframeeditorDiv
+	 * @param {HTMLDivElement} ukfecontainerDiv
 	 */
-	constructor(pattern_design, unifiedkeyframeeditorDiv) {
+	constructor(pattern_design, ukfecontainerDiv) {
 		this.pattern_design = pattern_design;
-		this.unifiedkeyframeeditorDiv = unifiedkeyframeeditorDiv;
+		this.ukfecontainerDiv = ukfecontainerDiv;
 
 		this.pattern_design.state_change_events.addEventListener("rerender", _ev => this.select_update());
 		this.pattern_design.state_change_events.addEventListener("kf_reorder", _ev => this.select_update());
@@ -26,7 +26,8 @@ export class UnifiedKeyframeEditor {
 		});
 		this.pattern_design.state_change_events.addEventListener("item_deselect", _ev => this.select_update());
 
-		this.ukfeForm = notnull(this.unifiedkeyframeeditorDiv.querySelector("form"));
+		/** @type {HTMLFormElement} */
+		this.ukfeForm = notnull(ukfecontainerDiv.querySelector("form.ukfe"));
 		this.ukfeForm.addEventListener("submit", ev => {
 			ev.preventDefault();
 		});
@@ -86,7 +87,7 @@ export class UnifiedKeyframeEditor {
 
 
 		/** @type {HTMLSelectElement} */
-		this.keyframe_type_select = notnull(this.unifiedkeyframeeditorDiv.querySelector("select.keyframe.type"));
+		this.keyframe_type_select = notnull(this.ukfeForm.querySelector("select[name=keyframetype]"));
 
 
 		this.select_update();
@@ -110,8 +111,8 @@ export class UnifiedKeyframeEditor {
 
 	select_update() {
 		const selected = [...this.pattern_design.selected_keyframes];
-		if (selected.length == 0) return this.unifiedkeyframeeditorDiv.classList.add("showhelp");
-		else this.unifiedkeyframeeditorDiv.classList.remove("showhelp");
+		if (selected.length == 0) return this.ukfecontainerDiv.classList.add("noneselected");
+		else this.ukfecontainerDiv.classList.remove("noneselected");
 
 
 		const selected_type = this.get_if_field_identical(selected, kf => kf.type);

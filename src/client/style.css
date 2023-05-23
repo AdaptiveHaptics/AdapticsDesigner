@@ -40,7 +40,11 @@
     --control-point-stop-selected: var(--selected-keyframe-color);
 
     --pattern-playback-vis-high: #74d4ec;
-    --pattern-playback-vis-low: #126f87;
+    /* --pattern-playback-vis-low: #126f87; */
+    /* --pattern-playback-vis-low: #22465b; */
+    --pattern-playback-vis-low: #263d4e;
+    /* --pattern-playback-vis-low: #273948; */
+    /* --pattern-playback-vis-low: #283744; */
 
     --pattern-boundary: var(--background-tertiary);
     --pattern-axis: hsl(var(--bg-hue), var(--bg-sat), 17%);
@@ -233,32 +237,67 @@ div.gutter.topbottom {
 
 div.right {
     display: grid;
+    grid-template-rows: auto 1fr;
 }
-div.unifiedkeyframeeditor {
+div.right > div.tabs {
+    display: grid;
+    gap: 1ex;
+    grid-auto-flow: column;
+}
+div.right > div.tabs > button.tab {
+    padding: 1ex;
+}
+div.right > div.tabs > button.tab.active {
+    background-color: var(--background-tertiary-alt);
+}
+div.tabpanelcontainer {
     display: flex;
     flex-direction: column;
     overflow: auto;
     background-color: var(--background-tertiary);
 }
-div.unifiedkeyframeeditor > div.help {
+div.tabpanelcontainer > *.hidden {
     display: none;
+}
+div.tabpanelcontainer > div.help {
     padding: 1.5ex;
     background-color: var(--background-tertiary-alt);
 }
-div.unifiedkeyframeeditor.showhelp > * {
+div.tabpanelcontainer > form.pattern {
+    padding: 1.5ex;
+    background-color: var(--background-tertiary-alt);
+}
+form.pattern div.transformcontrol {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1ex;
+    align-items: center;
+}
+form.pattern div.transformcontrol > label {
+    display: contents;
+}
+div.ukfecontainer {
+    background-color: var(--background-tertiary-alt);
+}
+div.ukfecontainer > h1 {
+    padding: 1ex;
+    margin: 0px;
+}
+div.ukfecontainer > div.helptext {
+    color: var(--text-low-priority);
+    padding: 1ex;
     display: none;
 }
-div.unifiedkeyframeeditor.showhelp > div.help {
+div.ukfecontainer.noneselected > div.helptext {
     display: block;
 }
-div.unifiedkeyframeeditor > form {
+div.ukfecontainer.noneselected > form.ukfe {
+    display: none;
+}
+form.ukfe {
     display: flex;
     flex-direction: column;
     background-color: var(--background-tertiary-alt);
-}
-div.unifiedkeyframeeditor > form > h1 {
-    padding: 0.5em;
-    margin: 0px;
 }
 
 div.typecontainer {
@@ -271,42 +310,42 @@ div.typecontainer {
     border: 1px solid var(--background-titlebar);
 }
 
-div.unifiedkeyframeeditor select, div.unifiedkeyframeeditor option, input {
+form.ukfe select, form.ukfe option, input {
     color: var(--text-normal);
     background-color: var(--background-primary);
     padding: 1ex;
     border: none;
     min-width: 4ex;
 }
-div.unifiedkeyframeeditor option:disabled, input:disabled {
+form.ukfe option:disabled, input:disabled {
     background-color: var(--background-primary-disabled);
     color: var(--text-low-priority);
 }
 
-div.unifiedkeyframeeditor summary, div.typecontainer select, div.typecontainer option {
+form.ukfe summary, div.typecontainer select, div.typecontainer option {
     font-weight: bold;
     text-transform: capitalize;
     padding: 1ex;
 }
 
-div.unifiedkeyframeeditor details {
+form.ukfe details {
     background-color: var(--background-tertiary-alt);
     border: 1px solid var(--background-titlebar);
     border-radius: 4px;
     padding: 1ex 1ex 0;
 }
 
-div.unifiedkeyframeeditor summary {
+form.ukfe summary {
     margin: -1ex -1ex 0;
     background-color: var(--background-secondary);
     user-select: none;
 }
 
-div.unifiedkeyframeeditor details[open] {
+form.ukfe details[open] {
     padding: 1ex;
 }
 
-div.unifiedkeyframeeditor details[open] summary {
+form.ukfe details[open] summary {
     border-bottom: 1px solid var(--background-titlebar);
     margin-bottom: 1ex;
 }
@@ -407,15 +446,6 @@ div.parametereditor div.userparameters > user-param-control span:nth-child(2) {
 div.parametereditor span.helpmsg {
     grid-column: 1 / -1;
     color: var(--text-low-priority);
-}
-div.parametereditor div.transformcontrol {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 1ex;
-    align-items: center;
-}
-div.parametereditor div.transformcontrol > label {
-    display: contents;
 }
 div.parametereditor div.timecontrol {
     display: grid;

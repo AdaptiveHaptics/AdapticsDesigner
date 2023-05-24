@@ -10,6 +10,8 @@
 /** @typedef {import("../external/pattern_evaluator/rs-shared-types").NextEvalParams} NextEvalParams */
 /** @typedef {import("../external/pattern_evaluator/rs-shared-types").PatternTransformation} PatternTransformation */
 /** @typedef {import("../external/pattern_evaluator/rs-shared-types").GeometricTransformMatrix} GeometricTransformMatrix */
+/** @typedef {import("../external/pattern_evaluator/rs-shared-types").GeometricTransformsSimple} GeometricTransformsSimple */
+/** @typedef {import("../../shared/types").MAHCoords} MAHCoords */
 
 import init, { PatternEvaluator as PatternEvaluatorWASM  } from "../external/pattern_evaluator/pattern_evaluator.js";
 
@@ -83,5 +85,24 @@ export class PatternEvaluator {
 	 */
 	static default_geo_transform_matrix() {
 		return JSON.parse(PatternEvaluatorWASM.default_geo_transform_matrix());
+	}
+
+	/**
+	 *
+	 * @param {GeometricTransformsSimple} gts
+	 * @param {MAHCoords} coords
+	 * @returns {MAHCoords}
+	 */
+	static geo_transform_simple_apply(gts, coords) {
+		return JSON.parse(PatternEvaluatorWASM.geo_transform_simple_apply(JSON.stringify(gts), JSON.stringify(coords)));
+	}
+	/**
+	 *
+	 * @param {GeometricTransformsSimple} gts
+	 * @param {MAHCoords} coords
+	 * @returns {MAHCoords}
+	 */
+	static geo_transform_simple_inverse(gts, coords) {
+		return JSON.parse(PatternEvaluatorWASM.geo_transform_simple_inverse(JSON.stringify(gts), JSON.stringify(coords)));
 	}
 }

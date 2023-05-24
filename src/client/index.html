@@ -48,8 +48,8 @@
 			<div class="right">
 				<div class="tabs">
 					<button class="tab active" data-tabpanel="help">Editor Help</button>
-					<button class="tab" data-tabpanel="pattern">Pattern Transforms</button>
 					<button class="tab" data-tabpanel="ukfecontainer">Keyframe Editor</button>
+					<button class="tab" data-tabpanel="pattern">Post Processing</button>
 				</div>
 				<div class="tabpanelcontainer betterscroll">
 					<div class="help">
@@ -86,19 +86,20 @@
 						</p>
 					</div>
 					<form class="pattern">
-						<h2>Pattern Transforms</h2>
+						<h2>Pattern Post Processing</h2>
 						<div class="transformcontrol">
 							<label><span class="labeltext">Speed <span class="unit">%</span></span><input type="number" name="playback_speed" min="0" step="25"></label>
 							<label><span class="labeltext">Intensity <span class="unit">%</span></span><input type="number" name="intensity" min="0" step="10"></label>
-							<label><span class="labeltext">Rotation <span class="unit">deg</span></span><input type="number" name="rotation" min="0" max="360" step="15"></label>
+							<label><span class="labeltext">Rotation <span class="unit">deg</span></span><input type="number" name="rotation" step="15"></label>
 							<h3>Scale</h3>
 							<label><span class="labeltext">Scale x <span class="unit">×</span></span><input type="number" name="scale_x" step="0.25"></label>
 							<label><span class="labeltext">Scale y <span class="unit">×</span></span><input type="number" name="scale_y" step="0.25"></label>
 							<label><span class="labeltext">Scale z <span class="unit">×</span></span><input type="number" name="scale_z" step="0.25"></label>
 							<h3>Translate</h3>
-							<label><span class="labeltext">Translate x <span class="unit">mm</span></span><input type="number" name="translate_x" step="0.25"></label>
-							<label><span class="labeltext">Translate y <span class="unit">mm</span></span><input type="number" name="translate_y" step="0.25"></label>
-							<label><span class="labeltext">Translate z <span class="unit">mm</span></span><input type="number" name="translate_z" step="0.25"></label>
+							<label><span class="labeltext">Translate x <span class="unit">mm</span></span><input type="number" name="translate_x" step="1"></label>
+							<label><span class="labeltext">Translate y <span class="unit">mm</span></span><input type="number" name="translate_y" step="1"></label>
+							<label><span class="labeltext">Translate z <span class="unit">mm</span></span><input type="number" name="translate_z" step="1"></label>
+							<button type="reset">RESET</button>
 						</div>
 					</form>
 					<div class="ukfecontainer">

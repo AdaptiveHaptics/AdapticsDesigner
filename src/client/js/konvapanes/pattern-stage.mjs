@@ -2,6 +2,7 @@ import { has_coords, filter_has_coords } from "../fe/keyframes/index.mjs";
 import { KonvaResizeStage } from "./shared.mjs";
 import { notnull } from "../util.mjs";
 import { BoundsCheck } from "../fe/keyframes/bounds-check.mjs";
+import { PatternEvaluator } from "../pattern-evaluator.mjs";
 
 const Konva = /** @type {import("konva").default} */ (window["Konva"]);
 
@@ -151,6 +152,9 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		pattern_design.state_change_events.addEventListener("kf_reorder", _ev => {
 			this.update_order();
 		});
+		pattern_design.state_change_events.addEventListener("pattern_transform_update", ev => {
+			if (ev.detail.geo_transform) this.update_pattern_geo_transform();
+		});
 
 
 		this.render_design();
@@ -197,7 +201,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		}
 
 		{ //initalize grid
-			const { x: layer0x, y: layer0y } = this.pattern_coords_to_layer_coords({ x: 0, y: 0 });
+			const { x: layer0x, y: layer0y } = this.pattern_coords_to_layer_coords({ x: 0, y: 0, apply_geo_transform: false });
 			const axisconfig = {
 				listening: false,
 				stroke: getComputedStyle(document.body).getPropertyValue("--pattern-axis"),
@@ -262,6 +266,17 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		this.update_all_linked();
 	}
 
+	update_pattern_geo_transform() {
+		// update_position on all control points
+		const keyframes = this.pattern_design.get_sorted_keyframes();
+		for (const kf of keyframes) {
+			if (!("coords" in kf)) continue;
+			const cp = KonvaPatternControlPoint.get_control_point_from_keyframe(kf);
+			cp?.update_position(kf.coords.coords);
+		}
+		this.update_paths();
+	}
+
 	update_order() {
 		this.update_paths();
 		this.update_all_linked();
@@ -309,25 +324,30 @@ export class KonvaPatternStage extends KonvaResizeStage {
 
 	/**
 	 *
-	 * @param {{ x: number, y: number }} coords
+	 * @param {{ x: number, y: number, apply_geo_transform: boolean }} coords
 	 */
-	pattern_coords_to_layer_coords({ x, y }) {
-		return {
-			x: ((x - BoundsCheck.raw.coords.x.min)/(BoundsCheck.raw.coords.x.max-BoundsCheck.raw.coords.x.min)*this.pattern_square_size) + this.pattern_padding,
-			y: (this.pattern_square_size - (y - BoundsCheck.raw.coords.y.min)/(BoundsCheck.raw.coords.y.max-BoundsCheck.raw.coords.y.min)*this.pattern_square_size) + this.pattern_padding,
+	pattern_coords_to_layer_coords({ x, y, apply_geo_transform }) {
+		const geo_applied = PatternEvaluator.geo_transform_simple_apply(this.pattern_design.filedata.pattern_transform.geometric_transforms, { x, y, z: 0 });
+		const pre_sandp = apply_geo_transform ? { x: geo_applied.x, y: geo_applied.y, } : { x, y, };
+		const scaled_and_padded = {
+			x: ((pre_sandp.x - BoundsCheck.raw.coords.x.min)/(BoundsCheck.raw.coords.x.max-BoundsCheck.raw.coords.x.min)*this.pattern_square_size) + this.pattern_padding,
+			y: (this.pattern_square_size - (pre_sandp.y - BoundsCheck.raw.coords.y.min)/(BoundsCheck.raw.coords.y.max-BoundsCheck.raw.coords.y.min)*this.pattern_square_size) + this.pattern_padding,
 			// z: z+this.pattern_padding,
 		};
+		return { x: scaled_and_padded.x, y: scaled_and_padded.y, };
 	}
 	/**
 	 *
 	 * @param {{ raw_x: number, raw_y: number }} coords
 	 */
 	layer_coords_to_pattern_coords({ raw_x, raw_y }) {
-		return {
+		const unscaled_and_unpadded = {
 			x: (raw_x-this.pattern_padding)/this.pattern_square_size * (BoundsCheck.raw.coords.x.max-BoundsCheck.raw.coords.x.min) + BoundsCheck.raw.coords.x.min,
 			y: (this.pattern_square_size - (raw_y-this.pattern_padding))/this.pattern_square_size * (BoundsCheck.raw.coords.y.max-BoundsCheck.raw.coords.y.min) + BoundsCheck.raw.coords.y.min,
 			// z: z-this.pattern_padding,
 		};
+		const geo_inversed = PatternEvaluator.geo_transform_simple_inverse(this.pattern_design.filedata.pattern_transform.geometric_transforms, { x: unscaled_and_unpadded.x, y: unscaled_and_unpadded.y, z: 0 });
+		return { x: geo_inversed.x, y: geo_inversed.y, };
 	}
 
 	snap_coords({ x, y }) {
@@ -377,7 +397,7 @@ class KonvaPlaybackVis {
 
 	update() {
 		const last_eval = this.pattern_stage.pattern_design.last_eval;
-		const last_eval_layer_coords = last_eval.map(p => this.pattern_stage.pattern_coords_to_layer_coords(p.ul_control_point.coords));
+		const last_eval_layer_coords = last_eval.map(p => this.pattern_stage.pattern_coords_to_layer_coords({ ...p.ul_control_point.coords, apply_geo_transform: false })); //geo transform is already applied in evaluator
 
 		const avg_intensity =
 			Math.max(Math.min(last_eval.reduce((acc, p) => acc + p.ul_control_point.intensity, 0) / last_eval.length, 1), 0);
@@ -647,7 +667,7 @@ class KonvaPatternControlPoint {
 	 * @param {{ x: number, y: number }} pattern_coords
 	 */
 	update_position(pattern_coords) {
-		const layer_coords = this.pattern_stage.pattern_coords_to_layer_coords(pattern_coords);
+		const layer_coords = this.pattern_stage.pattern_coords_to_layer_coords({...pattern_coords, apply_geo_transform: true});
 
 		this.k_cp_circle.x(layer_coords.x);
 		this.k_cp_circle.y(layer_coords.y);

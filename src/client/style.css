@@ -279,6 +279,11 @@ form.pattern div.transformcontrol > label {
 form.pattern div.transformcontrol > h3 {
     grid-column: 1/-1;
 }
+form.pattern button[type="reset"] {
+    grid-column: 1/-1;
+    justify-self: end;
+    padding: 1ex
+}
 div.ukfecontainer {
     background-color: var(--background-tertiary-alt);
 }

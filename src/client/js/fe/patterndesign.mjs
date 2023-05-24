@@ -40,7 +40,7 @@ import { create_correct_keyframefe_wrapper, MAHKeyframePauseFE, MAHKeyframeStand
  * @property {{ }} playback_update
  * @property {{ time: boolean }} parameters_update
  * @property {{ }} playstart_update
- * @property {{ }} pattern_transform_update
+ * @property {{ geo_transform: boolean }} pattern_transform_update
  */
 
 /**
@@ -177,7 +177,7 @@ export class MAHPatternDesignFE {
 	 * 	new_keyframes?: MAHKeyframeFE[] | Set<MAHKeyframeFE>
 	 * 	updated_keyframes?: MAHKeyframeFE[] | Set<MAHKeyframeFE>
 	 * 	deleted_keyframes?: MAHKeyframeFE[] | Set<MAHKeyframeFE>
-	 * 	pattern_transform?: boolean,
+	 * 	pattern_transform?: { geo_transform: boolean },
 	 * }} param0
 	 */
 	commit_operation({ rerender, pattern_transform, new_keyframes, updated_keyframes, deleted_keyframes }) {
@@ -217,7 +217,7 @@ export class MAHPatternDesignFE {
 		}
 
 		if (pattern_transform) {
-			const change_event = new StateChangeEvent("pattern_transform_update", { detail: {} });
+			const change_event = new StateChangeEvent("pattern_transform_update", { detail: { geo_transform: pattern_transform.geo_transform } });
 			this.state_change_events.dispatchEvent(change_event);
 		}
 	}
@@ -771,21 +771,5 @@ MAHPatternDesignFE.DEFAULT = ["test.json", {
 		}
 	],
 
-	pattern_transform: {
-		playback_speed: 100,
-		intensity_factor: 100,
-		geometric_transforms: {
-			rotation: 0,
-			scale: {
-				x: 1,
-				y: 1,
-				z: 1,
-			},
-			translate: {
-				x: 0,
-				y: 0,
-				z: 0,
-			},
-		}
-	}
+	pattern_transform: PatternEvaluator.default_pattern_transformation()
 }];

@@ -184,6 +184,7 @@ export class NewKeyframeCommon {
 			Object.keys(coords).forEach(k => coords[k] = 2*next_keyframe.coords.coords[k] - secondnext_keyframe.coords.coords[k]);
 		} else if (prev_keyframe) {
 			Object.keys(coords).forEach(k => coords[k] = prev_keyframe.coords.coords[k] + 5);
+			coords.z = prev_keyframe.coords.coords.z; // just copy previous z
 		}
 		coords = BoundsCheck.coords(coords);
 		return {

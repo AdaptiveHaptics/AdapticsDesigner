@@ -2,6 +2,8 @@
 /** @typedef {import("../../../shared/types").MAHKeyframe} MAHKeyframe */
 /** @typedef {import("../../../shared/types").MidAirHapticsClipboardFormat} MidAirHapticsClipboardFormat */
 /** @typedef {import("../../../shared/types").PatternTransformation} PatternTransformation */
+/** @typedef {import("../../../shared/types").ConditionalJump} ConditionalJump */
+/** @typedef {import("../../../external/pattern_evaluator/rs-shared-types").MAHDynamicF64} MAHDynamicF64 */
 /** @typedef {import("./keyframes/index.mjs").MAHKeyframeFE} MAHKeyframeFE */
 /** @typedef {import("../pattern-evaluator.mjs").PatternEvaluatorParameters} PatternEvaluatorParameters */
 /** @typedef {import("../pattern-evaluator.mjs").NextEvalParams} NextEvalParams */
@@ -452,33 +454,6 @@ export class MAHPatternDesignFE {
 		}
 	}
 
-	get_user_parameters_to_items_map() {
-		/** @type {Map<string, { keyframes: MAHKeyframeFE[], pattern_transform: boolean }>} */
-		const uparam_to_item_map = new Map();
-		for (const keyframe of this.filedata.keyframes) {
-			if ("cjumps" in keyframe) {
-				for (const cjump of keyframe.cjumps) {
-					const param = cjump.condition.parameter;
-					if (param) {
-						const linked_items = uparam_to_item_map.get(param);
-						if (linked_items) linked_items.keyframes.push(keyframe);
-						else uparam_to_item_map.set(param, { keyframes: [keyframe], pattern_transform: false });
-					}
-				}
-			}
-		}
-		//check pattern transform
-		if (this.filedata.pattern_transform.playback_speed.type == "dynamic") {
-			const param = this.filedata.pattern_transform.playback_speed.value;
-			const linked_items = uparam_to_item_map.get(param);
-			if (linked_items) linked_items.pattern_transform = true;
-			else uparam_to_item_map.set(param, { keyframes: [], pattern_transform: true });
-		}
-		return uparam_to_item_map;
-
-	}
-
-
 	#_playstart_timestamp = 0;
 	#_tick_playback() {
 		if (!this.is_playing()) return;
@@ -538,6 +513,63 @@ export class MAHPatternDesignFE {
 		const ce = new StateChangeEvent("parameters_update", { detail: { time: false } });
 		this.state_change_events.dispatchEvent(ce);
 	}
+
+	get_user_parameters_to_linked_map() {
+		/** @type {Map<string, { items: { keyframes: MAHKeyframeFE[], pattern_transform: boolean }, prop_parents: { cjumps: ConditionalJump[], dynf64: MAHDynamicF64[] } }>} */
+		const uparam_to_item_map = new Map();
+		for (const keyframe of this.filedata.keyframes) {
+			if ("cjumps" in keyframe) {
+				for (const cjump of keyframe.cjumps) {
+					const param_name = cjump.condition.parameter;
+					if (param_name) {
+						const up_linked = uparam_to_item_map.get(param_name);
+						if (up_linked) {
+							up_linked.items.keyframes.push(keyframe);
+							up_linked.prop_parents.cjumps.push(cjump);
+						} else {
+							uparam_to_item_map.set(param_name, {
+								items: { keyframes: [keyframe], pattern_transform: false },
+								prop_parents: { cjumps: [cjump], dynf64: [] }
+							});
+						}
+					}
+				}
+			}
+		}
+
+
+		//check pattern transform
+		// TODO: compute this from json schema (json-schema-parser.mjs)
+		const DYN_F64_LIST = [
+			this.filedata.pattern_transform.playback_speed,
+			this.filedata.pattern_transform.intensity_factor,
+			this.filedata.pattern_transform.geometric_transforms.rotation,
+			this.filedata.pattern_transform.geometric_transforms.scale.x,
+			this.filedata.pattern_transform.geometric_transforms.scale.y,
+			this.filedata.pattern_transform.geometric_transforms.scale.z,
+			this.filedata.pattern_transform.geometric_transforms.translate.x,
+			this.filedata.pattern_transform.geometric_transforms.translate.y,
+			this.filedata.pattern_transform.geometric_transforms.translate.z,
+		];
+
+		for (const mah_dyn_f64 of DYN_F64_LIST) {
+			if (mah_dyn_f64.type == "dynamic") {
+				const param_name = mah_dyn_f64.value;
+				const up_linked = uparam_to_item_map.get(param_name);
+				if (up_linked) {
+					up_linked.items.pattern_transform = true;
+				} else {
+					uparam_to_item_map.set(param_name, {
+						items: { keyframes: [], pattern_transform: true },
+						prop_parents: { cjumps: [], dynf64: [mah_dyn_f64] }
+					});
+				}
+			}
+		}
+		return uparam_to_item_map;
+
+	}
+
 	rename_evaluator_user_param(old_name, new_name) {
 		this.save_state();
 
@@ -545,19 +577,19 @@ export class MAHPatternDesignFE {
 		this.evaluator_params.user_parameters.delete(old_name);
 		this.evaluator_params.user_parameters.set(new_name, value || 0);
 
-		const updated_keyframes = new Set();
-		for (const keyframe of this.filedata.keyframes) {
-			if ("cjumps" in keyframe) {
-				for (const cjump of keyframe.cjumps) {
-					if (cjump.condition.parameter == old_name) {
-						cjump.condition.parameter = new_name;
-						updated_keyframes.add(keyframe);
-					}
-				}
-			}
+		const up_linked = this.get_user_parameters_to_linked_map().get(old_name);
+		if (!up_linked) throw new Error("no linked items found (should not happen)");
+		for (const cj of up_linked.prop_parents.cjumps) {
+			cj.condition.parameter = new_name;
 		}
+		for (const dynf64 of up_linked.prop_parents.dynf64) {
+			dynf64.value = new_name;
+		}
+		const updated_keyframes = up_linked.items.keyframes;
+		// just use geo_transform: true for now, since we don't keep track of which properties exactly change, and if they are geo transforms
+		const pattern_transform = up_linked.items.pattern_transform ? { geo_transform: true } : undefined;
 
-		this.commit_operation({ updated_keyframes });
+		this.commit_operation({ updated_keyframes, pattern_transform });
 
 		const ce = new StateChangeEvent("parameters_update", { detail: { time: false } });
 		this.state_change_events.dispatchEvent(ce);

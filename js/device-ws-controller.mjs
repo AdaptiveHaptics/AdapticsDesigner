@@ -84,7 +84,7 @@ export class DeviceWSController {
 	 */
 	update_parameters(evaluator_params) {
 		/** @type {import("./pattern-evaluator.mjs").WASMPatternEvaluatorParameters} */
-		const json_safe_p = { time: evaluator_params.time, user_parameters: Object.fromEntries(evaluator_params.user_parameters), transform: evaluator_params.transform };
+		const json_safe_p = { time: evaluator_params.time, user_parameters: Object.fromEntries(evaluator_params.user_parameters), geometric_transform: evaluator_params.geometric_transform };
 		this.send("update_parameters", { evaluator_params: json_safe_p });
 	}
 

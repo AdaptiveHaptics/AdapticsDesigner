@@ -85,7 +85,7 @@
       ],
       "properties": {
         "coords": {
-          "$ref": "#/definitions/MAHCoords"
+          "$ref": "#/definitions/MAHCoordsConst"
         },
         "transition": {
           "$ref": "#/definitions/MAHTransition"
@@ -95,8 +95,46 @@
     "DataFormatRevision": {
       "type": "string",
       "enum": [
-        "0.0.7-alpha.1"
+        "0.0.9-alpha.1"
       ]
+    },
+    "GeometricTransformMatrix": {
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": {
+          "type": "number",
+          "format": "double"
+        },
+        "maxItems": 4,
+        "minItems": 4
+      },
+      "maxItems": 4,
+      "minItems": 4
+    },
+    "GeometricTransformsSimple": {
+      "type": "object",
+      "required": [
+        "rotation",
+        "scale",
+        "translate"
+      ],
+      "properties": {
+        "rotation": {
+          "description": "in degrees",
+          "allOf": [
+            {
+              "$ref": "#/definitions/MAHDynamicF64"
+            }
+          ]
+        },
+        "scale": {
+          "$ref": "#/definitions/MAHScaleTuple"
+        },
+        "translate": {
+          "$ref": "#/definitions/MAHCoordsDynamic"
+        }
+      }
     },
     "IntensityWithTransition": {
       "type": "object",
@@ -137,12 +175,19 @@
               "properties": {
                 "am_freq": {
                   "description": "AM frequency in HZ",
-                  "type": "number",
-                  "format": "double"
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/MAHDynamicF64"
+                    }
+                  ]
                 },
                 "radius": {
-                  "type": "number",
-                  "format": "double"
+                  "description": "Millimeters",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/MAHDynamicF64"
+                    }
+                  ]
                 }
               }
             }
@@ -172,20 +217,30 @@
               "properties": {
                 "am_freq": {
                   "description": "AM frequency in HZ",
-                  "type": "number",
-                  "format": "double"
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/MAHDynamicF64"
+                    }
+                  ]
                 },
                 "length": {
-                  "type": "number",
-                  "format": "double"
+                  "description": "Millimeters",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/MAHDynamicF64"
+                    }
+                  ]
                 },
                 "rotation": {
-                  "type": "number",
-                  "format": "double"
+                  "description": "Degrees",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/MAHDynamicF64"
+                    }
+                  ]
                 },
                 "thickness": {
-                  "type": "number",
-                  "format": "double"
+                  "$ref": "#/definitions/MAHDynamicF64"
                 }
               }
             }
@@ -289,7 +344,7 @@
         }
       ]
     },
-    "MAHCoords": {
+    "MAHCoordsConst": {
       "description": "x and y are used for the xy coordinate system in the 2d designer. z is intended to be orthogonal to the phased array",
       "type": "object",
       "required": [
@@ -315,6 +370,68 @@
         }
       }
     },
+    "MAHCoordsDynamic": {
+      "type": "object",
+      "required": [
+        "x",
+        "y",
+        "z"
+      ],
+      "properties": {
+        "x": {
+          "$ref": "#/definitions/MAHDynamicF64"
+        },
+        "y": {
+          "$ref": "#/definitions/MAHDynamicF64"
+        },
+        "z": {
+          "$ref": "#/definitions/MAHDynamicF64"
+        }
+      }
+    },
+    "MAHDynamicF64": {
+      "oneOf": [
+        {
+          "description": "Specify a parameter instead of a constant value",
+          "type": "object",
+          "required": [
+            "type",
+            "value"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "dynamic"
+              ]
+            },
+            "value": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "description": "Normal constant value",
+          "type": "object",
+          "required": [
+            "type",
+            "value"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "f64"
+              ]
+            },
+            "value": {
+              "type": "number",
+              "format": "double"
+            }
+          }
+        }
+      ]
+    },
     "MAHIntensity": {
       "oneOf": [
         {
@@ -337,8 +454,7 @@
               ],
               "properties": {
                 "value": {
-                  "type": "number",
-                  "format": "double"
+                  "$ref": "#/definitions/MAHDynamicF64"
                 }
               }
             }
@@ -365,12 +481,10 @@
               ],
               "properties": {
                 "max": {
-                  "type": "number",
-                  "format": "double"
+                  "$ref": "#/definitions/MAHDynamicF64"
                 },
                 "min": {
-                  "type": "number",
-                  "format": "double"
+                  "$ref": "#/definitions/MAHDynamicF64"
                 }
               }
             }
@@ -500,6 +614,33 @@
         }
       ]
     },
+    "MAHPercentageDynamic": {
+      "description": "will parse 100 (%) in JSON exchange format as 1.00 (f64)",
+      "allOf": [
+        {
+          "$ref": "#/definitions/MAHDynamicF64"
+        }
+      ]
+    },
+    "MAHScaleTuple": {
+      "type": "object",
+      "required": [
+        "x",
+        "y",
+        "z"
+      ],
+      "properties": {
+        "x": {
+          "$ref": "#/definitions/MAHDynamicF64"
+        },
+        "y": {
+          "$ref": "#/definitions/MAHDynamicF64"
+        },
+        "z": {
+          "$ref": "#/definitions/MAHDynamicF64"
+        }
+      }
+    },
     "MAHTransition": {
       "oneOf": [
         {
@@ -547,8 +688,7 @@
         "$REVISION",
         "keyframes",
         "name",
-        "projection",
-        "update_rate"
+        "pattern_transform"
       ],
       "properties": {
         "$DATA_FORMAT": {
@@ -566,12 +706,8 @@
         "name": {
           "type": "string"
         },
-        "projection": {
-          "$ref": "#/definitions/Projection"
-        },
-        "update_rate": {
-          "type": "number",
-          "format": "double"
+        "pattern_transform": {
+          "$ref": "#/definitions/PatternTransformation"
         }
       }
     },
@@ -601,17 +737,17 @@
     "PatternEvaluatorParameters": {
       "type": "object",
       "required": [
+        "geometric_transform",
         "time",
-        "transform",
         "user_parameters"
       ],
       "properties": {
+        "geometric_transform": {
+          "$ref": "#/definitions/GeometricTransformMatrix"
+        },
         "time": {
           "type": "number",
           "format": "double"
-        },
-        "transform": {
-          "$ref": "#/definitions/PatternTransformation"
         },
         "user_parameters": {
           "type": "object",
@@ -625,41 +761,21 @@
     "PatternTransformation": {
       "type": "object",
       "required": [
-        "geo_matrix",
+        "geometric_transforms",
         "intensity_factor",
         "playback_speed"
       ],
       "properties": {
-        "geo_matrix": {
-          "type": "array",
-          "items": {
-            "type": "array",
-            "items": {
-              "type": "number",
-              "format": "double"
-            },
-            "maxItems": 4,
-            "minItems": 4
-          },
-          "maxItems": 4,
-          "minItems": 4
+        "geometric_transforms": {
+          "$ref": "#/definitions/GeometricTransformsSimple"
         },
         "intensity_factor": {
-          "type": "number",
-          "format": "double"
+          "$ref": "#/definitions/MAHPercentageDynamic"
         },
         "playback_speed": {
-          "type": "number",
-          "format": "double"
+          "$ref": "#/definitions/MAHPercentageDynamic"
         }
       }
-    },
-    "Projection": {
-      "type": "string",
-      "enum": [
-        "plane",
-        "palm"
-      ]
     },
     "UltraleapControlPoint": {
       "type": "object",
@@ -669,7 +785,7 @@
       ],
       "properties": {
         "coords": {
-          "$ref": "#/definitions/MAHCoords"
+          "$ref": "#/definitions/MAHCoordsConst"
         },
         "intensity": {
           "type": "number",

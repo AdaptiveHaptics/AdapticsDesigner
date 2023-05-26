@@ -5,6 +5,7 @@
 /** @typedef {import("./keyframes/index.mjs").MAHKeyframeFE} MAHKeyframeFE */
 /** @typedef {import("../pattern-evaluator.mjs").PatternEvaluatorParameters} PatternEvaluatorParameters */
 /** @typedef {import("../pattern-evaluator.mjs").NextEvalParams} NextEvalParams */
+/** @typedef {import("../pattern-evaluator.mjs").GeometricTransformMatrix} GeometricTransformMatrix */
 /** @typedef {import("../konvapanes/timeline-stage.mjs").KonvaCJumpFlag} KonvaCJumpFlag */
 /**
  * @template T
@@ -18,7 +19,7 @@
  */
 
 /** @type {import("../../../shared/types").REVISION_STRING} */
-const MAH_$REVISION = "0.0.7-alpha.1";
+const MAH_$REVISION = "0.0.9-alpha.1";
 
 import { DeviceWSController } from "../device-ws-controller.mjs";
 import { PatternEvaluator } from "../pattern-evaluator.mjs";
@@ -39,6 +40,7 @@ import { create_correct_keyframefe_wrapper, MAHKeyframePauseFE, MAHKeyframeStand
  * @property {{ }} playback_update
  * @property {{ time: boolean }} parameters_update
  * @property {{ }} playstart_update
+ * @property {{ geo_transform: boolean }} pattern_transform_update
  */
 
 /**
@@ -95,7 +97,7 @@ export class MAHPatternDesignFE {
 
 		//pattern eval
 		/** @type {PatternEvaluatorParameters}  */
-		this.evaluator_params = { time: 0, user_parameters: new Map(), transform: PatternEvaluator.default_pattern_transformation() };
+		this.evaluator_params = { time: 0, user_parameters: new Map(), geometric_transform: PatternEvaluator.default_geo_transform_matrix() };
 		/** @type {NextEvalParams} */
 		this.evaluator_next_eval_params = PatternEvaluator.default_next_eval_params();
 		this.pattern_evaluator = new PatternEvaluator(this.filedata);
@@ -175,9 +177,10 @@ export class MAHPatternDesignFE {
 	 * 	new_keyframes?: MAHKeyframeFE[] | Set<MAHKeyframeFE>
 	 * 	updated_keyframes?: MAHKeyframeFE[] | Set<MAHKeyframeFE>
 	 * 	deleted_keyframes?: MAHKeyframeFE[] | Set<MAHKeyframeFE>
+	 * 	pattern_transform?: { geo_transform: boolean },
 	 * }} param0
 	 */
-	commit_operation({ rerender, new_keyframes, updated_keyframes, deleted_keyframes }) {
+	commit_operation({ rerender, pattern_transform, new_keyframes, updated_keyframes, deleted_keyframes }) {
 		if (this.committed) {
 			alert("commit_operation before save");
 			throw new Error("commit_operation before save");
@@ -211,6 +214,11 @@ export class MAHPatternDesignFE {
 				const change_event = new StateChangeEvent("kf_update", { detail: { keyframe } });
 				this.state_change_events.dispatchEvent(change_event);
 			}
+		}
+
+		if (pattern_transform) {
+			const change_event = new StateChangeEvent("pattern_transform_update", { detail: { geo_transform: pattern_transform.geo_transform } });
+			this.state_change_events.dispatchEvent(change_event);
 		}
 	}
 
@@ -444,23 +452,30 @@ export class MAHPatternDesignFE {
 		}
 	}
 
-
-	get_user_parameters_to_keyframes_map() {
-		/** @type {Map<string, MAHKeyframeFE[]>} */
-		const uparam_to_kfs_map = new Map();
+	get_user_parameters_to_items_map() {
+		/** @type {Map<string, { keyframes: MAHKeyframeFE[], pattern_transform: boolean }>} */
+		const uparam_to_item_map = new Map();
 		for (const keyframe of this.filedata.keyframes) {
 			if ("cjumps" in keyframe) {
 				for (const cjump of keyframe.cjumps) {
 					const param = cjump.condition.parameter;
 					if (param) {
-						const arr = uparam_to_kfs_map.get(param);
-						if (arr) arr.push(keyframe);
-						else uparam_to_kfs_map.set(param, [keyframe]);
+						const linked_items = uparam_to_item_map.get(param);
+						if (linked_items) linked_items.keyframes.push(keyframe);
+						else uparam_to_item_map.set(param, { keyframes: [keyframe], pattern_transform: false });
 					}
 				}
 			}
 		}
-		return uparam_to_kfs_map;
+		//check pattern transform
+		if (this.filedata.pattern_transform.playback_speed.type == "dynamic") {
+			const param = this.filedata.pattern_transform.playback_speed.value;
+			const linked_items = uparam_to_item_map.get(param);
+			if (linked_items) linked_items.pattern_transform = true;
+			else uparam_to_item_map.set(param, { keyframes: [], pattern_transform: true });
+		}
+		return uparam_to_item_map;
+
 	}
 
 
@@ -516,10 +531,10 @@ export class MAHPatternDesignFE {
 	}
 	/**
 	 *
-	 * @param {Partial<PatternTransformation>} transform
+	 * @param {GeometricTransformMatrix} transform_matrix
 	 */
-	update_evaluator_transform(transform) {
-		this.evaluator_params.transform = Object.assign(this.evaluator_params.transform, transform);
+	update_evaluator_geo_transform(transform_matrix) {
+		this.evaluator_params.geometric_transform = transform_matrix;
 		const ce = new StateChangeEvent("parameters_update", { detail: { time: false } });
 		this.state_change_events.dispatchEvent(ce);
 	}
@@ -719,9 +734,6 @@ MAHPatternDesignFE.DEFAULT = ["test.json", {
 
 	name: "test",
 
-	projection: "plane",
-	update_rate: 1,
-
 	keyframes: [
 		{
 			type: "standard",
@@ -741,7 +753,7 @@ MAHPatternDesignFE.DEFAULT = ["test.json", {
 				intensity: {
 					name: "constant",
 					params: {
-						value: 1.00
+						value: { type: "f64", value: 1.00 }
 					}
 				},
 				transition: {
@@ -753,8 +765,8 @@ MAHPatternDesignFE.DEFAULT = ["test.json", {
 				brush: {
 					name: "circle",
 					params: {
-						radius: 1.00,
-						am_freq: 0,
+						radius: { type: "f64", value: 1.0 },
+						am_freq: { type: "f64", value: 0.0 },
 					}
 				},
 				transition: {
@@ -764,5 +776,7 @@ MAHPatternDesignFE.DEFAULT = ["test.json", {
 			},
 			cjumps: [],
 		}
-	]
+	],
+
+	pattern_transform: PatternEvaluator.default_pattern_transformation()
 }];

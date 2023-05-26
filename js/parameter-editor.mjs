@@ -55,36 +55,6 @@ export class ParameterEditor {
 			this.#_update_playback_controls();
 		}
 
-		{ // init transformcontrol
-			this._transformcontrol_div = notnull(document.querySelector("div.transformcontrol"));
-			/** @type {HTMLInputElement} */
-			this._speedcontrol_input = notnull(this._transformcontrol_div.querySelector("input[name=speed]"));
-			this._speedcontrol_input.addEventListener("change", _ => {
-				const v = parseFloat(this._speedcontrol_input.value) / 100;
-				if (Number.isFinite(v)) {
-					this._pattern_design.update_evaluator_transform({ playback_speed: v });
-				} else {
-					this.#_update_transform_controls();
-				}
-			});
-
-			/** @type {HTMLInputElement} */
-			this._intensitycontrol_input = notnull(this._transformcontrol_div.querySelector("input[name=intensity]"));
-			this._intensitycontrol_input.addEventListener("change", _ => {
-				const v = parseFloat(this._intensitycontrol_input.value) / 100;
-				if (Number.isFinite(v)) {
-					this._pattern_design.update_evaluator_transform({ intensity_factor: v });
-				} else {
-					this.#_update_transform_controls();
-				}
-			});
-
-			this._pattern_design.state_change_events.addEventListener("parameters_update", ev => {
-				if (!ev.detail.time) this.#_update_transform_controls();
-			});
-			this.#_update_transform_controls();
-		}
-
 		{ //init userparameters
 			this._pattern_design.state_change_events.addEventListener("rerender", () => {
 				this.#_update_user_parameters_controls();
@@ -95,6 +65,9 @@ export class ParameterEditor {
 			this._pattern_design.state_change_events.addEventListener("kf_delete", () => {
 				this.#_update_user_parameters_controls();
 			});
+			this._pattern_design.state_change_events.addEventListener("pattern_transform_update", () => {
+				this.#_update_user_parameters_controls();
+			});
 			this._pattern_design.state_change_events.addEventListener("parameters_update", ev => {
 				if (!ev.detail.time) this.#_update_user_parameters_values();
 			});
@@ -103,22 +76,22 @@ export class ParameterEditor {
 	}
 
 	#_update_user_parameters_controls() {
-		const uparam_to_kfs_map = this._pattern_design.get_user_parameters_to_keyframes_map();
+		const uparam_to_item_map = this._pattern_design.get_user_parameters_to_items_map();
 		/** @type {Map<string, UserParamControl>} */
 		const userparam_els_by_name = new Map();
 		const uparam_children = [...this._userparameters_div.children];
 		for (const up_el of uparam_children) {
 			if (!(up_el instanceof UserParamControl)) continue;
 			const user_param_name = up_el.param_name;
-			if (uparam_to_kfs_map.has(user_param_name)) {
+			if (uparam_to_item_map.has(user_param_name)) {
 				userparam_els_by_name.set(user_param_name, up_el);
 			}
 			up_el.remove();
 		}
-		for (const [param, keyframes] of new Map([...uparam_to_kfs_map].sort((a, b) => a[0].localeCompare(b[0])))) {
-			const up_el = userparam_els_by_name.get(param) || (this._pattern_design.update_evaluator_user_params(param, 0), new UserParamControl(this._pattern_design, param, 0, keyframes));
+		for (const [param, linked_items] of new Map([...uparam_to_item_map].sort((a, b) => a[0].localeCompare(b[0])))) {
+			const up_el = userparam_els_by_name.get(param) || (this._pattern_design.update_evaluator_user_params(param, 0), new UserParamControl(this._pattern_design, param, 0, linked_items.keyframes));
 
-			up_el.linked_keyframes = keyframes;
+			up_el.linked_keyframes = linked_items.keyframes;
 
 			this._userparameters_div.appendChild(up_el);
 		}
@@ -151,12 +124,6 @@ export class ParameterEditor {
 			this._timecontrol_pause.style.display = "none";
 		}
 	}
-
-	#_update_transform_controls() {
-		this._speedcontrol_input.value = (this._pattern_design.evaluator_params.transform.playback_speed*100).toFixed(0);
-		this._intensitycontrol_input.value = (this._pattern_design.evaluator_params.transform.intensity_factor*100).toFixed(0);
-	}
-
 
 }
 

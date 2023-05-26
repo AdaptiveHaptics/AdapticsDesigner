@@ -28,6 +28,24 @@ export class PatternEvaluator {
 * @returns {string}
 */
   static default_pattern_transformation(): string;
+/**
+* @returns {string}
+*/
+  static default_geo_transform_matrix(): string;
+/**
+* @param {string} gts
+* @param {string} coords
+* @param {string} user_parameters
+* @returns {string}
+*/
+  static geo_transform_simple_apply(gts: string, coords: string, user_parameters: string): string;
+/**
+* @param {string} gts
+* @param {string} coords
+* @param {string} user_parameters
+* @returns {string}
+*/
+  static geo_transform_simple_inverse(gts: string, coords: string, user_parameters: string): string;
 }
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
@@ -40,6 +58,9 @@ export interface InitOutput {
   readonly patternevaluator_eval_brush_at_anim_local_time_for_max_t: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
   readonly patternevaluator_default_next_eval_params: (a: number) => void;
   readonly patternevaluator_default_pattern_transformation: (a: number) => void;
+  readonly patternevaluator_default_geo_transform_matrix: (a: number) => void;
+  readonly patternevaluator_geo_transform_simple_apply: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
+  readonly patternevaluator_geo_transform_simple_inverse: (a: number, b: number, c: number, d: number, e: number, f: number, g: number) => void;
   readonly __wbindgen_malloc: (a: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number) => number;
   readonly __wbindgen_add_to_stack_pointer: (a: number) => number;

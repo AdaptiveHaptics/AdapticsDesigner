@@ -3,7 +3,7 @@ import { MAHPatternDesignFE } from "./fe/patterndesign.mjs";
 import { KonvaPatternStage } from "./konvapanes/pattern-stage.mjs";
 import { KonvaTimelineStage } from "./konvapanes/timeline-stage.mjs";
 import { ParameterEditor } from "./parameter-editor.mjs";
-import { UnifiedKeyframeEditor } from "./unified-keyframe-editor.mjs";
+import { RightPanel } from "./rightpanel/right-panel.mjs";
 import { notnull } from "./util.mjs";
 
 const ignoreErrorsContaining = [
@@ -29,10 +29,16 @@ const SplitGrid = /** @type {import("split-grid").default} */(/** @type {unknown
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
 /** @typedef {import("../../shared/types").MidAirHapticsClipboardFormat} MidAirHapticsClipboardFormat */
 
-const mainsplitgridDiv = /** @type {HTMLDivElement} */ (document.querySelector("div.mainsplitgrid"));
-const patternDiv = /** @type {HTMLDivElement} */ (mainsplitgridDiv.querySelector("div.center"));
-const timelineDiv = /** @type {HTMLDivElement} */ (document.querySelector("div.timeline"));
-const savedstateSpan = /** @type {HTMLSpanElement} */ (document.querySelector("span.savedstate"));
+/** @type {HTMLDivElement} */
+const mainsplitgrid_div = notnull(document.querySelector("div.mainsplitgrid"));
+/** @type {HTMLDivElement} */
+const rightpanel_div = notnull(mainsplitgrid_div.querySelector("div.right"));
+/** @type {HTMLDivElement} */
+const pattern_div = notnull(mainsplitgrid_div.querySelector("div.center"));
+/** @type {HTMLDivElement} */
+const timeline_div = notnull(document.querySelector("div.timeline"));
+/** @type {HTMLSpanElement} */
+const savedstate_span = notnull(document.querySelector("span.savedstate"));
 
 const websocketurl_input = /** @type {HTMLInputElement} */ (document.querySelector(".isection.websocket input.websocketurl"));
 const websocket_connect_button = /** @type {HTMLButtonElement} */ (document.querySelector(".isection.websocket button.connect"));
@@ -43,11 +49,11 @@ const websocket_state_span = /** @type {HTMLButtonElement} */ (document.querySel
 const _mainsplit = SplitGrid({
 	minSize: 5,
 	columnGutters: [
-		{ track: 1, element: notnull(mainsplitgridDiv.querySelector("div.mainsplitgrid > div.gutter.leftcenter")) },
-		{ track: 3, element: notnull(mainsplitgridDiv.querySelector("div.mainsplitgrid > div.gutter.centerright")) },
+		{ track: 1, element: notnull(mainsplitgrid_div.querySelector("div.mainsplitgrid > div.gutter.leftcenter")) },
+		{ track: 3, element: notnull(mainsplitgrid_div.querySelector("div.mainsplitgrid > div.gutter.centerright")) },
 	],
 	rowGutters: [
-		{ track: 1, element: notnull(mainsplitgridDiv.querySelector("div.mainsplitgrid > div.gutter.topbottom")) },
+		{ track: 1, element: notnull(mainsplitgrid_div.querySelector("div.mainsplitgrid > div.gutter.topbottom")) },
 	],
 });
 const _bottomsplit = SplitGrid({
@@ -69,7 +75,7 @@ try {
 }
 
 const focus_within_design_panes = () => {
-	return patternDiv.matches(":focus-within") || timelineDiv.matches(":focus-within");
+	return pattern_div.matches(":focus-within") || timeline_div.matches(":focus-within");
 };
 document.addEventListener("keydown", ev => {
 	if (ev.key == "s" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
@@ -134,6 +140,7 @@ websocket_connect_button.addEventListener("click", () => {
 
 	websocket_connect_button.style.display = "none";
 	websocket_disconnect_button.style.display = "";
+	websocket_disconnect_button.focus();
 	websocketurl_input.disabled = true;
 	websocket_state_span.textContent = "connecting...";
 	const websocket = primary_design.websocket;
@@ -150,22 +157,25 @@ websocket_disconnect_button.addEventListener("click", () => {
 
 	websocket_connect_button.style.display = "";
 	websocket_disconnect_button.style.display = "none";
+	websocket_connect_button.focus();
 	websocketurl_input.disabled = false;
 });
 
 primary_design.state_change_events.addEventListener("commit_update", ev => {
-	savedstateSpan.textContent = ev.detail.committed ? "saved to localstorage" : "pending change";
+	savedstate_span.textContent = ev.detail.committed ? "saved to localstorage" : "pending change";
 });
 primary_design.commit_operation({});
-const konva_pattern_stage = new KonvaPatternStage(primary_design, "patternstage", patternDiv);
-const konva_timeline_stage = new KonvaTimelineStage(primary_design, "timelinestage", timelineDiv);
-const unified_keyframe_editor = new UnifiedKeyframeEditor(primary_design, notnull(document.querySelector("div.unifiedkeyframeeditor")));
+const konva_pattern_stage = new KonvaPatternStage(primary_design, "patternstage", pattern_div);
+const konva_timeline_stage = new KonvaTimelineStage(primary_design, "timelinestage", timeline_div);
+const right_panel = new RightPanel(primary_design, rightpanel_div);
+const unified_keyframe_editor = right_panel.unified_keyframe_editor;
 const parameter_editor = new ParameterEditor(primary_design, notnull(document.querySelector("div.parametereditor")));
 
 Object.assign(window, {
 	primary_design,
 	konva_pattern_stage,
 	konva_timeline_stage,
+	right_panel,
 	unified_keyframe_editor,
 	parameter_editor,
 });

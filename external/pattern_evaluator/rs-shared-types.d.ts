@@ -12,7 +12,7 @@
 export type TupleOf_MidAirHapticsAnimationFileFormatAnd_PatternEvaluatorParametersAnd_BrushAtAnimLocalTimeAnd_ArrayOf_BrushAtAnimLocalTime =
   [MidAirHapticsAnimationFileFormat, PatternEvaluatorParameters, BrushAtAnimLocalTime, BrushAtAnimLocalTime[]];
 export type MidAirHapticsAnimationFileFormatDataFormatName = "MidAirHapticsAnimationFileFormat";
-export type DataFormatRevision = "0.0.7-alpha.1";
+export type DataFormatRevision = "0.0.9-alpha.1";
 export type MAHKeyframe =
   | {
       brush?: BrushWithTransition | null;
@@ -40,8 +40,11 @@ export type MAHBrush =
         /**
          * AM frequency in HZ
          */
-        am_freq: number;
-        radius: number;
+        am_freq: MAHDynamicF64;
+        /**
+         * Millimeters
+         */
+        radius: MAHDynamicF64;
       };
     }
   | {
@@ -50,11 +53,26 @@ export type MAHBrush =
         /**
          * AM frequency in HZ
          */
-        am_freq: number;
-        length: number;
-        rotation: number;
-        thickness: number;
+        am_freq: MAHDynamicF64;
+        /**
+         * Millimeters
+         */
+        length: MAHDynamicF64;
+        /**
+         * Degrees
+         */
+        rotation: MAHDynamicF64;
+        thickness: MAHDynamicF64;
       };
+    };
+export type MAHDynamicF64 =
+  | {
+      type: "dynamic";
+      value: string;
+    }
+  | {
+      type: "f64";
+      value: number;
     };
 export type MAHTransition =
   | {
@@ -86,25 +104,37 @@ export type MAHIntensity =
   | {
       name: "constant";
       params: {
-        value: number;
+        value: MAHDynamicF64;
       };
     }
   | {
       name: "random";
       params: {
-        max: number;
-        min: number;
+        max: MAHDynamicF64;
+        min: MAHDynamicF64;
       };
     };
-export type Projection = "plane" | "palm";
+/**
+ * will parse 100 (%) in JSON exchange format as 1.00 (f64)
+ */
+export type MAHPercentageDynamic = MAHDynamicF64;
+/**
+ * @minItems 4
+ * @maxItems 4
+ */
+export type GeometricTransformMatrix = [
+  [number, number, number, number],
+  [number, number, number, number],
+  [number, number, number, number],
+  [number, number, number, number]
+];
 
 export interface MidAirHapticsAnimationFileFormat {
   $DATA_FORMAT: MidAirHapticsAnimationFileFormatDataFormatName;
   $REVISION: DataFormatRevision;
   keyframes: MAHKeyframe[];
   name: string;
-  projection: Projection;
-  update_rate: number;
+  pattern_transform: PatternTransformation;
 }
 export interface BrushWithTransition {
   brush: MAHBrush;
@@ -120,13 +150,13 @@ export interface MAHCondition {
   value: number;
 }
 export interface CoordsWithTransition {
-  coords: MAHCoords;
+  coords: MAHCoordsConst;
   transition: MAHTransition;
 }
 /**
  * x and y are used for the xy coordinate system in the 2d designer. z is intended to be orthogonal to the phased array
  */
-export interface MAHCoords {
+export interface MAHCoordsConst {
   /**
    * in millimeters, [-100, 100]
    */
@@ -144,26 +174,35 @@ export interface IntensityWithTransition {
   intensity: MAHIntensity;
   transition: MAHTransition;
 }
+export interface PatternTransformation {
+  geometric_transforms: GeometricTransformsSimple;
+  intensity_factor: MAHPercentageDynamic;
+  playback_speed: MAHPercentageDynamic;
+}
+export interface GeometricTransformsSimple {
+  /**
+   * in degrees
+   */
+  rotation: MAHDynamicF64;
+  scale: MAHScaleTuple;
+  translate: MAHCoordsDynamic;
+}
+export interface MAHScaleTuple {
+  x: MAHDynamicF64;
+  y: MAHDynamicF64;
+  z: MAHDynamicF64;
+}
+export interface MAHCoordsDynamic {
+  x: MAHDynamicF64;
+  y: MAHDynamicF64;
+  z: MAHDynamicF64;
+}
 export interface PatternEvaluatorParameters {
+  geometric_transform: GeometricTransformMatrix;
   time: number;
-  transform: PatternTransformation;
   user_parameters: {
     [k: string]: number;
   };
-}
-export interface PatternTransformation {
-  /**
-   * @minItems 4
-   * @maxItems 4
-   */
-  geo_matrix: [
-    [number, number, number, number],
-    [number, number, number, number],
-    [number, number, number, number],
-    [number, number, number, number]
-  ];
-  intensity_factor: number;
-  playback_speed: number;
 }
 export interface BrushAtAnimLocalTime {
   next_eval_params: NextEvalParams;
@@ -176,6 +215,6 @@ export interface NextEvalParams {
   time_offset: number;
 }
 export interface UltraleapControlPoint {
-  coords: MAHCoords;
+  coords: MAHCoordsConst;
   intensity: number;
 }

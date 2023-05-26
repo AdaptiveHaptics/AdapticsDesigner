@@ -4,11 +4,15 @@
  * @typedef {import("../../shared/util").DeepImmutable<T>} DeepImmutable
  */
 
+/** @typedef {Map<string, number>} UserParameters */
 /** @typedef {import("../external/pattern_evaluator/rs-shared-types").PatternEvaluatorParameters} WASMPatternEvaluatorParameters */
-/** @typedef {{ time: number, user_parameters: Map<string, number>, transform: WASMPatternEvaluatorParameters["transform"] }} PatternEvaluatorParameters */
+/** @typedef {{ time: number, user_parameters: UserParameters, geometric_transform: WASMPatternEvaluatorParameters["geometric_transform"] }} PatternEvaluatorParameters */
 /** @typedef {import("../external/pattern_evaluator/rs-shared-types").BrushAtAnimLocalTime} BrushAtAnimLocalTime */
 /** @typedef {import("../external/pattern_evaluator/rs-shared-types").NextEvalParams} NextEvalParams */
 /** @typedef {import("../external/pattern_evaluator/rs-shared-types").PatternTransformation} PatternTransformation */
+/** @typedef {import("../external/pattern_evaluator/rs-shared-types").GeometricTransformMatrix} GeometricTransformMatrix */
+/** @typedef {import("../external/pattern_evaluator/rs-shared-types").GeometricTransformsSimple} GeometricTransformsSimple */
+/** @typedef {import("../../shared/types").MAHCoords} MAHCoords */
 
 import init, { PatternEvaluator as PatternEvaluatorWASM  } from "../external/pattern_evaluator/pattern_evaluator.js";
 
@@ -45,7 +49,7 @@ export class PatternEvaluator {
 	 */
 	eval_brush_at_anim_local_time(p, nep) {
 		/** @type {WASMPatternEvaluatorParameters} */
-		const json_safe_p = { time: p.time, user_parameters: Object.fromEntries(p.user_parameters), transform: p.transform };
+		const json_safe_p = { time: p.time, user_parameters: Object.fromEntries(p.user_parameters), geometric_transform: p.geometric_transform };
 		return JSON.parse(this.#_internal.eval_brush_at_anim_local_time(JSON.stringify(json_safe_p), JSON.stringify(nep)));
 	}
 
@@ -57,7 +61,7 @@ export class PatternEvaluator {
 	 */
 	eval_brush_at_anim_local_time_for_max_t(p, nep) {
 		/** @type {WASMPatternEvaluatorParameters} */
-		const json_safe_p = { time: p.time, user_parameters: Object.fromEntries(p.user_parameters), transform: p.transform };
+		const json_safe_p = { time: p.time, user_parameters: Object.fromEntries(p.user_parameters), geometric_transform: p.geometric_transform };
 		return JSON.parse(this.#_internal.eval_brush_at_anim_local_time_for_max_t(JSON.stringify(json_safe_p), JSON.stringify(nep)));
 	}
 
@@ -75,5 +79,33 @@ export class PatternEvaluator {
 	 */
 	static default_pattern_transformation() {
 		return JSON.parse(PatternEvaluatorWASM.default_pattern_transformation());
+	}
+	/**
+	 *
+	 * @returns {GeometricTransformMatrix}
+	 */
+	static default_geo_transform_matrix() {
+		return JSON.parse(PatternEvaluatorWASM.default_geo_transform_matrix());
+	}
+
+	/**
+	 *
+	 * @param {GeometricTransformsSimple} gts
+	 * @param {MAHCoords} coords
+	 * @param {UserParameters} user_parameters
+	 * @returns {MAHCoords}
+	 */
+	static geo_transform_simple_apply(gts, coords, user_parameters) {
+		return JSON.parse(PatternEvaluatorWASM.geo_transform_simple_apply(JSON.stringify(gts), JSON.stringify(coords), JSON.stringify(Object.fromEntries(user_parameters))));
+	}
+	/**
+	 *
+	 * @param {GeometricTransformsSimple} gts
+	 * @param {MAHCoords} coords
+	 * @param {UserParameters} user_parameters
+	 * @returns {MAHCoords}
+	 */
+	static geo_transform_simple_inverse(gts, coords, user_parameters) {
+		return JSON.parse(PatternEvaluatorWASM.geo_transform_simple_inverse(JSON.stringify(gts), JSON.stringify(coords), JSON.stringify(Object.fromEntries(user_parameters))));
 	}
 }

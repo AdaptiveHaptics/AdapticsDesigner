@@ -168,7 +168,7 @@ export class UnifiedKeyframeEditor {
 				if (for_type_check.find(kf => kf.brush?.brush.params[i.name] == undefined)) parent_label.style.display = "none";
 				else {
 					parent_label.style.display = "";
-					const val = this.get_if_field_identical(for_type_check, kf => kf.brush?.brush.params[i.name]);
+					const val = this.get_if_field_identical(for_type_check, kf => kf.brush?.brush.params[i.name].value);
 					i.value = val;
 				}
 			});
@@ -193,7 +193,7 @@ export class UnifiedKeyframeEditor {
 				if (for_type_check.find(kf => kf.intensity?.intensity.params[i.name] == undefined)) parent_label.style.display = "none";
 				else {
 					parent_label.style.display = "";
-					const val = this.get_if_field_identical(for_type_check, kf => kf.intensity?.intensity.params[i.name]);
+					const val = this.get_if_field_identical(for_type_check, kf => kf.intensity?.intensity.params[i.name].value);
 					i.value = val;
 				}
 			});
@@ -283,9 +283,11 @@ export class UnifiedKeyframeEditor {
 		this.brush_inputs.forEach(i => {
 			const parent_label = notnull(i.parentElement);
 			if (parent_label.style.display == "none") return;
+			const fvalue = parseFloat(i.value);
+			if (!Number.isFinite(fvalue)) return;
 			keyframes.forEach(kf => {
 				if (!kf.brush) return;
-				kf.brush.brush.params[i.name] = parseFloat(i.value);
+				kf.brush.brush.params[i.name].value = fvalue;
 			});
 		});
 
@@ -329,9 +331,11 @@ export class UnifiedKeyframeEditor {
 		this.intensity_inputs.forEach(i => {
 			const parent_label = notnull(i.parentElement);
 			if (parent_label.style.display == "none") return;
+			const fvalue = parseFloat(i.value);
+			if (!Number.isFinite(fvalue)) return;
 			keyframes.forEach(kf => {
 				if (!kf.intensity) return;
-				kf.intensity.intensity.params[i.name] = parseFloat(i.value);
+				kf.intensity.intensity.params[i.name].value = fvalue;
 			});
 		});
 

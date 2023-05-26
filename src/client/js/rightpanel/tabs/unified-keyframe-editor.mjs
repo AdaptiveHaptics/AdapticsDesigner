@@ -1,12 +1,12 @@
-/** @typedef {import("../fe/keyframes/index.mjs").MAHKeyframeFE} MAHKeyframeFE */
-/** @typedef {import("../fe/patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
-/** @typedef {import("../../../shared/types.js").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
-/** @typedef {import("../../../shared/types.js").MAHKeyframe} MAHKeyframe */
+/** @typedef {import("../../fe/keyframes/index.mjs").MAHKeyframeFE} MAHKeyframeFE */
+/** @typedef {import("../../fe/patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
+/** @typedef {import("../../../../shared/types.js").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
+/** @typedef {import("../../../../shared/types.js").MAHKeyframe} MAHKeyframe */
 
-import { BoundsCheck } from "../fe/keyframes/bounds-check.mjs";
-import { supports_coords, supports_brush, supports_intensity, supports_cjump } from "../fe/keyframes/index.mjs";
-import { notnull } from "../util.mjs";
-import Sortable from "../../thirdparty/sortable.complete.esm.js";
+import { BoundsCheck } from "../../fe/keyframes/bounds-check.mjs";
+import { supports_coords, supports_brush, supports_intensity, supports_cjump } from "../../fe/keyframes/index.mjs";
+import { notnull } from "../../util.mjs";
+import Sortable from "../../../thirdparty/sortable.complete.esm.js";
 
 export class UnifiedKeyframeEditor {
 	/**
@@ -296,17 +296,17 @@ export class UnifiedKeyframeEditor {
 				case "circle":
 					kf.brush.brush = {
 						name: this.brush_type_select.value,
-						params: { radius: 1, am_freq: 0 }
+						params: { radius: { type: "f64", value: 1 }, am_freq: { type: "f64", value: 0 } }
 					};
 					break;
 				case "line":
 					kf.brush.brush = {
 						name: this.brush_type_select.value,
 						params: {
-							length: 5,
-							thickness: 1,
-							rotation: 0,
-							am_freq: 0,
+							length: { type: "f64", value: 5 },
+							thickness: { type: "f64", value: 1 },
+							rotation: { type: "f64", value: 0 },
+							am_freq: { type: "f64", value: 0 },
 						}
 					};
 					break;
@@ -342,15 +342,15 @@ export class UnifiedKeyframeEditor {
 				case "constant":
 					kf.intensity.intensity = {
 						name: this.intensity_type_select.value,
-						params: { value: 1 }
+						params: { value: { type: "f64", value: 1 } }
 					};
 					break;
 				case "random":
 					kf.intensity.intensity = {
 						name: this.intensity_type_select.value,
 						params: {
-							min: 0,
-							max: 1,
+							min: { type: "f64", value: 0 },
+							max: { type: "f64", value: 1 },
 						}
 					};
 					break;

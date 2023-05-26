@@ -4,8 +4,9 @@
  * @typedef {import("../../shared/util").DeepImmutable<T>} DeepImmutable
  */
 
+/** @typedef {Map<string, number>} UserParameters */
 /** @typedef {import("../external/pattern_evaluator/rs-shared-types").PatternEvaluatorParameters} WASMPatternEvaluatorParameters */
-/** @typedef {{ time: number, user_parameters: Map<string, number>, geometric_transform: WASMPatternEvaluatorParameters["geometric_transform"] }} PatternEvaluatorParameters */
+/** @typedef {{ time: number, user_parameters: UserParameters, geometric_transform: WASMPatternEvaluatorParameters["geometric_transform"] }} PatternEvaluatorParameters */
 /** @typedef {import("../external/pattern_evaluator/rs-shared-types").BrushAtAnimLocalTime} BrushAtAnimLocalTime */
 /** @typedef {import("../external/pattern_evaluator/rs-shared-types").NextEvalParams} NextEvalParams */
 /** @typedef {import("../external/pattern_evaluator/rs-shared-types").PatternTransformation} PatternTransformation */
@@ -91,18 +92,20 @@ export class PatternEvaluator {
 	 *
 	 * @param {GeometricTransformsSimple} gts
 	 * @param {MAHCoords} coords
+	 * @param {UserParameters} user_parameters
 	 * @returns {MAHCoords}
 	 */
-	static geo_transform_simple_apply(gts, coords) {
-		return JSON.parse(PatternEvaluatorWASM.geo_transform_simple_apply(JSON.stringify(gts), JSON.stringify(coords)));
+	static geo_transform_simple_apply(gts, coords, user_parameters) {
+		return JSON.parse(PatternEvaluatorWASM.geo_transform_simple_apply(JSON.stringify(gts), JSON.stringify(coords), JSON.stringify(Object.fromEntries(user_parameters))));
 	}
 	/**
 	 *
 	 * @param {GeometricTransformsSimple} gts
 	 * @param {MAHCoords} coords
+	 * @param {UserParameters} user_parameters
 	 * @returns {MAHCoords}
 	 */
-	static geo_transform_simple_inverse(gts, coords) {
-		return JSON.parse(PatternEvaluatorWASM.geo_transform_simple_inverse(JSON.stringify(gts), JSON.stringify(coords)));
+	static geo_transform_simple_inverse(gts, coords, user_parameters) {
+		return JSON.parse(PatternEvaluatorWASM.geo_transform_simple_inverse(JSON.stringify(gts), JSON.stringify(coords), JSON.stringify(Object.fromEntries(user_parameters))));
 	}
 }

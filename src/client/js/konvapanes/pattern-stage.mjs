@@ -327,7 +327,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 	 * @param {{ x: number, y: number, apply_geo_transform: boolean }} coords
 	 */
 	pattern_coords_to_layer_coords({ x, y, apply_geo_transform }) {
-		const geo_applied = PatternEvaluator.geo_transform_simple_apply(this.pattern_design.filedata.pattern_transform.geometric_transforms, { x, y, z: 0 });
+		const geo_applied = PatternEvaluator.geo_transform_simple_apply(this.pattern_design.filedata.pattern_transform.geometric_transforms, { x, y, z: 0 }, this.pattern_design.evaluator_params.user_parameters);
 		const pre_sandp = apply_geo_transform ? { x: geo_applied.x, y: geo_applied.y, } : { x, y, };
 		const scaled_and_padded = {
 			x: ((pre_sandp.x - BoundsCheck.raw.coords.x.min)/(BoundsCheck.raw.coords.x.max-BoundsCheck.raw.coords.x.min)*this.pattern_square_size) + this.pattern_padding,
@@ -346,7 +346,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 			y: (this.pattern_square_size - (raw_y-this.pattern_padding))/this.pattern_square_size * (BoundsCheck.raw.coords.y.max-BoundsCheck.raw.coords.y.min) + BoundsCheck.raw.coords.y.min,
 			// z: z-this.pattern_padding,
 		};
-		const geo_inversed = PatternEvaluator.geo_transform_simple_inverse(this.pattern_design.filedata.pattern_transform.geometric_transforms, { x: unscaled_and_unpadded.x, y: unscaled_and_unpadded.y, z: 0 });
+		const geo_inversed = PatternEvaluator.geo_transform_simple_inverse(this.pattern_design.filedata.pattern_transform.geometric_transforms, { x: unscaled_and_unpadded.x, y: unscaled_and_unpadded.y, z: 0 }, this.pattern_design.evaluator_params.user_parameters);
 		return { x: geo_inversed.x, y: geo_inversed.y, };
 	}
 
@@ -384,10 +384,10 @@ class KonvaPlaybackVis {
 		this.listener_abort = new AbortController();
 		this.pattern_stage.pattern_design.state_change_events.addEventListener("playback_update", _ev => {
 			this.update();
-		});
+		}, { signal: this.listener_abort.signal });
 		this.pattern_stage.pattern_design.state_change_events.addEventListener("commit_update", ev => {
 			this.playback_vis.visible(ev.detail.committed);
-		});
+		}, { signal: this.listener_abort.signal });
 	}
 
 	destroy() {

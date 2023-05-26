@@ -64,7 +64,7 @@
 						<p>
 							<h4>To select all, focus* an editor pane and <code>Ctrl+a</code></h4>
 							<ul>
-								<li>with Pattern Pane focused, only select keyframes with coordinates</li>
+								<li>with the Pattern Pane focused, only select keyframes with coordinates</li>
 								<li>with the Timeline Pane focused, select all keyframes</li>
 							</ul>
 							<sub>* Focus a pane by clicking within it. Focus is indicated by a light steel blue border</sub>
@@ -86,20 +86,12 @@
 						</p>
 					</div>
 					<form class="pattern">
-						<h2>Pattern Post Processing</h2>
-						<div class="transformcontrol">
-							<label><span class="labeltext">Speed <span class="unit">%</span></span><input type="number" name="playback_speed" min="0" step="25"></label>
-							<label><span class="labeltext">Intensity <span class="unit">%</span></span><input type="number" name="intensity" min="0" step="10"></label>
-							<label><span class="labeltext">Rotation <span class="unit">deg</span></span><input type="number" name="rotation" step="15"></label>
-							<h3>Scale</h3>
-							<label><span class="labeltext">Scale x <span class="unit">×</span></span><input type="number" name="scale_x" step="0.25"></label>
-							<label><span class="labeltext">Scale y <span class="unit">×</span></span><input type="number" name="scale_y" step="0.25"></label>
-							<label><span class="labeltext">Scale z <span class="unit">×</span></span><input type="number" name="scale_z" step="0.25"></label>
-							<h3>Translate</h3>
-							<label><span class="labeltext">Translate x <span class="unit">mm</span></span><input type="number" name="translate_x" step="1"></label>
-							<label><span class="labeltext">Translate y <span class="unit">mm</span></span><input type="number" name="translate_y" step="1"></label>
-							<label><span class="labeltext">Translate z <span class="unit">mm</span></span><input type="number" name="translate_z" step="1"></label>
+						<div class="header">
+							<h2>Pattern Post Processing</h2>
 							<button type="reset">RESET</button>
+						</div>
+						<div class="transformcontrol labelinputgrid">
+							<!-- controls added in pattern-globals-editor.mjs -->
 						</div>
 					</form>
 					<div class="ukfecontainer">
@@ -123,9 +115,9 @@
 								<summary>Coords</summary>
 								<div>
 									<div class="coordsconfig labelinputgrid">
-										<label><span class="labeltext">x <span class="unit">mm</span></span><input type="number" name="x" min="-100" max="100"></label>
-										<label><span class="labeltext">y <span class="unit">mm</span></span><input type="number" name="y" min="-100" max="100"></label>
-										<label><span class="labeltext">z <span class="unit">mm</span></span><input disabled type="number" name="z" min="0" max="100"></label>
+										<label><span class="labeltext">x<span class="unit"> mm</span></span><input type="number" name="x" min="-100" max="100"></label>
+										<label><span class="labeltext">y<span class="unit"> mm</span></span><input type="number" name="y" min="-100" max="100"></label>
+										<label><span class="labeltext">z<span class="unit"> mm</span></span><input disabled type="number" name="z" min="0" max="100"></label>
 									</div>
 									<div class="transition">
 										<span>Transition</span>
@@ -149,11 +141,11 @@
 										<option value="circle">circle</option>
 										<option value="line">line</option>
 									</select>
-									<label><span class="labeltext">radius <span class="unit">mm</span></span><input type="number" name="radius" min="0" max="100"></label>
-									<label><span class="labeltext">length <span class="unit">mm</span></span><input type="number" name="length" min="0" max="100"></label>
-									<!-- <label><span class="labeltext">thickness <span class="unit">mm</span></span><input disabled type="number" name="thickness" min="0" max="100"></label> -->
-									<label><span class="labeltext">rotation <span class="unit">deg</span></span><input type="number" name="rotation" min="0"></label>
-									<label><span class="labeltext">AM Frequency <span class="unit">hz</span></span><input type="number" name="am_freq" min="0" max="500"></label>
+									<label><span class="labeltext">radius<span class="unit"> mm</span></span><input type="number" name="radius" min="0" max="100"></label>
+									<label><span class="labeltext">length<span class="unit"> mm</span></span><input type="number" name="length" min="0" max="100"></label>
+									<!-- <label><span class="labeltext">thickness<span class="unit"> mm</span></span><input disabled type="number" name="thickness" min="0" max="100"></label> -->
+									<label><span class="labeltext">rotation<span class="unit"> deg</span></span><input type="number" name="rotation" min="0"></label>
+									<label><span class="labeltext">AM Frequency<span class="unit"> hz</span></span><input type="number" name="am_freq" min="0" max="500"></label>
 								</div>
 								<div class="transition">
 									<span>Transition</span>
@@ -201,7 +193,7 @@
 												<div><span class="labeltext">Parameter</span></div>
 												<div><span class="labeltext">Operator</span></div>
 												<div><span class="labeltext">Value</span></div>
-												<div><span class="labeltext">Jump To Time <span class="unit">ms</span></span></div>
+												<div><span class="labeltext">Jump To Time<span class="unit"> ms</span></span></div>
 												<button class="remove" style="visibility: hidden;">✖</button>
 											</div>
 										</div>
@@ -238,7 +230,7 @@
 					<h1>Parameters</h1>
 					<!-- <h2>Playback</h2> -->
 					<div class="timecontrol">
-						<label><span class="labeltext">Time <span class="unit">ms</span></span><input type="number" name="time" min="0" step="1"></label>
+						<label><span class="labeltext">Time<span class="unit"> ms</span></span><input type="number" name="time" min="0" step="1"></label>
 						<button class="reset">⏮</button>
 						<button class="play">⏵</button>
 						<button class="pause" style="display: none;">⏸</button>

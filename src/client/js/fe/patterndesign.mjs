@@ -19,7 +19,7 @@
  */
 
 /** @type {import("../../../shared/types").REVISION_STRING} */
-const MAH_$REVISION = "0.0.8-alpha.1";
+const MAH_$REVISION = "0.0.9-alpha.1";
 
 import { DeviceWSController } from "../device-ws-controller.mjs";
 import { PatternEvaluator } from "../pattern-evaluator.mjs";
@@ -452,23 +452,30 @@ export class MAHPatternDesignFE {
 		}
 	}
 
-
-	get_user_parameters_to_keyframes_map() {
-		/** @type {Map<string, MAHKeyframeFE[]>} */
-		const uparam_to_kfs_map = new Map();
+	get_user_parameters_to_items_map() {
+		/** @type {Map<string, { keyframes: MAHKeyframeFE[], pattern_transform: boolean }>} */
+		const uparam_to_item_map = new Map();
 		for (const keyframe of this.filedata.keyframes) {
 			if ("cjumps" in keyframe) {
 				for (const cjump of keyframe.cjumps) {
 					const param = cjump.condition.parameter;
 					if (param) {
-						const arr = uparam_to_kfs_map.get(param);
-						if (arr) arr.push(keyframe);
-						else uparam_to_kfs_map.set(param, [keyframe]);
+						const linked_items = uparam_to_item_map.get(param);
+						if (linked_items) linked_items.keyframes.push(keyframe);
+						else uparam_to_item_map.set(param, { keyframes: [keyframe], pattern_transform: false });
 					}
 				}
 			}
 		}
-		return uparam_to_kfs_map;
+		//check pattern transform
+		if (this.filedata.pattern_transform.playback_speed.type == "dynamic") {
+			const param = this.filedata.pattern_transform.playback_speed.value;
+			const linked_items = uparam_to_item_map.get(param);
+			if (linked_items) linked_items.pattern_transform = true;
+			else uparam_to_item_map.set(param, { keyframes: [], pattern_transform: true });
+		}
+		return uparam_to_item_map;
+
 	}
 
 
@@ -746,7 +753,7 @@ MAHPatternDesignFE.DEFAULT = ["test.json", {
 				intensity: {
 					name: "constant",
 					params: {
-						value: 1.00
+						value: { type: "f64", value: 1.00 }
 					}
 				},
 				transition: {
@@ -758,8 +765,8 @@ MAHPatternDesignFE.DEFAULT = ["test.json", {
 				brush: {
 					name: "circle",
 					params: {
-						radius: 1.00,
-						am_freq: 0,
+						radius: { type: "f64", value: 1.0 },
+						am_freq: { type: "f64", value: 0.0 },
 					}
 				},
 				transition: {

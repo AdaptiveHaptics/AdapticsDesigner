@@ -1,8 +1,8 @@
 /** @typedef {import("../fe/patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
 
 import { notnull } from "../util.mjs";
-import { PatternGlobalsEditor } from "./pattern-globals-editor.mjs";
-import { UnifiedKeyframeEditor } from "./unified-keyframe-editor.mjs";
+import { PatternGlobalsEditor } from "./tabs/pattern-globals-editor.mjs";
+import { UnifiedKeyframeEditor } from "./tabs/unified-keyframe-editor.mjs";
 
 export class RightPanel {
 	/**

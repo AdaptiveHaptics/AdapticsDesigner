@@ -33,3 +33,5 @@ type OmitNever<T extends Record<string, unknown>> = {
     [K in keyof T as T[K] extends never ? never : K]: T[K];
 };
 type SharedProperties<A, B> = OmitNever<Pick<A & B, keyof A & keyof B>>;
+
+type RemoveFirstFromArray<T extends any[]> = T extends [any, ...infer U] ? U : never;

@@ -140,6 +140,7 @@ websocket_connect_button.addEventListener("click", () => {
 
 	websocket_connect_button.style.display = "none";
 	websocket_disconnect_button.style.display = "";
+	websocket_disconnect_button.focus();
 	websocketurl_input.disabled = true;
 	websocket_state_span.textContent = "connecting...";
 	const websocket = primary_design.websocket;
@@ -156,6 +157,7 @@ websocket_disconnect_button.addEventListener("click", () => {
 
 	websocket_connect_button.style.display = "";
 	websocket_disconnect_button.style.display = "none";
+	websocket_connect_button.focus();
 	websocketurl_input.disabled = false;
 });
 

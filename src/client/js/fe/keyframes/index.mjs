@@ -40,7 +40,7 @@ export function filter_supports_coords(keyframe) {
 		case "standard": return keyframe;
 		case "pause": return null;
 		case "stop": return null;
-		default: assert_unreachable(keyframe); //if this is causing a tsc error, switch cases are not complete
+		default: assert_unreachable(keyframe); //if this is causing a tsc error, switch cases are not complete (or typescript server needs to be restarted)
 	}
 }
 /** @type {(a0: MAHKeyframeFE) => a0 is NotNullable<ReturnType<typeof filter_supports_coords>> } */
@@ -243,8 +243,8 @@ export class NewKeyframeCommon {
 		brush: {
 			name: "circle",
 			params: {
-				radius: 1.00,
-				am_freq: 0,
+				radius: { type: "f64", value: 1.0 },
+				am_freq: { type: "f64", value: 0 },
 			}
 		},
 		transition: {
@@ -266,7 +266,7 @@ export class NewKeyframeCommon {
 		intensity: {
 			name: "constant",
 			params: {
-				value: 1.00
+				value: { type: "f64", value: 1.00 }
 			}
 		},
 		transition: {

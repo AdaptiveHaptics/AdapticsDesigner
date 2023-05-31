@@ -27,17 +27,17 @@ export class PatternGlobalsEditor {
 			 * @type {(import("../../../../shared/util").RemoveFirstFromArray<ConstructorParameters<typeof DynamicF64Input>>|string)[]}
 			 */
 			const ifsa = [
-				["Speed", () => this.pattern_design.filedata.pattern_transform.playback_speed, v => { this.pattern_design.filedata.pattern_transform.playback_speed = v; return { pattern_transform: { geo_transform: false }}; }, { unit: "%", step: 25, min: 0 }],
-				["Intensity", () => this.pattern_design.filedata.pattern_transform.intensity_factor, v => { this.pattern_design.filedata.pattern_transform.intensity_factor = v; return { pattern_transform: { geo_transform: false }}; }, { unit: "%", step: 10, min: 0 }],
-				["Rotation", () => this.pattern_design.filedata.pattern_transform.geometric_transforms.rotation, v => { this.pattern_design.filedata.pattern_transform.geometric_transforms.rotation = v; return { pattern_transform: { geo_transform: true }}; }, { unit: "deg", step: 15 }],
+				["Speed", { unit: "%", step: 25, min: 0, get: () => this.pattern_design.filedata.pattern_transform.playback_speed, set: v => { this.pattern_design.filedata.pattern_transform.playback_speed = v; return { pattern_transform: { geo_transform: false }}; }, }],
+				["Intensity", { unit: "%", step: 10, min: 0, get: () => this.pattern_design.filedata.pattern_transform.intensity_factor, set: v => { this.pattern_design.filedata.pattern_transform.intensity_factor = v; return { pattern_transform: { geo_transform: false }}; }, }],
+				["Rotation", { unit: "deg", step: 15, get: () => this.pattern_design.filedata.pattern_transform.geometric_transforms.rotation, set: v => { this.pattern_design.filedata.pattern_transform.geometric_transforms.rotation = v; return { pattern_transform: { geo_transform: true }}; }, }],
 				"Scale",
-				["Scale x", () => this.pattern_design.filedata.pattern_transform.geometric_transforms.scale.x, v => { this.pattern_design.filedata.pattern_transform.geometric_transforms.scale.x = v; return { pattern_transform: { geo_transform: true }}; }, { unit: "×", step: 0.25 }],
-				["Scale y", () => this.pattern_design.filedata.pattern_transform.geometric_transforms.scale.y, v => { this.pattern_design.filedata.pattern_transform.geometric_transforms.scale.y = v; return { pattern_transform: { geo_transform: true }}; }, { unit: "×", step: 0.25 }],
-				["Scale z", () => this.pattern_design.filedata.pattern_transform.geometric_transforms.scale.z, v => { this.pattern_design.filedata.pattern_transform.geometric_transforms.scale.z = v; return { pattern_transform: { geo_transform: true }}; }, { unit: "×", step: 0.25 }],
+				["Scale x", { unit: "×", step: 0.25, get: () => this.pattern_design.filedata.pattern_transform.geometric_transforms.scale.x, set: v => { this.pattern_design.filedata.pattern_transform.geometric_transforms.scale.x = v; return { pattern_transform: { geo_transform: true }}; }, }],
+				["Scale y", { unit: "×", step: 0.25, get: () => this.pattern_design.filedata.pattern_transform.geometric_transforms.scale.y, set: v => { this.pattern_design.filedata.pattern_transform.geometric_transforms.scale.y = v; return { pattern_transform: { geo_transform: true }}; }, }],
+				["Scale z", { unit: "×", step: 0.25, get: () => this.pattern_design.filedata.pattern_transform.geometric_transforms.scale.z, set: v => { this.pattern_design.filedata.pattern_transform.geometric_transforms.scale.z = v; return { pattern_transform: { geo_transform: true }}; }, }],
 				"Translate",
-				["Translate x", () => this.pattern_design.filedata.pattern_transform.geometric_transforms.translate.x, v => { this.pattern_design.filedata.pattern_transform.geometric_transforms.translate.x = v; return { pattern_transform: { geo_transform: true }}; }, { unit: "mm", step: 1 }],
-				["Translate y", () => this.pattern_design.filedata.pattern_transform.geometric_transforms.translate.y, v => { this.pattern_design.filedata.pattern_transform.geometric_transforms.translate.y = v; return { pattern_transform: { geo_transform: true }}; }, { unit: "mm", step: 1 }],
-				["Translate z", () => this.pattern_design.filedata.pattern_transform.geometric_transforms.translate.z, v => { this.pattern_design.filedata.pattern_transform.geometric_transforms.translate.z = v; return { pattern_transform: { geo_transform: true }}; }, { unit: "mm", step: 1 }],
+				["Translate x", { unit: "mm", step: 1, get: () => this.pattern_design.filedata.pattern_transform.geometric_transforms.translate.x, set: v => { this.pattern_design.filedata.pattern_transform.geometric_transforms.translate.x = v; return { pattern_transform: { geo_transform: true }}; }, }],
+				["Translate y", { unit: "mm", step: 1, get: () => this.pattern_design.filedata.pattern_transform.geometric_transforms.translate.y, set: v => { this.pattern_design.filedata.pattern_transform.geometric_transforms.translate.y = v; return { pattern_transform: { geo_transform: true }}; }, }],
+				["Translate z", { unit: "mm", step: 1, get: () => this.pattern_design.filedata.pattern_transform.geometric_transforms.translate.z, set: v => { this.pattern_design.filedata.pattern_transform.geometric_transforms.translate.z = v; return { pattern_transform: { geo_transform: true }}; }, }],
 			];
 			this._inputs = ifsa.map(ifs => {
 				if (typeof ifs === "string") {
@@ -46,8 +46,8 @@ export class PatternGlobalsEditor {
 					this._transformcontrol_div.appendChild(h3);
 					return null;
 				} else {
-					const [name, get, set, options] = ifs;
-					const input = new DynamicF64Input(this.pattern_design, name, get, set, options);
+					const [name, options] = ifs;
+					const input = new DynamicF64Input(this.pattern_design, name, options);
 					this._transformcontrol_div.appendChild(input);
 					return input;
 				}

@@ -38,3 +38,23 @@ export function milliseconds_to_hhmmssms_format(t) {
 export function structured_clone(o) {
 	return window.structuredClone(o);
 }
+
+
+/**
+ * Compares two values for deep equality.
+ *
+ * @template {any} A
+ * @template {any} B
+ * @param {A} a
+ * @param {B} b
+ * @returns {A is B} `true` if the values are deeply equal, `false` otherwise.
+ */
+export function deep_equals(a, b) {
+	// @ts-ignore
+	return a == b || (
+		a && b &&
+		typeof a == "object" && typeof b == "object" &&
+		Object.keys(a).length == Object.keys(b).length &&
+		Object.keys(a).every(k => deep_equals(a[k], b[k]))
+	);
+}

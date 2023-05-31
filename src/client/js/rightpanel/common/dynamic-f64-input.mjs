@@ -4,6 +4,7 @@
 
 export class DynamicF64Input extends HTMLLabelElement {
 	#_pattern_design;
+	#_name;
 	#_labeltext_span = document.createElement("span");
 	#_val_input = document.createElement("input");
 	#_step = 1;
@@ -16,15 +17,15 @@ export class DynamicF64Input extends HTMLLabelElement {
 	 *
 	 * @param {MAHPatternDesignFE} pattern_design
 	 * @param {string} name
-	 * @param {() => MAHDynamicF64} get
-	 * @param {(v: MAHDynamicF64) => Parameters<MAHPatternDesignFE["commit_operation"]>[0]} set
 	 * @param {Object} param3
+	 * @param {() => MAHDynamicF64=} param3.get
+	 * @param {(v: MAHDynamicF64) => Parameters<MAHPatternDesignFE["commit_operation"]>[0]=} param3.set
 	 * @param {string=} param3.unit
 	 * @param {number=} param3.step
 	 * @param {number=} param3.min
 	 * @param {number=} param3.max
 	 */
-	constructor(pattern_design, name, get, set, { unit, step, min, max }) {
+	constructor(pattern_design, name, { get, set, unit, step, min, max }) {
 		super();
 
 		this.#_pattern_design = pattern_design;
@@ -32,6 +33,7 @@ export class DynamicF64Input extends HTMLLabelElement {
 		this.#_get = get;
 
 		this.#_labeltext_span.classList.add("labeltext");
+		this.#_name = name;
 		this.#_labeltext_span.textContent = name;
 		this.appendChild(this.#_labeltext_span);
 		if (unit) {
@@ -46,7 +48,7 @@ export class DynamicF64Input extends HTMLLabelElement {
 		this.#_max = max;
 
 		this.#_val_input.type = "text";
-		this.#_val_input.value = get().value.toString();
+		if (this.#_get) this.#_val_input.value = this.#_get().value.toString();
 		this.#_val_input.addEventListener("keydown", ev => {
 			const value = this.#_parse_input_value();
 			if (value.type === "f64") {
@@ -61,17 +63,36 @@ export class DynamicF64Input extends HTMLLabelElement {
 				}
 			}
 		});
-		this.#_val_input.addEventListener("change", _ => this.#_on_val_input_change());
+		this.#_val_input.addEventListener("change", ev => {
+			ev.stopPropagation(); //i cant use shadowroot because subgrid isnt supported (and may not even work in shadow root)
+			this.#_on_val_input_change();
+		});
 		this.appendChild(this.#_val_input);
 	}
 
-	update_value() {
-		const v = this.#_get();
-		if (v.type === "f64") {
+	get_name() {
+		return this.#_name;
+	}
+
+	/**
+	 *
+	 * @param {MAHDynamicF64=} v
+	 */
+	update_value(v) {
+		if (v === undefined) {
+			if (!this.#_get) throw new Error("Cannot auto update value without getter");
+			v = this.#_get();
+		}
+		if (v === null) {
+			this.#_val_input.value = "";
+		} else if (v.type === "f64") {
 			this.#_val_input.value = v.value.toString();
 		} else {
 			this.#_val_input.value = v.value;
 		}
+	}
+	get_value() {
+		return this.#_parse_input_value();
 	}
 
 	/**
@@ -98,8 +119,11 @@ export class DynamicF64Input extends HTMLLabelElement {
 	}
 
 	#_on_val_input_change() {
-		this.#_pattern_design.save_state();
-		this.#_pattern_design.commit_operation(this.#_set(this.#_parse_input_value()));
+		this.dispatchEvent(new Event("change", { bubbles: true }));
+		if (this.#_set) {
+			this.#_pattern_design.save_state();
+			this.#_pattern_design.commit_operation(this.#_set(this.#_parse_input_value()));
+		}
 	}
 }
 

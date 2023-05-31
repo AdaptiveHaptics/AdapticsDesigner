@@ -5,8 +5,9 @@
 
 import { BoundsCheck } from "../../fe/keyframes/bounds-check.mjs";
 import { supports_coords, supports_brush, supports_intensity, supports_cjump } from "../../fe/keyframes/index.mjs";
-import { notnull } from "../../util.mjs";
+import { deep_equals, notnull } from "../../util.mjs";
 import Sortable from "../../../thirdparty/sortable.complete.esm.js";
+import { DynamicF64Input } from "../common/dynamic-f64-input.mjs";
 
 export class UnifiedKeyframeEditor {
 	/**
@@ -44,13 +45,39 @@ export class UnifiedKeyframeEditor {
 		/** @type {HTMLDetailsElement} */
 		this.brush_details = notnull(this.ukfeForm.querySelector("details.brush"));
 		this.brush_type_select = notnull(this.brush_details.querySelector("select"));
-		this.brush_inputs = notnull(this.brush_details.querySelector(".brushconfig")).querySelectorAll("input");
+		this.brush_config_label_input_grid = notnull(this.brush_details.querySelector("div.brushconfig.labelinputgrid"));
+		/** @type {(import("../../../../shared/util").RemoveFirstFromArray<ConstructorParameters<typeof DynamicF64Input>>)[]} */
+		const brush_input_specs = [
+			["radius", { unit: "mm", min: 0, max: 100 }],
+			["length", { unit: "mm", min: 0, max: 100 }],
+			// ["thickness", { unit: "mm", min: 0, max: 100 } ],
+			["rotation", { unit: "deg", min: 0 }],
+			["am_freq", { unit: "hz", min: 0, max: 500 }]
+		];
+		this.brush_inputs = new Map(brush_input_specs.map(ifs => {
+			const [name, options] = ifs;
+			const input = new DynamicF64Input(this.pattern_design, name, options);
+			this.brush_config_label_input_grid.appendChild(input);
+			return [name, input];
+		}));
 		this.brush_transition_select = /** @type {HTMLSelectElement} */(this.brush_details.querySelector("div.transitionconfig select"));
 
 		/** @type {HTMLDetailsElement} */
 		this.intensity_details = notnull(this.ukfeForm.querySelector("details.intensity"));
 		this.intensity_type_select = notnull(this.intensity_details.querySelector("select"));
-		this.intensity_inputs = notnull(this.intensity_details.querySelector(".intensityconfig")).querySelectorAll("input");
+		this.intensity_config_label_input_grid = notnull(this.intensity_details.querySelector("div.intensityconfig.labelinputgrid"));
+		/** @type {(import("../../../../shared/util").RemoveFirstFromArray<ConstructorParameters<typeof DynamicF64Input>>)[]} */
+		const intensity_input_specs = [
+			["value", { unit: "", min: 0, max: 1, step: 0.05 }],
+			["min", { unit: "", min: 0, max: 1, step: 0.05 }],
+			["max", { unit: "", min: 0, max: 1, step: 0.05 }],
+		];
+		this.intensity_inputs = new Map(intensity_input_specs.map(ifs => {
+			const [name, options] = ifs;
+			const input = new DynamicF64Input(this.pattern_design, name, options);
+			this.intensity_config_label_input_grid.appendChild(input);
+			return [name, input];
+		}));
 		this.intensity_transition_select = /** @type {HTMLSelectElement} */(this.intensity_details.querySelector("div.transitionconfig select"));
 
 		/** @type {HTMLDetailsElement} */
@@ -104,7 +131,7 @@ export class UnifiedKeyframeEditor {
 	 */
 	get_if_field_identical(keyframes, map_to_field) {
 		const fa = keyframes.map(map_to_field);
-		if (fa.every(v => v == fa[0])) return fa[0];
+		if (fa.every(v => deep_equals(v, fa[0]))) return fa[0];
 		else return null;
 	}
 
@@ -163,15 +190,15 @@ export class UnifiedKeyframeEditor {
 			const brush_type = this.get_if_field_identical(for_type_check, kf => kf.brush?.brush.name || "omitted");
 			this.brush_type_select.value = brush_type || "multipletypes";
 
-			this.brush_inputs.forEach(i => {
-				const parent_label = notnull(i.parentElement);
-				if (for_type_check.find(kf => kf.brush?.brush.params[i.name] == undefined)) parent_label.style.display = "none";
+			for (const [brush_input_name, brush_input] of this.brush_inputs) {
+				if (for_type_check.find(kf => kf.brush?.brush.params[brush_input_name] == undefined)) brush_input.style.display = "none";
 				else {
-					parent_label.style.display = "";
-					const val = this.get_if_field_identical(for_type_check, kf => kf.brush?.brush.params[i.name].value);
-					i.value = val;
+					brush_input.style.display = "";
+					const val = this.get_if_field_identical(for_type_check, kf => kf.brush?.brush.params[brush_input_name]);
+					brush_input.update_value(val);
 				}
-			});
+
+			}
 
 			const transition_div = /** @type {HTMLDivElement} */ (this.brush_details.querySelector("div.transition"));
 			if (for_type_check.find(kf => kf.brush == undefined)) transition_div.style.display = "none";
@@ -188,15 +215,16 @@ export class UnifiedKeyframeEditor {
 			const intensity_type = this.get_if_field_identical(for_type_check, kf => kf.intensity?.intensity.name || "omitted");
 			this.intensity_type_select.value = intensity_type || "multipletypes";
 
-			this.intensity_inputs.forEach(i => {
-				const parent_label = notnull(i.parentElement);
-				if (for_type_check.find(kf => kf.intensity?.intensity.params[i.name] == undefined)) parent_label.style.display = "none";
+
+			for (const [intensity_input_name, intensity_input] of this.intensity_inputs) {
+				if (for_type_check.find(kf => kf.intensity?.intensity.params[intensity_input_name] == undefined)) intensity_input.style.display = "none";
 				else {
-					parent_label.style.display = "";
-					const val = this.get_if_field_identical(for_type_check, kf => kf.intensity?.intensity.params[i.name].value);
-					i.value = val;
+					intensity_input.style.display = "";
+					const val = this.get_if_field_identical(for_type_check, kf => kf.intensity?.intensity.params[intensity_input_name]);
+					intensity_input.update_value(val);
 				}
-			});
+
+			}
 
 			const transition_div = /** @type {HTMLDivElement} */ (this.intensity_details.querySelector("div.transition"));
 			if (for_type_check.find(kf => kf.intensity == undefined)) transition_div.style.display = "none";
@@ -280,16 +308,12 @@ export class UnifiedKeyframeEditor {
 
 		const keyframes = [...this.pattern_design.selected_keyframes].filter(supports_brush); //filter for type check (redundant since GUI restricts to correct types)
 
-		this.brush_inputs.forEach(i => {
-			const parent_label = notnull(i.parentElement);
-			if (parent_label.style.display == "none") return;
-			const fvalue = parseFloat(i.value);
-			if (!Number.isFinite(fvalue)) return;
+		for (const [brush_input_name, brush_input] of this.brush_inputs) {
 			keyframes.forEach(kf => {
-				if (!kf.brush) return;
-				kf.brush.brush.params[i.name].value = fvalue;
+				if (!kf.brush || brush_input.style.display == "none") return;
+				kf.brush.brush.params[brush_input_name] = brush_input.get_value();
 			});
-		});
+		}
 
 		keyframes.forEach(kf => {
 			if (!kf.brush) return;
@@ -328,16 +352,12 @@ export class UnifiedKeyframeEditor {
 
 		const keyframes = [...this.pattern_design.selected_keyframes].filter(supports_intensity); //filter for type check (redundant since GUI restricts to correct types)
 
-		this.intensity_inputs.forEach(i => {
-			const parent_label = notnull(i.parentElement);
-			if (parent_label.style.display == "none") return;
-			const fvalue = parseFloat(i.value);
-			if (!Number.isFinite(fvalue)) return;
+		for (const [intensity_input_name, intensity_input] of this.intensity_inputs) {
 			keyframes.forEach(kf => {
-				if (!kf.intensity) return;
-				kf.intensity.intensity.params[i.name].value = fvalue;
+				if (!kf.intensity || intensity_input.style.display == "none") return;
+				kf.intensity.intensity.params[intensity_input_name] = intensity_input.get_value();
 			});
-		});
+		}
 
 		keyframes.forEach(kf => {
 			if (!kf.intensity) return;

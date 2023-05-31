@@ -5,6 +5,15 @@
 	"version": "0.2.0",
 	"configurations": [
 		{
+			"name": "Launch json-schema-parser",
+			"program": "${workspaceFolder}/src/client/js/utility/json-schema-parser.mjs",
+			"request": "launch",
+			"skipFiles": [
+				"<node_internals>/**"
+			],
+			"type": "node"
+		},
+		{
 			"type": "chrome",
 			"request": "launch",
 			"name": "Launch Chrome against localhost",

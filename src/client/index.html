@@ -141,19 +141,15 @@
 										<option value="circle">circle</option>
 										<option value="line">line</option>
 									</select>
-									<label><span class="labeltext">radius<span class="unit"> mm</span></span><input type="number" name="radius" min="0" max="100"></label>
-									<label><span class="labeltext">length<span class="unit"> mm</span></span><input type="number" name="length" min="0" max="100"></label>
-									<!-- <label><span class="labeltext">thickness<span class="unit"> mm</span></span><input disabled type="number" name="thickness" min="0" max="100"></label> -->
-									<label><span class="labeltext">rotation<span class="unit"> deg</span></span><input type="number" name="rotation" min="0"></label>
-									<label><span class="labeltext">AM Frequency<span class="unit"> hz</span></span><input type="number" name="am_freq" min="0" max="500"></label>
+									<!-- 'dynamic-f64-input's added in javascript unified-keyframe-editor.mjs -->
 								</div>
 								<div class="transition">
 									<span>Transition</span>
 									<div class="transitionconfig">
-										<select disabled name="brushtransitiontype" class="brush transition type">
+										<select name="brushtransitiontype" class="brush transition type">
 											<option hidden disabled selected value="multipletypes">multiple types</option>
-											<option disabled value="linear" title="Linear interpolation between the keyframes">linear</option>
-											<option disabled value="step" title="Step/Jump between the keyframes">step</option>
+											<option value="linear" title="Linear interpolation between the keyframes">linear</option>
+											<option value="step" title="Step/Jump between the keyframes">step</option>
 										</select>
 									</div>
 								</div>
@@ -168,9 +164,7 @@
 										<option value="constant">constant</option>
 										<option value="random">random</option>
 									</select>
-									<label><span class="labeltext">value</span><input type="number" name="value" min="0" max="1" step="0.05"></label>
-									<label><span class="labeltext">min</span><input type="number" name="min" min="0" max="1" step="0.05"></label>
-									<label><span class="labeltext">max</span><input type="number" name="max" min="0" max="1" step="0.05"></label>
+
 								</div>
 								<div class="transition">
 									<span>Transition</span>

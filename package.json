@@ -5,6 +5,7 @@
     "split-grid": "^1.0.11"
   },
   "devDependencies": {
+    "@types/json-schema": "^7.0.12",
     "eslint": "^8.30.0"
   },
   "scripts": {

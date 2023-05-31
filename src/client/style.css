@@ -268,6 +268,7 @@ div.tabpanelcontainer > div.help {
 div.tabpanelcontainer > form.pattern {
     padding: 1.5ex;
     background-color: var(--background-tertiary-alt);
+    padding-top: 0;
 }
 form.pattern > div.header {
     display: flex;
@@ -360,6 +361,20 @@ form.ukfe details[open] {
 form.ukfe details[open] summary {
     border-bottom: 1px solid var(--background-titlebar);
     margin-bottom: 1ex;
+}
+form.ukfe details hr.transitionsep {
+    margin: 1ex 0;
+    border: none;
+    border-bottom: 1px solid var(--background-titlebar);
+}
+form.ukfe details div.transition h4 {
+    margin-bottom: 1ex;
+}
+form.ukfe details div.transition div.transitionconfig {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1ex;
+    align-items: center;
 }
 
 div.labelinputgrid {

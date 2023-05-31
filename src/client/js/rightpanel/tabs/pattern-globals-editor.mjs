@@ -27,8 +27,8 @@ export class PatternGlobalsEditor {
 			 * @type {(import("../../../../shared/util").RemoveFirstFromArray<ConstructorParameters<typeof DynamicF64Input>>|string)[]}
 			 */
 			const ifsa = [
-				["Speed", { unit: "×", step: 25, min: 0, get: () => this.pattern_design.filedata.pattern_transform.playback_speed, set: v => { this.pattern_design.filedata.pattern_transform.playback_speed = v; return { pattern_transform: { geo_transform: false }}; }, }],
-				["Intensity", { unit: "×", step: 10, min: 0, get: () => this.pattern_design.filedata.pattern_transform.intensity_factor, set: v => { this.pattern_design.filedata.pattern_transform.intensity_factor = v; return { pattern_transform: { geo_transform: false }}; }, }],
+				["Speed", { unit: "×", step: 0.25, min: 0, get: () => this.pattern_design.filedata.pattern_transform.playback_speed, set: v => { this.pattern_design.filedata.pattern_transform.playback_speed = v; return { pattern_transform: { geo_transform: false }}; }, }],
+				["Intensity", { unit: "×", step: 0.10, min: 0, get: () => this.pattern_design.filedata.pattern_transform.intensity_factor, set: v => { this.pattern_design.filedata.pattern_transform.intensity_factor = v; return { pattern_transform: { geo_transform: false }}; }, }],
 				["Rotation", { unit: "deg", step: 15, get: () => this.pattern_design.filedata.pattern_transform.geometric_transforms.rotation, set: v => { this.pattern_design.filedata.pattern_transform.geometric_transforms.rotation = v; return { pattern_transform: { geo_transform: true }}; }, }],
 				"Scale",
 				["Scale x", { unit: "×", step: 0.25, get: () => this.pattern_design.filedata.pattern_transform.geometric_transforms.scale.x, set: v => { this.pattern_design.filedata.pattern_transform.geometric_transforms.scale.x = v; return { pattern_transform: { geo_transform: true }}; }, }],

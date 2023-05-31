@@ -86,7 +86,7 @@ export class DynamicF64Input extends HTMLLabelElement {
 		if (v === null) {
 			this.#_val_input.value = "";
 		} else if (v.type === "f64") {
-			this.#_val_input.value = v.value.toString();
+			this.#_val_input.value = (Math.round(v.value*100000)/100000).toString();
 		} else {
 			this.#_val_input.value = v.value;
 		}

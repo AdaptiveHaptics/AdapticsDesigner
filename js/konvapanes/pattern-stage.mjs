@@ -63,6 +63,35 @@ export class KonvaPatternStage extends KonvaResizeStage {
 			}
 		});
 
+
+		/** @type {HTMLDivElement} */
+		this.context_menu = notnull(resize_container.querySelector("div.contextmenu"));
+		this.context_menu.style.display = "none";
+		/** @type {NodeListOf<HTMLButtonElement>} */
+		const addkf_buttons = this.context_menu.querySelectorAll("button.addkf");
+		addkf_buttons.forEach(el => el.addEventListener("click", () => {
+			/** @type {any} */
+			const type = el.dataset.type;
+			this.pattern_design.save_state();
+			const new_keyframe = this.pattern_design.insert_new_keyframe({
+				type: type,
+				coords: {
+					coords: {
+						x: parseFloat(this.context_menu.dataset.x || "0"),
+						y: parseFloat(this.context_menu.dataset.y || "0"),
+						z: 0
+					},
+					transition: { name: "linear", params: {} }
+				}
+			});
+			this.pattern_design.commit_operation({ new_keyframes: [new_keyframe] });
+
+			this.context_menu.style.display = "none";
+		}));
+		window.addEventListener("click", () => {
+			this.context_menu.style.display = "none";
+		});
+
 		{ //initialize selection_rect
 			let x1, y1, x2, y2;
 			this.k_stage.on("pointerdown", ev => {
@@ -181,6 +210,7 @@ export class KonvaPatternStage extends KonvaResizeStage {
 			});
 			this.pattern_area.on("pointerdblclick", ev => {
 				if (ev.target != this.pattern_area) return;
+				if (ev.evt.button != 0) return;
 				this.pattern_design.save_state();
 				const { x: raw_x, y: raw_y } = this.k_control_points_layer.getRelativePointerPosition();
 				const { x, y } = this.raw_coords_to_pattern_coords({ raw_x, raw_y, snap: true });
@@ -196,6 +226,19 @@ export class KonvaPatternStage extends KonvaResizeStage {
 				this.selection_rect.visible(false);
 				if (!ev.evt.ctrlKey) this.pattern_design.deselect_all_items();
 				this.pattern_design.select_items({ keyframes: [ new_keyframe ]});
+			});
+			this.pattern_area.on("contextmenu", ev => {
+				ev.evt.preventDefault();
+
+				const { x: raw_x, y: raw_y } = this.k_control_points_layer.getRelativePointerPosition();
+				const { x, y } = this.raw_coords_to_pattern_coords({ raw_x, raw_y, snap: true });
+
+				this.context_menu.style.display = "";
+				this.context_menu.style.left = ev.evt.clientX + "px";
+				this.context_menu.style.top = ev.evt.clientY + "px";
+
+				this.context_menu.dataset.x = x.toString();
+				this.context_menu.dataset.y = y.toString();
 			});
 			this.k_control_points_layer.add(this.pattern_area);
 		}

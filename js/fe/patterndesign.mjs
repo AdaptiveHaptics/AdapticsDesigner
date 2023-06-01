@@ -21,13 +21,17 @@
  */
 
 /** @type {import("../../../shared/types").REVISION_STRING} */
-const MAH_$REVISION = "0.0.9-alpha.1";
+const MAH_$REVISION = "0.0.9-alpha.2";
 
 import { DeviceWSController } from "../device-ws-controller.mjs";
 import { PatternEvaluator } from "../pattern-evaluator.mjs";
 import { assert_unreachable } from "../util.mjs";
+import { ParseJSONSchema } from "../utility/json-schema-parser.mjs";
 import { BoundsCheck } from "./keyframes/bounds-check.mjs";
 import { create_correct_keyframefe_wrapper, MAHKeyframePauseFE, MAHKeyframeStandardFE, MAHKeyframeStopFE, NewKeyframeCommon } from "./keyframes/index.mjs";
+const JSON_SCHEMA = JSON.parse(await fetch("../../external/pattern_evaluator/rs-shared-types.json").then(r => r.text()));
+const PARSED_JSON_SCHEMA = new ParseJSONSchema(JSON_SCHEMA);
+const MAH_DYNAMIC_F64_PATHS = PARSED_JSON_SCHEMA.find_paths_to_wanted_on_type(PARSED_JSON_SCHEMA.resolve_type_name("MAHKeyframe"), PARSED_JSON_SCHEMA.resolve_type_name("MAHDynamicF64"));
 
 /**
  * @typedef {Object} StateEventMap
@@ -517,21 +521,27 @@ export class MAHPatternDesignFE {
 	get_user_parameters_to_linked_map() {
 		/** @type {Map<string, { items: { keyframes: MAHKeyframeFE[], pattern_transform: boolean }, prop_parents: { cjumps: ConditionalJump[], dynf64: MAHDynamicF64[] } }>} */
 		const uparam_to_item_map = new Map();
+		const get_up_linked_or_default = (param_name) => {
+			const up_linked = uparam_to_item_map.get(param_name);
+			if (up_linked) return up_linked;
+
+			const new_up_linked = {
+				items: { keyframes: [], pattern_transform: false },
+				prop_parents: { cjumps: [], dynf64: [] }
+			};
+			uparam_to_item_map.set(param_name, new_up_linked);
+			return new_up_linked;
+		};
+
+
 		for (const keyframe of this.filedata.keyframes) {
 			if ("cjumps" in keyframe) {
 				for (const cjump of keyframe.cjumps) {
 					const param_name = cjump.condition.parameter;
 					if (param_name) {
-						const up_linked = uparam_to_item_map.get(param_name);
-						if (up_linked) {
-							up_linked.items.keyframes.push(keyframe);
-							up_linked.prop_parents.cjumps.push(cjump);
-						} else {
-							uparam_to_item_map.set(param_name, {
-								items: { keyframes: [keyframe], pattern_transform: false },
-								prop_parents: { cjumps: [cjump], dynf64: [] }
-							});
-						}
+						const up_linked = get_up_linked_or_default(param_name);
+						up_linked.items.keyframes.push(keyframe);
+						up_linked.prop_parents.cjumps.push(cjump);
 					}
 				}
 			}
@@ -555,19 +565,32 @@ export class MAHPatternDesignFE {
 		for (const mah_dyn_f64 of DYN_F64_LIST) {
 			if (mah_dyn_f64.type == "dynamic") {
 				const param_name = mah_dyn_f64.value;
-				const up_linked = uparam_to_item_map.get(param_name);
-				if (up_linked) {
-					up_linked.items.pattern_transform = true;
-				} else {
-					uparam_to_item_map.set(param_name, {
-						items: { keyframes: [], pattern_transform: true },
-						prop_parents: { cjumps: [], dynf64: [mah_dyn_f64] }
-					});
+				const up_linked = get_up_linked_or_default(param_name);
+				up_linked.items.pattern_transform = true;
+				up_linked.prop_parents.dynf64.push(mah_dyn_f64);
+			}
+		}
+
+
+		for (const keyframe of this.filedata.keyframes) {
+			const mah_dyn_f64s = PARSED_JSON_SCHEMA.get_wanted_from_paths(keyframe, MAH_DYNAMIC_F64_PATHS, (mah_dyn_f64) => {
+				return mah_dyn_f64 && (
+					(mah_dyn_f64.type == "dynamic" && typeof mah_dyn_f64.value == "string") ||
+					(mah_dyn_f64.type == "f64" && typeof mah_dyn_f64.value == "number")
+				);
+			});
+			for (const mah_dyn_f64 of mah_dyn_f64s) {
+				if (mah_dyn_f64.type == "dynamic") {
+					const param_name = mah_dyn_f64.value;
+					const up_linked = get_up_linked_or_default(param_name);
+					up_linked.items.keyframes.push(keyframe);
+					up_linked.prop_parents.dynf64.push(mah_dyn_f64);
 				}
 			}
 		}
-		return uparam_to_item_map;
 
+
+		return uparam_to_item_map;
 	}
 
 	rename_evaluator_user_param(old_name, new_name) {

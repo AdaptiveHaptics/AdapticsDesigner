@@ -15,6 +15,7 @@
 	<link rel="apple-touch-icon" href="favicon.48.png" sizes="48x48">
 	<script src="./thirdparty/konva.min.js" defer></script>
 	<script src="./js/script.mjs" type="module"></script>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 </head>
 
 <body>
@@ -42,6 +43,22 @@
 			</div>
 			<div class="gutter column leftcenter"></div>
 			<div class="center konvastagecontainer" tabindex="0">
+				<div class="contextmenu">
+					<div class="menulist">
+						<div class="nested">
+							<span class="nestedtitle"><span class="material-symbols-outlined">add</span>Add Keyframe</span>
+							<div class="menulist">
+								<button class="addkf noicon" data-type="standard" title="Standard keyframe with coords, brush, intensity, and transitions">Standard</button>
+								<button class="addkf noicon" data-type="pause" title="Holds brush at the previous keyframe's position">Hold Position</button>
+								<button class="addkf noicon" data-type="stop" title="Stops the animation, and pauses playback on the device">Stop</button>
+							</div>
+						</div>
+						<button title="Delete Selected Keyframes" disabled><span class="material-symbols-outlined">close</span> Delete Selected</button>
+						<button title="Copy Selected Keyframes" disabled><span class="material-symbols-outlined">content_copy</span>Copy</button>
+						<button title="Paste Keyframes From Clipboard" disabled><span class="material-symbols-outlined">content_paste</span>Paste</button>
+
+					</div>
+				</div>
 				<div id="patternstage" class="konvastage"></div>
 			</div>
 			<div class="gutter column centerright"></div>
@@ -55,7 +72,7 @@
 					<div class="help">
 						<h1>Editor Help</h1>
 						<p>
-							<h4>To create a new keyframe, <code>Double Click</code></h4>
+							<h4>To create a new keyframe, <code>Right Click</code>, or <code>Double Click</code></h4>
 							<ul>
 								<li>in background of the Pattern Pane</li>
 								<li>within the Keyframe Track of the Timeline Pane</li>
@@ -77,7 +94,7 @@
 							</ul>
 						</p>
 						<p>
-							<h4>During group selection:</h4>
+							<h4>During group selection (click and drag):</h4>
 							<ul>
 								<li><code>Ctrl</code> is union/addition to selection</li>
 								<li><code>Ctrl+Shift</code> is subtraction from selection</li>
@@ -119,9 +136,13 @@
 										<label><span class="labeltext">y<span class="unit"> mm</span></span><input type="number" name="y" min="-100" max="100"></label>
 										<label><span class="labeltext">z<span class="unit"> mm</span></span><input disabled type="number" name="z" min="0" max="100"></label>
 									</div>
+									<hr class="transitionsep">
 									<div class="transition">
-										<span>Transition</span>
+										<!-- <h4>Transition</h4> -->
 										<div class="transitionconfig">
+											<label>
+												<span class="labeltext">Transition Type</span>
+											</label>
 											<select name="coordstransitiontype" class="coords transition type">
 												<option hidden disabled selected value="multipletypes">multiple types</option>
 												<option value="linear" title="Linear interpolation between the keyframes">linear</option>
@@ -141,19 +162,19 @@
 										<option value="circle">circle</option>
 										<option value="line">line</option>
 									</select>
-									<label><span class="labeltext">radius<span class="unit"> mm</span></span><input type="number" name="radius" min="0" max="100"></label>
-									<label><span class="labeltext">length<span class="unit"> mm</span></span><input type="number" name="length" min="0" max="100"></label>
-									<!-- <label><span class="labeltext">thickness<span class="unit"> mm</span></span><input disabled type="number" name="thickness" min="0" max="100"></label> -->
-									<label><span class="labeltext">rotation<span class="unit"> deg</span></span><input type="number" name="rotation" min="0"></label>
-									<label><span class="labeltext">AM Frequency<span class="unit"> hz</span></span><input type="number" name="am_freq" min="0" max="500"></label>
+									<!-- 'dynamic-f64-input's added in javascript unified-keyframe-editor.mjs -->
 								</div>
+								<hr class="transitionsep">
 								<div class="transition">
-									<span>Transition</span>
+									<!-- <h4>Transition</h4> -->
 									<div class="transitionconfig">
-										<select disabled name="brushtransitiontype" class="brush transition type">
+										<label>
+											<span class="labeltext">Transition Type</span>
+										</label>
+										<select name="brushtransitiontype" class="brush transition type">
 											<option hidden disabled selected value="multipletypes">multiple types</option>
-											<option disabled value="linear" title="Linear interpolation between the keyframes">linear</option>
-											<option disabled value="step" title="Step/Jump between the keyframes">step</option>
+											<option value="linear" title="Linear interpolation between the keyframes">linear</option>
+											<option value="step" title="Step/Jump between the keyframes">step</option>
 										</select>
 									</div>
 								</div>
@@ -168,13 +189,15 @@
 										<option value="constant">constant</option>
 										<option value="random">random</option>
 									</select>
-									<label><span class="labeltext">value</span><input type="number" name="value" min="0" max="1" step="0.05"></label>
-									<label><span class="labeltext">min</span><input type="number" name="min" min="0" max="1" step="0.05"></label>
-									<label><span class="labeltext">max</span><input type="number" name="max" min="0" max="1" step="0.05"></label>
+
 								</div>
+								<hr class="transitionsep">
 								<div class="transition">
-									<span>Transition</span>
+									<!-- <h4>Transition</h4> -->
 									<div class="transitionconfig">
+										<label>
+											<span class="labeltext">Transition Type</span>
+										</label>
 										<select name="intensitytransitiontype" class="intensity transition type">
 											<option hidden disabled selected value="multipletypes">multiple types</option>
 											<option value="linear" title="Linear interpolation between the keyframes">linear</option>
@@ -223,6 +246,10 @@
 						</form>
 					</div>
 				</div>
+				<div class="actionbuttons" style="display: none;">
+					<button title="Add Keyframe" class="addkeyframe"><span class="material-symbols-outlined">add</span>Add Keyframe</button>
+					<button title="Delete Selected Keyframes" class="deletekeyframes"><span class="material-symbols-outlined">close</span>Delete Selected</button>
+				</div>
 			</div>
 			<div class="gutter row topbottom"></div>
 			<div class="bottom">
@@ -243,6 +270,22 @@
 				</div>
 				<div class="gutter column"></div>
 				<div class="timeline konvastagecontainer" tabindex="0">
+					<div class="contextmenu">
+						<div class="menulist">
+							<div class="nested">
+								<span class="nestedtitle"><span class="material-symbols-outlined">add</span>Add Keyframe</span>
+								<div class="menulist">
+									<button class="addkf noicon" data-type="standard" title="Standard keyframe with coords, brush, intensity, and transitions">Standard</button>
+									<button class="addkf noicon" data-type="pause" title="Holds brush at the previous keyframe's position">Hold Position</button>
+									<button class="addkf noicon" data-type="stop" title="Stops the animation, and pauses playback on the device">Stop</button>
+								</div>
+							</div>
+							<button title="Delete Selected Keyframes" disabled><span class="material-symbols-outlined">close</span> Delete Selected</button>
+							<button title="Copy Selected Keyframes" disabled><span class="material-symbols-outlined">content_copy</span>Copy</button>
+							<button title="Paste Keyframes From Clipboard" disabled><span class="material-symbols-outlined">content_paste</span>Paste</button>
+
+						</div>
+					</div>
 					<div id="timelinestage" class="konvastage"></div>
 				</div>
 			</div>

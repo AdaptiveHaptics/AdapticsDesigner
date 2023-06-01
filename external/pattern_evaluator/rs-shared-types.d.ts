@@ -12,7 +12,7 @@
 export type TupleOf_MidAirHapticsAnimationFileFormatAnd_PatternEvaluatorParametersAnd_BrushAtAnimLocalTimeAnd_ArrayOf_BrushAtAnimLocalTime =
   [MidAirHapticsAnimationFileFormat, PatternEvaluatorParameters, BrushAtAnimLocalTime, BrushAtAnimLocalTime[]];
 export type MidAirHapticsAnimationFileFormatDataFormatName = "MidAirHapticsAnimationFileFormat";
-export type DataFormatRevision = "0.0.9-alpha.1";
+export type DataFormatRevision = "0.0.9-alpha.2";
 export type MAHKeyframe =
   | {
       brush?: BrushWithTransition | null;
@@ -115,10 +115,6 @@ export type MAHIntensity =
       };
     };
 /**
- * will parse 100 (%) in JSON exchange format as 1.00 (f64)
- */
-export type MAHPercentageDynamic = MAHDynamicF64;
-/**
  * @minItems 4
  * @maxItems 4
  */
@@ -176,8 +172,8 @@ export interface IntensityWithTransition {
 }
 export interface PatternTransformation {
   geometric_transforms: GeometricTransformsSimple;
-  intensity_factor: MAHPercentageDynamic;
-  playback_speed: MAHPercentageDynamic;
+  intensity_factor: MAHDynamicF64;
+  playback_speed: MAHDynamicF64;
 }
 export interface GeometricTransformsSimple {
   /**

@@ -95,7 +95,7 @@
     "DataFormatRevision": {
       "type": "string",
       "enum": [
-        "0.0.9-alpha.1"
+        "0.0.9-alpha.2"
       ]
     },
     "GeometricTransformMatrix": {
@@ -614,14 +614,6 @@
         }
       ]
     },
-    "MAHPercentageDynamic": {
-      "description": "will parse 100 (%) in JSON exchange format as 1.00 (f64)",
-      "allOf": [
-        {
-          "$ref": "#/definitions/MAHDynamicF64"
-        }
-      ]
-    },
     "MAHScaleTuple": {
       "type": "object",
       "required": [
@@ -770,10 +762,10 @@
           "$ref": "#/definitions/GeometricTransformsSimple"
         },
         "intensity_factor": {
-          "$ref": "#/definitions/MAHPercentageDynamic"
+          "$ref": "#/definitions/MAHDynamicF64"
         },
         "playback_speed": {
-          "$ref": "#/definitions/MAHPercentageDynamic"
+          "$ref": "#/definitions/MAHDynamicF64"
         }
       }
     },

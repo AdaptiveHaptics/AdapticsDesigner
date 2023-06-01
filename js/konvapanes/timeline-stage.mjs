@@ -77,6 +77,25 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 
 		this.pattern_design = pattern_design;
 
+		/** @type {HTMLDivElement} */
+		this.context_menu = notnull(resize_container.querySelector("div.contextmenu"));
+		this.context_menu.style.display = "none";
+		/** @type {NodeListOf<HTMLButtonElement>} */
+		const addkf_buttons = this.context_menu.querySelectorAll("button.addkf");
+		addkf_buttons.forEach(el => el.addEventListener("click", () => {
+			/** @type {any} */
+			const type = el.dataset.type;
+			this.pattern_design.save_state();
+			const new_keyframe = this.pattern_design.insert_new_keyframe({ type: type, time: parseFloat(this.context_menu.dataset.time || "0") });
+			this.pattern_design.commit_operation({ new_keyframes: [new_keyframe] });
+
+			this.context_menu.style.display = "none";
+		}));
+		window.addEventListener("click", () => {
+			this.context_menu.style.display = "none";
+		});
+
+
 		this.k_stage.on("wheel", ev => {
 			if (!ev.evt.ctrlKey) return;
 			ev.evt.preventDefault(); // prevent parent scrolling
@@ -210,6 +229,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 		this.scrolling_layer.add(this.keyframe_rect);
 		this.keyframe_rect.on("pointerdblclick", ev => {
 			if (ev.target != this.keyframe_rect) return;
+			if (ev.evt.button != 0) return;
 			ev.evt.preventDefault();
 			this.pattern_design.save_state();
 			const { x } = this.keyframe_rect.getRelativePointerPosition();
@@ -220,6 +240,19 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 			this.selection_rect_kf.visible(false);
 			if (!ev.evt.ctrlKey) this.pattern_design.deselect_all_items();
 			this.pattern_design.select_items({ keyframes: [ new_keyframe ] });
+		});
+
+		this.keyframe_rect.on("contextmenu", ev => {
+			ev.evt.preventDefault();
+
+			const { x } = this.keyframe_rect.getRelativePointerPosition();
+			const t = this.raw_x_to_t({ raw_x: x, snap: true });
+
+			this.context_menu.style.display = "";
+			this.context_menu.style.left = ev.evt.clientX + "px";
+			this.context_menu.style.top = ev.evt.clientY + "px";
+
+			this.context_menu.dataset.time = t.toString();
 		});
 
 		this.cjump_flag_rect = new Konva.Rect({

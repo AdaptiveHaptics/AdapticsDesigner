@@ -43,6 +43,22 @@
 			</div>
 			<div class="gutter column leftcenter"></div>
 			<div class="center konvastagecontainer" tabindex="0">
+				<div class="contextmenu">
+					<div class="menulist">
+						<div class="nested">
+							<span class="nestedtitle">Add Keyframe</span>
+							<div class="menulist">
+								<button class="addkf" data-type="standard" title="Standard keyframe with coords, brush, intensity, and transitions">Standard</button>
+								<button class="addkf" data-type="pause" title="Holds brush at the previous keyframe's position">Hold Position</button>
+								<button class="addkf" data-type="stop" title="Stops the animation, and pauses playback on the device">Stop</button>
+							</div>
+						</div>
+						<button title="Delete Selected Keyframes" disabled>Delete Selected</button>
+						<button title="Copy Selected Keyframes" disabled>Copy</button>
+						<button title="Paste Keyframes From Clipboard" disabled>Paste</button>
+
+					</div>
+				</div>
 				<div id="patternstage" class="konvastage"></div>
 			</div>
 			<div class="gutter column centerright"></div>
@@ -56,7 +72,7 @@
 					<div class="help">
 						<h1>Editor Help</h1>
 						<p>
-							<h4>To create a new keyframe, <code>Double Click</code></h4>
+							<h4>To create a new keyframe, <code>Right Click</code>, or <code>Double Click</code></h4>
 							<ul>
 								<li>in background of the Pattern Pane</li>
 								<li>within the Keyframe Track of the Timeline Pane</li>
@@ -254,6 +270,22 @@
 				</div>
 				<div class="gutter column"></div>
 				<div class="timeline konvastagecontainer" tabindex="0">
+					<div class="contextmenu">
+						<div class="menulist">
+							<div class="nested">
+								<span class="nestedtitle">Add Keyframe</span>
+								<div class="menulist">
+									<button class="addkf" data-type="standard" title="Standard keyframe with coords, brush, intensity, and transitions">Standard</button>
+									<button class="addkf" data-type="pause" title="Holds brush at the previous keyframe's position">Hold Position</button>
+									<button class="addkf" data-type="stop" title="Stops the animation, and pauses playback on the device">Stop</button>
+								</div>
+							</div>
+							<button title="Delete Selected Keyframes" disabled>Delete Selected</button>
+							<button title="Copy Selected Keyframes" disabled>Copy</button>
+							<button title="Paste Keyframes From Clipboard" disabled>Paste</button>
+
+						</div>
+					</div>
 					<div id="timelinestage" class="konvastage"></div>
 				</div>
 			</div>

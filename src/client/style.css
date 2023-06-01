@@ -97,7 +97,7 @@ body {
 }
 
 *:disabled {
-    /* cursor: not-allowed; */
+    cursor: not-allowed;
 }
 
 div.app {
@@ -133,8 +133,7 @@ div.titlebar span.status {
     color: var(--text-low-priority);
 }
 div.titlebar span.icon {
-    /* display: flex; */
-    /* align-items: center; */
+    text-align: center;
 }
 div.titlebar button {
     height: 100%;
@@ -516,6 +515,70 @@ div.parametereditor div.timecontrol button.pause {
     background-color: var(--pause-color);
     color: var(--text-dark);
 }
+
+div.contextmenu {
+    position: fixed;
+    background-color: var(--background-tertiary);
+    z-index: 100;
+
+    --contextmenu-border: 0.7ex;
+    user-select: none;
+}
+
+div.contextmenu div.menulist {
+    /* border: 5px solid var(--background-titlebar); */
+    padding: var(--contextmenu-border);
+    display: grid;
+    grid-template-columns: max-content;
+    background-color: var(--background-titlebar);
+    gap: 1px;
+}
+
+div.contextmenu div.menulist span.nestedtitle,
+div.contextmenu div.menulist button {
+    padding: 1ex;
+}
+
+div.contextmenu div.menulist div.nested {
+    position: relative;
+    display: grid;
+}
+
+div.contextmenu div.menulist span.nestedtitle {
+    /* font-weight: bold; */
+    background-color: var(--background-interactive);
+    cursor: default;
+    display: flex;
+    align-items: center;
+    user-select: none;
+}
+
+div.contextmenu div.menulist span.nestedtitle::after {
+    content: "navigate_next";
+    font-family: "Material Symbols Outlined";
+    margin-left: 1ex;
+}
+
+div.contextmenu div.menulist div.nested div.menulist {
+    position: absolute;
+    left: 100%;
+    top: calc(-1 * var(--contextmenu-border));
+
+    visibility: hidden;
+    opacity: 0;
+    transition: 200ms;
+    transition-delay: 200ms;
+}
+
+div.contextmenu div.menulist div.nested:hover span.nestedtitle {
+    background-color: var(--background-interactive-hover);
+}
+div.contextmenu div.menulist div.nested:hover div.menulist {
+    visibility: visible;
+    opacity: 1;
+    transition-delay: 0ms;
+}
+
 
 button {
     font-size: 1em;

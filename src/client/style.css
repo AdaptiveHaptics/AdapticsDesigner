@@ -537,6 +537,14 @@ div.contextmenu div.menulist {
 div.contextmenu div.menulist span.nestedtitle,
 div.contextmenu div.menulist button {
     padding: 1ex;
+    display: grid;
+    grid-auto-flow: column;
+    grid-template-columns: min-content;
+    align-items: center;
+    gap: 0.5ex;
+}
+div.contextmenu div.menulist button.noicon {
+    grid-template-columns: 1fr;
 }
 
 div.contextmenu div.menulist div.nested {
@@ -545,18 +553,13 @@ div.contextmenu div.menulist div.nested {
 }
 
 div.contextmenu div.menulist span.nestedtitle {
-    /* font-weight: bold; */
     background-color: var(--background-interactive);
-    cursor: default;
-    display: flex;
-    align-items: center;
-    user-select: none;
 }
 
 div.contextmenu div.menulist span.nestedtitle::after {
     content: "navigate_next";
     font-family: "Material Symbols Outlined";
-    margin-left: 1ex;
+    /* margin-left: 1ex; */
 }
 
 div.contextmenu div.menulist div.nested div.menulist {

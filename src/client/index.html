@@ -15,6 +15,7 @@
 	<link rel="apple-touch-icon" href="favicon.48.png" sizes="48x48">
 	<script src="./thirdparty/konva.min.js" defer></script>
 	<script src="./js/script.mjs" type="module"></script>
+	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 </head>
 
 <body>
@@ -77,7 +78,7 @@
 							</ul>
 						</p>
 						<p>
-							<h4>During group selection:</h4>
+							<h4>During group selection (click and drag):</h4>
 							<ul>
 								<li><code>Ctrl</code> is union/addition to selection</li>
 								<li><code>Ctrl+Shift</code> is subtraction from selection</li>
@@ -228,6 +229,10 @@
 							</details>
 						</form>
 					</div>
+				</div>
+				<div class="actionbuttons" style="display: none;">
+					<button title="Add Keyframe" class="addkeyframe"><span class="material-symbols-outlined">add</span>Add Keyframe</button>
+					<button title="Delete Selected Keyframes" class="deletekeyframes"><span class="material-symbols-outlined">close</span>Delete Selected</button>
 				</div>
 			</div>
 			<div class="gutter row topbottom"></div>

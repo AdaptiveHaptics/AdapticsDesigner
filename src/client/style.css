@@ -239,18 +239,39 @@ div.gutter.topbottom {
 
 div.right {
     display: grid;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: auto 1fr auto;
 }
 div.right > div.tabs {
     display: grid;
-    gap: 1ex;
+    gap: 0.2ex;
     grid-auto-flow: column;
+    background-color: var(--background-titlebar);
 }
 div.right > div.tabs > button.tab {
     padding: 1ex;
 }
 div.right > div.tabs > button.tab.active {
     background-color: var(--background-tertiary-alt);
+}
+div.actionbuttons {
+    display: flex;
+    gap: 1ex;
+    justify-content: center;
+    background-color: var(--background-titlebar);
+    padding: 1ex;
+}
+div.actionbuttons > button {
+    padding: 1ex;
+    display: flex;
+    gap: 0.5ex;
+    align-items: center;
+}
+div.actionbuttons .material-symbols-outlined {
+    font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 200,
+        'opsz' 48;
 }
 div.tabpanelcontainer {
     display: flex;
@@ -504,6 +525,7 @@ button {
     background-color: var(--background-interactive);
     color: var(--text-normal);
     /* text-transform: uppercase; */
+    /* border-radius: 1px; */
 }
 button:hover {
     background-color: var(--background-interactive-hover);

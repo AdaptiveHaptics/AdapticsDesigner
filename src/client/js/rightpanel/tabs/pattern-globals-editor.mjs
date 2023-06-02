@@ -24,25 +24,32 @@ export class PatternGlobalsEditor {
 
 
 			/**
-			 * @type {(import("../../../../shared/util").RemoveFirstFromArray<ConstructorParameters<typeof DynamicF64Input>>|string)[]}
+			 * @type {(import("../../../../shared/util").RemoveFirstFromArray<ConstructorParameters<typeof DynamicF64Input>>|[string, string])[]}
 			 */
 			const ifsa = [
+				// slow_motion_video
 				["Speed", { unit: "×", step: 0.25, min: 0, get: () => this.pattern_design.filedata.pattern_transform.playback_speed, set: v => { this.pattern_design.filedata.pattern_transform.playback_speed = v; return { pattern_transform: { geo_transform: false }}; }, }],
 				["Intensity", { unit: "×", step: 0.10, min: 0, get: () => this.pattern_design.filedata.pattern_transform.intensity_factor, set: v => { this.pattern_design.filedata.pattern_transform.intensity_factor = v; return { pattern_transform: { geo_transform: false }}; }, }],
 				["Rotation", { unit: "deg", step: 15, get: () => this.pattern_design.filedata.pattern_transform.geometric_transforms.rotation, set: v => { this.pattern_design.filedata.pattern_transform.geometric_transforms.rotation = v; return { pattern_transform: { geo_transform: true }}; }, }],
-				"Scale",
+				["Scale", "zoom_out_map"],
 				["Scale x", { unit: "×", step: 0.25, get: () => this.pattern_design.filedata.pattern_transform.geometric_transforms.scale.x, set: v => { this.pattern_design.filedata.pattern_transform.geometric_transforms.scale.x = v; return { pattern_transform: { geo_transform: true }}; }, }],
 				["Scale y", { unit: "×", step: 0.25, get: () => this.pattern_design.filedata.pattern_transform.geometric_transforms.scale.y, set: v => { this.pattern_design.filedata.pattern_transform.geometric_transforms.scale.y = v; return { pattern_transform: { geo_transform: true }}; }, }],
 				["Scale z", { unit: "×", step: 0.25, get: () => this.pattern_design.filedata.pattern_transform.geometric_transforms.scale.z, set: v => { this.pattern_design.filedata.pattern_transform.geometric_transforms.scale.z = v; return { pattern_transform: { geo_transform: true }}; }, }],
-				"Translate",
+				["Translate", "drag_pan"],
 				["Translate x", { unit: "mm", step: 1, get: () => this.pattern_design.filedata.pattern_transform.geometric_transforms.translate.x, set: v => { this.pattern_design.filedata.pattern_transform.geometric_transforms.translate.x = v; return { pattern_transform: { geo_transform: true }}; }, }],
 				["Translate y", { unit: "mm", step: 1, get: () => this.pattern_design.filedata.pattern_transform.geometric_transforms.translate.y, set: v => { this.pattern_design.filedata.pattern_transform.geometric_transforms.translate.y = v; return { pattern_transform: { geo_transform: true }}; }, }],
 				["Translate z", { unit: "mm", step: 1, get: () => this.pattern_design.filedata.pattern_transform.geometric_transforms.translate.z, set: v => { this.pattern_design.filedata.pattern_transform.geometric_transforms.translate.z = v; return { pattern_transform: { geo_transform: true }}; }, }],
 			];
 			this._inputs = ifsa.map(ifs => {
-				if (typeof ifs === "string") {
+				if (typeof ifs[1] === "string") {
 					const h3 = document.createElement("h3");
-					h3.textContent = ifs;
+					h3.textContent = ifs[0];
+					{ // icon
+						const icon_span = document.createElement("span");
+						icon_span.classList.add("material-symbols-outlined");
+						icon_span.textContent = ifs[1];
+						h3.appendChild(icon_span);
+					}
 					this._transformcontrol_div.appendChild(h3);
 					return null;
 				} else {

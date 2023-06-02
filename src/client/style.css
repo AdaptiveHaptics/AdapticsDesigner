@@ -75,6 +75,17 @@
     --scrollbar-thumb-color: var(--background-interactive);
 }
 
+span.material-symbols-outlined {
+    vertical-align: bottom;
+}
+h1 > span.material-symbols-outlined {
+    font-size: 1em;
+    font-variation-settings: 'FILL' 0,
+        'wght' 300,
+        'GRAD' 100,
+        'opsz' 48;
+}
+
 .betterscroll::-webkit-scrollbar {
     width: 1.5ex;
 }
@@ -303,6 +314,14 @@ form.pattern div.transformcontrol {
 }
 form.pattern div.transformcontrol > h3 {
     grid-column: 1/-1;
+    margin-bottom: 1ex;
+}
+form.pattern div.transformcontrol > h3 > span.material-symbols-outlined {
+    margin-left: 0.5ex;
+    font-variation-settings: 'FILL' 0,
+        'wght' 300,
+        'GRAD' 100,
+        'opsz' 24;
 }
 form.pattern button[type="reset"] {
     grid-column: 1/-1;
@@ -372,6 +391,18 @@ form.ukfe summary {
     margin: -1ex -1ex 0;
     background-color: var(--background-secondary);
     user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 0.7ex;
+}
+
+form.ukfe details summary::before {
+    content: "expand_more";
+    font-family: "Material Symbols Outlined";
+    margin-right: 0.7ex;
+}
+form.ukfe details[open] summary::before {
+    content: "expand_less";
 }
 
 form.ukfe details[open] {
@@ -409,6 +440,9 @@ div.labelinputgrid > label, div.labelinputgrid > dynamic-f64-input {
 }
 div.labelinputgrid > label > .labeltext {
     justify-self: end;
+}
+label > .labeltext > span.material-symbols-outlined {
+    margin-right: 0.5ex;
 }
 
 span.unit {
@@ -506,7 +540,19 @@ div.parametereditor div.timecontrol > label {
 
 div.parametereditor div.timecontrol button {
     font-size: 1.2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5ex;
 }
+div.parametereditor div.timecontrol button span.material-symbols-outlined {
+    font-variation-settings:
+        'FILL' 0,
+        'wght' 500,
+        'GRAD' 50,
+        'opsz' 24;
+}
+
 div.parametereditor div.timecontrol button.play {
     background-color: var(--play-color);
     color: var(--text-dark);

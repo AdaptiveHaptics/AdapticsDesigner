@@ -29,7 +29,7 @@ import { assert_unreachable } from "../util.mjs";
 import { ParseJSONSchema } from "../utility/json-schema-parser.mjs";
 import { BoundsCheck } from "./keyframes/bounds-check.mjs";
 import { create_correct_keyframefe_wrapper, MAHKeyframePauseFE, MAHKeyframeStandardFE, MAHKeyframeStopFE, NewKeyframeCommon } from "./keyframes/index.mjs";
-const JSON_SCHEMA = JSON.parse(await fetch("../../external/pattern_evaluator/rs-shared-types.json").then(r => r.text()));
+const JSON_SCHEMA = JSON.parse(await fetch(new URL("../../external/pattern_evaluator/rs-shared-types.json", import.meta.url)).then(r => r.text()));
 const PARSED_JSON_SCHEMA = new ParseJSONSchema(JSON_SCHEMA);
 const MAH_DYNAMIC_F64_PATHS = PARSED_JSON_SCHEMA.find_paths_to_wanted_on_type(PARSED_JSON_SCHEMA.resolve_type_name("MAHKeyframe"), PARSED_JSON_SCHEMA.resolve_type_name("MAHDynamicF64"));
 

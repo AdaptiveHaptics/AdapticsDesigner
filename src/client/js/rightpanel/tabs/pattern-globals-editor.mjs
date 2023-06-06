@@ -60,6 +60,9 @@ export class PatternGlobalsEditor {
 				}
 			}).filter(/** @type {(a: any) => a is DynamicF64Input } */ (v => v instanceof DynamicF64Input));
 
+			this.pattern_design.state_change_events.addEventListener("rerender", _ev => {
+				this.#_update_transform_controls();
+			});
 			this.pattern_design.state_change_events.addEventListener("pattern_transform_update", _ev => {
 				this.#_update_transform_controls();
 			});

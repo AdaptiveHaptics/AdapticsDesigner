@@ -22,6 +22,8 @@
 	<div class="app">
 		<div class="titlebar">
 			<div class="isection file">
+				<button class="upload"><span class="material-symbols-outlined">upload</span></button>
+				<button class="download"><span class="material-symbols-outlined">download</span></button>
 				<!-- <span class="icon">💾</span> -->
 				<span class="filename">test.json</span>
 				<span class="status savedstate">loading....</span>
@@ -64,9 +66,9 @@
 			<div class="gutter column centerright"></div>
 			<div class="right">
 				<div class="tabs">
-					<button class="tab active" data-tabpanel="help">Editor Help</button>
-					<button class="tab" data-tabpanel="ukfecontainer">Keyframe Editor</button>
-					<button class="tab" data-tabpanel="pattern">Post Processing</button>
+					<button class="tab active" data-tabpanel="help"><span class="material-symbols-outlined">info</span> Editor Help</button>
+					<button class="tab" data-tabpanel="ukfecontainer"><span class="material-symbols-outlined">auto_awesome_motion</span> Keyframe Editor</button>
+					<button class="tab" data-tabpanel="pattern"><span class="material-symbols-outlined">lens_blur</span> Post Processing</button>
 				</div>
 				<div class="tabpanelcontainer betterscroll">
 					<div class="help">
@@ -104,7 +106,7 @@
 					</div>
 					<form class="pattern">
 						<div class="header">
-							<h2>Pattern Post Processing</h2>
+							<h2>Post Processing Transformations</h2>
 							<button type="reset">RESET</button>
 						</div>
 						<div class="transformcontrol labelinputgrid">

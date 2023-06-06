@@ -236,7 +236,7 @@ export class MAHPatternDesignFE {
 		if (this.redo_states.length > this.redo_states_size) this.redo_states.shift();
 
 		this.selected_keyframes.clear();
-		this.filedata = this.load_filedata_into_fe_format(fd);
+		this.filedata = this.load_filedata_into_fe_format(fd); //could fail to due to incorrect data structure revision
 		this.committed = false;
 		this.commit_operation({ rerender: true });
 		return true;
@@ -250,7 +250,7 @@ export class MAHPatternDesignFE {
 		if (this.undo_states.length > this.undo_states_size) this.undo_states.shift();
 
 		this.selected_keyframes.clear();
-		this.filedata = this.load_filedata_into_fe_format(fd);
+		this.filedata = this.load_filedata_into_fe_format(fd); //could fail to due to incorrect data structure revision
 		this.committed = false;
 		this.commit_operation({ rerender: true });
 		return true;
@@ -733,6 +733,8 @@ export class MAHPatternDesignFE {
 	 * @param {MidAirHapticsAnimationFileFormat} filedata
 	 */
 	load_filedata_into_fe_format(filedata) {
+		if (filedata.$DATA_FORMAT != "MidAirHapticsAnimationFileFormat") throw new Error(`incorrect $DATA_FORMAT ${filedata.$DATA_FORMAT} expected ${"MidAirHapticsAnimationFileFormat"}`);
+		if (filedata.$REVISION != MAH_$REVISION) throw new Error(`incorrect revision ${filedata.$REVISION} expected ${MAH_$REVISION}`);
 		const keyframesFE = filedata.keyframes.map(kf => create_correct_keyframefe_wrapper(kf, this));
 		const filedataFE = { ...filedata, keyframes: keyframesFE };
 		return filedataFE;
@@ -746,6 +748,21 @@ export class MAHPatternDesignFE {
 		filedata.$DATA_FORMAT = "MidAirHapticsAnimationFileFormat";
 		filedata.$REVISION = MAH_$REVISION;
 		return filedata;
+	}
+
+	export_file() {
+		return new File([JSON.stringify(this.clone_filedata(), undefined, "\t")], this.filename, { type: "application/json" });
+	}
+
+	/**
+	 * @param {File} file
+	 */
+	async import_file(file) {
+		const filedata_text = await file.text();
+		const filedataFE = this.load_filedata_into_fe_format(JSON.parse(filedata_text));
+		this.save_state();
+		this.filedata = filedataFE;
+		this.commit_operation({ rerender: true });
 	}
 
 	serialize() {
@@ -762,8 +779,6 @@ export class MAHPatternDesignFE {
 	 */
 	static deserialize(json_str) {
 		const { filename, filedata, undo_states, redo_states, undo_states_size, redo_states_size } = JSON.parse(json_str);
-		if (filedata.$DATA_FORMAT != "MidAirHapticsAnimationFileFormat") throw new Error(`incorrect $DATA_FORMAT ${filedata.$DATA_FORMAT} expected ${"MidAirHapticsAnimationFileFormat"}`);
-		if (filedata.$REVISION != MAH_$REVISION) throw new Error(`incorrect revision ${filedata.$REVISION} expected ${MAH_$REVISION}`);
 		return new MAHPatternDesignFE(filename, filedata, undo_states, redo_states, undo_states_size, redo_states_size);
 	}
 

@@ -40,10 +40,19 @@ const timeline_div = notnull(document.querySelector("div.timeline"));
 /** @type {HTMLSpanElement} */
 const savedstate_span = notnull(document.querySelector("span.savedstate"));
 
-const websocketurl_input = /** @type {HTMLInputElement} */ (document.querySelector(".isection.websocket input.websocketurl"));
-const websocket_connect_button = /** @type {HTMLButtonElement} */ (document.querySelector(".isection.websocket button.connect"));
-const websocket_disconnect_button = /** @type {HTMLButtonElement} */ (document.querySelector(".isection.websocket button.disconnect"));
-const websocket_state_span = /** @type {HTMLButtonElement} */ (document.querySelector(".isection.websocket span.websocketstate"));
+/** @type {HTMLInputElement} */
+const websocketurl_input = notnull(document.querySelector(".isection.websocket input.websocketurl"));
+/** @type {HTMLButtonElement} */
+const websocket_connect_button = notnull(document.querySelector(".isection.websocket button.connect"));
+/** @type {HTMLButtonElement} */
+const websocket_disconnect_button = notnull(document.querySelector(".isection.websocket button.disconnect"));
+/** @type {HTMLButtonElement} */
+const websocket_state_span = notnull(document.querySelector(".isection.websocket span.websocketstate"));
+
+/** @type {HTMLButtonElement} */
+const file_download_button = notnull(document.querySelector(".isection.file button.download"));
+/** @type {HTMLButtonElement} */
+const file_upload_button = notnull(document.querySelector(".isection.file button.upload"));
 
 
 const _mainsplit = SplitGrid({
@@ -160,6 +169,29 @@ websocket_disconnect_button.addEventListener("click", () => {
 	websocket_connect_button.focus();
 	websocketurl_input.disabled = false;
 });
+
+
+file_download_button.addEventListener("click", () => {
+	const file = primary_design.export_file();
+	const url = URL.createObjectURL(file);
+	const a = document.createElement("a");
+	a.href = url;
+	a.download = file.name;
+	a.click();
+	URL.revokeObjectURL(url);
+});
+file_upload_button.addEventListener("click", () => {
+	const input = document.createElement("input");
+	input.type = "file";
+	input.accept = ".json";
+	input.addEventListener("change", () => {
+		if (input.files == null) return;
+		const file = input.files[0];
+		if (file) primary_design.import_file(file);
+	});
+	input.click();
+});
+
 
 primary_design.state_change_events.addEventListener("commit_update", ev => {
 	savedstate_span.textContent = ev.detail.committed ? "saved to localstorage" : "pending change";

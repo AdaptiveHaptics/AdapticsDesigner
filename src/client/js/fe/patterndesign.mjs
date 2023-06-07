@@ -810,11 +810,11 @@ export class MAHPatternDesignFE {
 }
 
 /** @type {[string, MidAirHapticsAnimationFileFormat]} */
-MAHPatternDesignFE.DEFAULT = ["test.json", {
+MAHPatternDesignFE.DEFAULT = ["untitled.json", {
 	$DATA_FORMAT: "MidAirHapticsAnimationFileFormat",
 	$REVISION: MAH_$REVISION,
 
-	name: "test",
+	name: "untitled",
 
 	keyframes: [
 		{

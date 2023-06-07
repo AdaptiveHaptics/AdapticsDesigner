@@ -191,19 +191,27 @@ if ("showSaveFilePicker" in window && "showOpenFilePicker" in window) {
 		filename_span.classList.remove("unsaved");
 	};
 	file_save_as_button.addEventListener("click", async () => {
-		last_file_handle = await window.showSaveFilePicker({
-			types: [
-				{
-					description: "JSON Pattern file",
-					accept: {
-						"application/json": [".json"],
+		try {
+			last_file_handle = await window.showSaveFilePicker({
+				types: [
+					{
+						description: "JSON Pattern file",
+						accept: {
+							"application/json": [".json"],
+						},
 					},
-				},
-			],
-			suggestedName: primary_design.filename,
-		});
-		primary_design.update_filename(last_file_handle.name);
-		await save_to_filehandle(last_file_handle);
+				],
+				suggestedName: primary_design.filename,
+			});
+			primary_design.update_filename(last_file_handle.name);
+			await save_to_filehandle(last_file_handle);
+		} catch (e) {
+			if (e.name == "AbortError") {
+				//do nothing
+			} else {
+				throw e;
+			}
+		}
 	});
 	file_save_button.addEventListener("click", async () => {
 		if (last_file_handle == null) {
@@ -213,21 +221,29 @@ if ("showSaveFilePicker" in window && "showOpenFilePicker" in window) {
 		await save_to_filehandle(last_file_handle);
 	});
 	file_open_button.addEventListener("click", async () => {
-		const [fileHandle] = await window.showOpenFilePicker({
-			types: [
-				{
-					description: "JSON Pattern file",
-					accept: {
-						"application/json": [".json"],
+		try {
+			const [fileHandle] = await window.showOpenFilePicker({
+				types: [
+					{
+						description: "JSON Pattern file",
+						accept: {
+							"application/json": [".json"],
+						},
 					},
-				},
-			],
-			multiple: false,
-		});
-		last_file_handle = fileHandle;
-		const file = await fileHandle.getFile();
-		primary_design.import_file(file);
-		filename_span.classList.remove("unsaved");
+				],
+				multiple: false,
+			});
+			last_file_handle = fileHandle;
+			const file = await fileHandle.getFile();
+			primary_design.import_file(file);
+			filename_span.classList.remove("unsaved");
+		} catch (e) {
+			if (e.name == "AbortError") {
+				//do nothing
+			} else {
+				throw e;
+			}
+		}
 	});
 } else {
 	file_save_button.disabled = true;

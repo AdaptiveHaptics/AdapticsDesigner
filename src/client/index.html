@@ -22,10 +22,18 @@
 	<div class="app">
 		<div class="titlebar">
 			<div class="isection file">
-				<button class="upload"><span class="material-symbols-outlined">upload</span></button>
-				<button class="download"><span class="material-symbols-outlined">download</span></button>
+				<div class="filemenu">
+					<button class="file"><span class="material-symbols-outlined">menu</span>File</button>
+					<div class="menulist">
+						<button class="open" title="Open a file"><span class="material-symbols-outlined">folder_open</span> Open</button>
+						<button class="download" title="Use standard browser file download"><span class="material-symbols-outlined">download</span> Download</button>
+						<button class="save" title="Save to last used file handle"><span class="material-symbols-outlined">save</span> Save</button>
+						<button class="save_as" title="Save to new file"><span class="material-symbols-outlined">save_as</span> Save As</button>
+					</div>
+				</div>
+
 				<!-- <span class="icon">💾</span> -->
-				<span class="filename">test.json</span>
+				<span class="filename">LOADING</span>
 				<span class="status savedstate">loading....</span>
 			</div>
 			<div class="verticalrule"></div>
@@ -214,7 +222,7 @@
 									<div class="table">
 										<div class="thead">
 											<div>
-												<div style="visibility: hidden;">⋮⋮</div>
+												<div style="visibility: hidden;"><span class="material-symbols-outlined">drag_handle</span>⋮</div>
 												<div><span class="labeltext">Parameter</span></div>
 												<div><span class="labeltext">Operator</span></div>
 												<div><span class="labeltext">Value</span></div>
@@ -229,7 +237,7 @@
 									<button class="add">+ Add Conditional Jump</button>
 									<template class="cjumprow">
 										<div class="cjump">
-											<div class="draghandle">⋮⋮</div>
+											<div class="draghandle"><span class="material-symbols-outlined">drag_handle</span></div>
 											<input type="text" name="parameter">
 											<select name="conditionoperatortype" class="conditionoperator type">
 												<option hidden disabled selected value="multipletypes">multiple types</option>

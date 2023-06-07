@@ -81,13 +81,15 @@ class StateChangeEventTarget extends EventTarget {
 }
 
 export class MAHPatternDesignFE {
+	#_filename; get filename() { return this.#_filename; }
+
 	/**
 	 *
 	 * @param {string} filename
 	 * @param {MidAirHapticsAnimationFileFormat} filedata
 	 */
 	constructor(filename, filedata, undo_states = [], redo_states = [], undo_states_size = 50, redo_states_size = 50) {
-		this.filename = filename;
+		this.#_filename = filename;
 
 		/** @type {MAHAnimationFileFormatFE} */
 		this.filedata = this.load_filedata_into_fe_format(filedata);
@@ -755,12 +757,22 @@ export class MAHPatternDesignFE {
 	}
 
 	/**
+	 * @param {string} filename
+	 */
+	update_filename(filename) {
+		this.save_state();
+		this.#_filename = filename;
+		this.commit_operation({ rerender: true });
+	}
+
+	/**
 	 * @param {File} file
 	 */
 	async import_file(file) {
 		const filedata_text = await file.text();
 		const filedataFE = this.load_filedata_into_fe_format(JSON.parse(filedata_text));
 		this.save_state();
+		this.#_filename = file.name;
 		this.filedata = filedataFE;
 		this.commit_operation({ rerender: true });
 	}

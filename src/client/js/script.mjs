@@ -235,7 +235,7 @@ if ("showSaveFilePicker" in window && "showOpenFilePicker" in window) {
 			});
 			last_file_handle = fileHandle;
 			const file = await fileHandle.getFile();
-			primary_design.import_file(file);
+			await primary_design.import_file(file);
 			filename_span.classList.remove("unsaved");
 		} catch (e) {
 			if (e.name == "AbortError") {

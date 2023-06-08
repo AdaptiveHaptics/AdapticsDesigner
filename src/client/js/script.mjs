@@ -272,7 +272,7 @@ if ("showSaveFilePicker" in window && "showOpenFilePicker" in window) {
 	});
 }
 
-primary_design.state_change_events.addEventListener("rerender", ev => {
+primary_design.state_change_events.addEventListener("rerender", () => {
 	filename_span.textContent = primary_design.filename;
 });
 

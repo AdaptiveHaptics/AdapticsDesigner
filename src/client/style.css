@@ -357,7 +357,9 @@ div.ukfecontainer > div.helptext {
     display: none;
 }
 div.ukfecontainer.noneselected > div.helptext {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75ex;
 }
 div.ukfecontainer.noneselected > form.ukfe {
     display: none;

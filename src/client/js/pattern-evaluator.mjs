@@ -13,6 +13,7 @@
 /** @typedef {import("../external/pattern_evaluator/rs-shared-types").GeometricTransformMatrix} GeometricTransformMatrix */
 /** @typedef {import("../external/pattern_evaluator/rs-shared-types").GeometricTransformsSimple} GeometricTransformsSimple */
 /** @typedef {import("../../shared/types").MAHCoords} MAHCoords */
+/** @typedef {import("./fe/patterndesign.mjs").MAHAnimationFileFormatFE} MAHAnimationFileFormatFE */
 
 import init, { PatternEvaluator as PatternEvaluatorWASM  } from "../external/pattern_evaluator/pattern_evaluator.js";
 
@@ -93,19 +94,33 @@ export class PatternEvaluator {
 	 * @param {GeometricTransformsSimple} gts
 	 * @param {MAHCoords} coords
 	 * @param {UserParameters} user_parameters
+	 * @param {MAHAnimationFileFormatFE["user_parameter_definitions"]} user_parameter_definitions
 	 * @returns {MAHCoords}
 	 */
-	static geo_transform_simple_apply(gts, coords, user_parameters) {
-		return JSON.parse(PatternEvaluatorWASM.geo_transform_simple_apply(JSON.stringify(gts), JSON.stringify(coords), JSON.stringify(Object.fromEntries(user_parameters))));
+	static geo_transform_simple_apply(gts, coords, user_parameters, user_parameter_definitions) {
+		return JSON.parse(
+			PatternEvaluatorWASM.geo_transform_simple_apply(
+				JSON.stringify(gts),
+				JSON.stringify(coords),
+				JSON.stringify(Object.fromEntries(user_parameters)),
+				JSON.stringify(user_parameter_definitions)
+			));
 	}
 	/**
 	 *
 	 * @param {GeometricTransformsSimple} gts
 	 * @param {MAHCoords} coords
 	 * @param {UserParameters} user_parameters
+	 * @param {MAHAnimationFileFormatFE["user_parameter_definitions"]} user_parameter_definitions
 	 * @returns {MAHCoords}
 	 */
-	static geo_transform_simple_inverse(gts, coords, user_parameters) {
-		return JSON.parse(PatternEvaluatorWASM.geo_transform_simple_inverse(JSON.stringify(gts), JSON.stringify(coords), JSON.stringify(Object.fromEntries(user_parameters))));
+	static geo_transform_simple_inverse(gts, coords, user_parameters, user_parameter_definitions) {
+		return JSON.parse(
+			PatternEvaluatorWASM.geo_transform_simple_inverse(
+				JSON.stringify(gts),
+				JSON.stringify(coords),
+				JSON.stringify(Object.fromEntries(user_parameters)),
+				JSON.stringify(user_parameter_definitions)
+			));
 	}
 }

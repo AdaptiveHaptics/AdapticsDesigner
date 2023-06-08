@@ -21,7 +21,7 @@
  */
 
 /** @type {import("../../../shared/types").REVISION_STRING} */
-const MAH_$REVISION = "0.0.9-alpha.2";
+const MAH_$REVISION = "0.0.10-alpha.1";
 
 import { DeviceWSController } from "../device-ws-controller.mjs";
 import { PatternEvaluator } from "../pattern-evaluator.mjs";
@@ -860,5 +860,7 @@ MAHPatternDesignFE.DEFAULT = ["untitled.json", {
 		}
 	],
 
-	pattern_transform: PatternEvaluator.default_pattern_transformation()
+	pattern_transform: PatternEvaluator.default_pattern_transformation(),
+
+	user_parameter_definitions: {}
 }];

@@ -16,12 +16,13 @@
     --hitbox: green;
     --hitbox: none;
 
+    --error: #cd5c5c;
+
     --text-normal: rgb(250, 250, 255);
     --text-low-priority: rgb(210, 210, 213);
     --text-dark: hsl(240, 20%, 20%);
     --focus-ring: hsl(240, 20%, 50%);
-
-    --error: #cd5c5c;
+    --text-error: #f97070;
 
     --selected-konva-stage: hsl(204, 40%, 75%);
 
@@ -86,6 +87,48 @@ h1 > span.material-symbols-outlined {
         'opsz' 48;
 }
 
+hr {
+    margin: 1ex 0;
+    border: none;
+    border-bottom: 1px solid var(--background-titlebar);
+    grid-column: 1 / -1;
+}
+
+dialog {
+    background-color: var(--background-tertiary);
+    color: var(--text-normal);
+    border: 2px solid var(--background-titlebar);
+    box-shadow: 0 0 1em 0.5em var(--background-titlebar);
+}
+dialog::backdrop {
+    backdrop-filter: blur(2px);
+}
+dialog > form {
+    display: flex;
+    flex-direction: column;
+    gap: 1ex;
+}
+dialog > form > div.buttons {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1ex;
+}
+dialog > form > div.buttons > button {
+    padding: 1ex;
+}
+div.dialogtitlebar {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 1ex;
+    align-items: end;
+}
+div.dialogtitlebar > span.titletext {
+    font-size: 1.5em;
+}
+div.dialogtitlebar > button.close {
+    padding: 0.5ex;
+}
+
 .betterscroll::-webkit-scrollbar {
     width: 1.5ex;
 }
@@ -100,15 +143,123 @@ h1 > span.material-symbols-outlined {
     /* outline: 1px solid slategrey; */
 }
 
+div.labelinputgrid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.5ex 1ex;
+    align-items: center;
+}
+div.labelinputgrid > label, div.labelinputgrid > dynamic-f64-input {
+    display: contents;
+}
+div.labelinputgrid > label > .labeltext {
+    justify-self: end;
+}
+div.labelinputgrid > label > div.optionalinput {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 0.5ex;
+    align-items: center;
+}
+label > .labeltext > span.material-symbols-outlined {
+    margin-right: 0.5ex;
+}
+
+span.unit {
+    font-family: monospace;
+    /* font-size: 1.1em; */
+}
+
+.errortext {
+    color: #f97070;
+}
+
+
+*:disabled {
+    cursor: not-allowed;
+}
+
+select, option, input, button {
+    background-color: var(--background-interactive);
+    color: var(--text-normal);
+}
+select:hover, option:hover, input:hover, button:hover {
+    background-color: var(--background-interactive-hover);
+    color: var(--text-normal);
+}
+option:active, input[type="checkbox"]:active, button:active {
+    background-color: var(--background-interactive-active);
+    color: var(--text-normal);
+}
+select:disabled, option:disabled, input:disabled, button:disabled {
+    background-color: var(--background-interactive-disabled);
+    color: var(--text-low-priority);
+}
+select:focus, option:focus, input:focus, button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--focus-ring);
+}
+
+select, option, input {
+    padding: 1ex;
+    border: none;
+    min-width: 4ex;
+}
+
+button {
+    font-size: 1em;
+    padding: 0.25ex 1ex;
+    border: none;
+    cursor: pointer;
+    /* text-transform: uppercase; */
+    /* border-radius: 1px; */
+}
+button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--focus-ring);
+}
+
+input[type="checkbox"] {
+    appearance: none;
+    width: 4ex;
+    height: 4ex;
+    cursor: pointer;
+    position: relative;
+    margin: 0px;
+}
+input[type="checkbox"]::before {
+    content: "check";
+    font-family: "Material Symbols Outlined";
+    font-variation-settings: 'FILL' 0,
+        'wght' 100,
+        'GRAD' 100,
+        'opsz' 24;
+    font-size: 24px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    /* transition: all 0.05s linear; */
+    visibility: hidden;
+}
+input[type="checkbox"]:hover:not(:checked)::before {
+    color: var(--text-low-priority);
+    visibility: visible;
+}
+input[type="checkbox"]:checked::before {
+    visibility: visible;
+    font-variation-settings: 'FILL' 0,
+        'wght' 350,
+        'GRAD' 200,
+        'opsz' 24;
+}
+
+
 html,
 body {
     font-family: Arial, Helvetica, sans-serif;
     color: var(--text-normal);
     margin: 0;
-}
-
-*:disabled {
-    cursor: not-allowed;
 }
 
 div.app {
@@ -380,18 +531,6 @@ div.typecontainer {
     border: 1px solid var(--background-titlebar);
 }
 
-form.ukfe select, form.ukfe option, input {
-    color: var(--text-normal);
-    background-color: var(--background-interactive);
-    padding: 1ex;
-    border: none;
-    min-width: 4ex;
-}
-form.ukfe option:disabled, input:disabled {
-    background-color: var(--background-interactive-disabled);
-    color: var(--text-low-priority);
-}
-
 form.ukfe summary, div.typecontainer select, div.typecontainer option {
     font-weight: bold;
     text-transform: capitalize;
@@ -431,11 +570,6 @@ form.ukfe details[open] summary {
     border-bottom: 1px solid var(--background-titlebar);
     margin-bottom: 1ex;
 }
-form.ukfe details hr.transitionsep {
-    margin: 1ex 0;
-    border: none;
-    border-bottom: 1px solid var(--background-titlebar);
-}
 form.ukfe details div.transition h4 {
     margin-bottom: 1ex;
 }
@@ -444,28 +578,6 @@ form.ukfe details div.transition div.transitionconfig {
     grid-template-columns: auto 1fr;
     gap: 1ex;
     align-items: center;
-}
-
-div.labelinputgrid {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 0.5ex 1ex;
-    align-items: center;
-    margin-bottom: 1ex;
-}
-div.labelinputgrid > label, div.labelinputgrid > dynamic-f64-input {
-    display: contents;
-}
-div.labelinputgrid > label > .labeltext {
-    justify-self: end;
-}
-label > .labeltext > span.material-symbols-outlined {
-    margin-right: 0.5ex;
-}
-
-span.unit {
-    font-family: monospace;
-    /* font-size: 1.1em; */
 }
 
 div.cjumpconfig {
@@ -513,13 +625,12 @@ div.cjumpconfig > button.add {
 }
 
 div.parametereditor {
-    /* display: flex; */
+    display: flex;
     flex-direction: column;
-    padding: 1ex;
-    gap: 1ex;
+    /* padding: 1ex; */
+    /* gap: 1ex; */
     background-color: var(--background-tertiary);
     overflow: hidden auto;
-    padding-bottom: 2ex;
 }
 
 div.parametereditor div.userparameters {
@@ -545,6 +656,25 @@ div.parametereditor span.helpmsg {
     grid-column: 1 / -1;
     color: var(--text-low-priority);
 }
+div.parametereditor button.addparam {
+    grid-column: 1 / -1;
+    padding: 1ex;
+}
+div.parametereditor > div {
+    padding: 1.5ex;
+    display: flex;
+    flex-direction: column;
+    gap: 1ex;
+}
+div.parametereditor > div > h2 {
+    margin: 0.2ex 0ex 0ex;
+    display: flex;
+    gap: 0.5ex;
+    align-items: center;
+}
+div.parametereditor div.playback {
+    background-color: var(--background-titlebar);
+}
 div.parametereditor div.timecontrol {
     display: grid;
     grid-template-columns: auto 1fr;
@@ -554,6 +684,9 @@ div.parametereditor div.timecontrol {
 }
 div.parametereditor div.timecontrol > label {
     display: contents;
+}
+div.parametereditor div.timecontrol > label > span.labeltext {
+    white-space: nowrap;
 }
 
 div.parametereditor div.timecontrol button {
@@ -644,34 +777,4 @@ div.menulist div.nested:hover div.menulist {
     visibility: visible;
     opacity: 1;
     transition-delay: 0ms;
-}
-
-
-button {
-    font-size: 1em;
-    padding: 0.25ex 1ex;
-    border: none;
-    cursor: pointer;
-    background-color: var(--background-interactive);
-    color: var(--text-normal);
-    /* text-transform: uppercase; */
-    /* border-radius: 1px; */
-}
-button:hover {
-    background-color: var(--background-interactive-hover);
-    color: var(--text-normal);
-}
-
-button:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--focus-ring);
-}
-
-button:active {
-    background-color: var(--background-interactive-active);
-    color: var(--text-normal);
-}
-button:disabled {
-    background-color: var(--background-interactive-disabled);
-    color: var(--text-low-priority);
 }

@@ -13,7 +13,10 @@ export class ParameterEditor {
 		this._pattern_design = pattern_design;
 		this._patterneditor_div = patterneditor_div;
 		this._userparameters_div = notnull(this._patterneditor_div.querySelector("div.userparameters"));
-		this._userparam_helpmsg_span = notnull(this._patterneditor_div.querySelector("span.helpmsg"));
+		/** @type {HTMLButtonElement} */
+		this._addparam_button = notnull(this._patterneditor_div.querySelector("button.addparam"));
+
+		this.user_param_dialog = new UserParamDialog(pattern_design);
 
 		{ //init timecontrol
 			this._timecontrol_div = notnull(document.querySelector("div.timecontrol"));
@@ -56,6 +59,9 @@ export class ParameterEditor {
 		}
 
 		{ //init userparameters
+			this._addparam_button.addEventListener("click", _ev => {
+				this.user_param_dialog.open();
+			});
 			this._pattern_design.state_change_events.addEventListener("rerender", () => {
 				this.#_update_user_parameters_controls();
 			});
@@ -66,6 +72,9 @@ export class ParameterEditor {
 				this.#_update_user_parameters_controls();
 			});
 			this._pattern_design.state_change_events.addEventListener("pattern_transform_update", () => {
+				this.#_update_user_parameters_controls();
+			});
+			this._pattern_design.state_change_events.addEventListener("user_param_definitions_update", () => {
 				this.#_update_user_parameters_controls();
 			});
 			this._pattern_design.state_change_events.addEventListener("parameters_update", ev => {
@@ -95,12 +104,7 @@ export class ParameterEditor {
 
 			this._userparameters_div.appendChild(up_el);
 		}
-		// if no user parameters, show a message instead
-		if ([...this._userparameters_div.children].filter(el => el instanceof UserParamControl).length === 0) {
-			this._userparam_helpmsg_span.classList.remove("hide");
-		} else {
-			this._userparam_helpmsg_span.classList.add("hide");
-		}
+
 		this.#_update_user_parameters_values();
 	}
 
@@ -183,6 +187,7 @@ class UserParamControl extends HTMLElement {
 	on_name_input_change() {
 		const new_name = this.param_name;
 		if (this.#_pattern_design.evaluator_params.user_parameters.has(new_name)) {
+			alert(`Parameter with the name '${new_name}' already exists!`);
 			this.param_name = this.#_val_input.name; // reset to old name to avoid merging/collision
 		} else {
 			this.#_pattern_design.rename_evaluator_user_param(this.#_val_input.name, new_name);
@@ -206,3 +211,114 @@ class UserParamControl extends HTMLElement {
 
 // Register the custom element
 customElements.define("user-param-control", UserParamControl);
+
+
+class UserParamDialog {
+	#_pattern_design;
+
+	/**
+	 *
+	 * @param {MAHPatternDesignFE} pattern_design
+	 */
+	constructor(pattern_design) {
+		this.#_pattern_design = pattern_design;
+
+		/** @type {HTMLDialogElement} */
+		this._userparamdialog_dialog = notnull(document.querySelector("dialog#userparamdialog"));
+		/** @type {HTMLFormElement} */
+		this._userparamdialog_form = notnull(this._userparamdialog_dialog.querySelector("form"));
+		/** @type {HTMLInputElement} */
+		this._userparamdialog_paramname_input = notnull(this._userparamdialog_form.querySelector("input[name=paramname]"));
+		/** @type {HTMLInputElement} */
+		this._userparamdialog_default_input = notnull(this._userparamdialog_form.querySelector("input[name=default]"));
+		/** @type {HTMLInputElement} */
+		this._userparamdialog_clampmin_input = notnull(this._userparamdialog_form.querySelector("input[name=clampmin]"));
+		/** @type {HTMLInputElement} */
+		this._userparamdialog_min_input = notnull(this._userparamdialog_form.querySelector("input[name=min]"));
+		/** @type {HTMLInputElement} */
+		this._userparamdialog_clampmax_input = notnull(this._userparamdialog_form.querySelector("input[name=clampmax]"));
+		/** @type {HTMLInputElement} */
+		this._userparamdialog_max_input = notnull(this._userparamdialog_form.querySelector("input[name=max]"));
+		/** @type {HTMLInputElement} */
+		this._userparamdialog_step_input = notnull(this._userparamdialog_form.querySelector("input[name=step]"));
+		/** @type {HTMLButtonElement} */
+		this._userparamdialog_save_button = notnull(this._userparamdialog_form.querySelector("button[type=submit]"));
+		/** @type {HTMLButtonElement} */
+		this._userparamdialog_close_button = notnull(this._userparamdialog_form.querySelector("button.close"));
+		/** @type {HTMLButtonElement} */
+		this._userparamdialog_reset_button = notnull(this._userparamdialog_form.querySelector("button.reset"));
+		/** @type {HTMLDivElement} */
+		this._userparamdialog_errortext_div = notnull(this._userparamdialog_form.querySelector("div.errortext"));
+
+
+		this._userparamdialog_close_button.addEventListener("click", _ => {
+			this._userparamdialog_dialog.close("dismiss");
+		});
+		this._userparamdialog_reset_button.addEventListener("click", _ => {
+			this.reset();
+		});
+		this._userparamdialog_dialog.addEventListener("click", ev => {
+			// light dismiss
+			if (ev.target === this._userparamdialog_dialog) {
+				console.log("light dismiss");
+				this._userparamdialog_dialog.close("dismiss");
+			}
+		});
+		this._userparamdialog_form.addEventListener("change", _ => {
+			this.onchange();
+		});
+		this._userparamdialog_form.addEventListener("submit", _ => {
+			const { name, default_value, min, max, step } = this.get_values();
+			pattern_design.update_user_param_definition(name, { default: default_value, min, max, step });
+		});
+	}
+
+
+	reset() {
+		this._userparamdialog_form.reset();
+		this.onchange();
+		this._userparamdialog_errortext_div.textContent = "";
+	}
+
+	onchange() {
+		this._userparamdialog_min_input.disabled = !this._userparamdialog_clampmin_input.checked;
+		this._userparamdialog_max_input.disabled = !this._userparamdialog_clampmax_input.checked;
+
+
+		const { name, default_value, min, max, step } = this.get_values();
+
+		this._userparamdialog_save_button.disabled = true;
+		if (name === "") {
+			this._userparamdialog_errortext_div.textContent = "Name must not be empty";
+		} else if (name in this.#_pattern_design.filedata.user_parameter_definitions) {
+			this._userparamdialog_errortext_div.textContent = "Parameter with name '${}' already exists";
+		} else if (!Number.isFinite(default_value)) {
+			this._userparamdialog_errortext_div.textContent = "Default value must be a number";
+		} else if (!Number.isFinite(step)) {
+			this._userparamdialog_errortext_div.textContent = "Step must be a number";
+		} else if (min > max) {
+			this._userparamdialog_errortext_div.textContent = "Min must be less than max";
+		} else if (min > default_value) {
+			this._userparamdialog_errortext_div.textContent = "Default value must be greater than min";
+		} else if (default_value > max) {
+			this._userparamdialog_errortext_div.textContent = "Default value must be less than max";
+		} else {
+			this._userparamdialog_errortext_div.textContent = "";
+			this._userparamdialog_save_button.disabled = false;
+		}
+	}
+
+	get_values() {
+		const name = this._userparamdialog_paramname_input.value;
+		const default_value = parseFloat(this._userparamdialog_default_input.value);
+		const min = this._userparamdialog_clampmin_input.checked ? parseFloat(this._userparamdialog_min_input.value) : -Infinity;
+		const max = this._userparamdialog_clampmax_input.checked ? parseFloat(this._userparamdialog_max_input.value) : Infinity;
+		const step = parseFloat(this._userparamdialog_step_input.value);
+		return { name, default_value, min, max, step };
+	}
+
+	open() {
+		this._userparamdialog_dialog.showModal();
+	}
+
+}

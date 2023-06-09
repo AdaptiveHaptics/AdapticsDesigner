@@ -1,11 +1,11 @@
 /**
  * Assert Not Null
  * @template T
- * @param {T | null} t
+ * @param {T | null} v
  * @returns {T}
  */
-export function notnull(t) {
-	if (t) return t;
+export function notnull(v) {
+	if (v != null) return v;
 	else throw new TypeError("Unexpected null");
 }
 /**

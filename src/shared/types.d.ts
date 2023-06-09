@@ -11,6 +11,7 @@ import {
     IntensityWithTransition,
     ConditionalJump,
     PatternTransformation,
+    MAHUserParameterDefinition,
     DataFormatRevision
 } from "../external/pattern_evaluator/rs-shared-types";
 export {
@@ -26,6 +27,7 @@ export {
     IntensityWithTransition,
     ConditionalJump,
     PatternTransformation,
+    MAHUserParameterDefinition,
 };
 import { SharedProperties } from "./util";
 

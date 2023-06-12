@@ -24,6 +24,14 @@
 /** @type {import("../../../shared/types").REVISION_STRING} */
 const MAH_$REVISION = "0.0.10-alpha.1";
 
+/**
+ * @typedef {{
+ *   items: { keyframes: MAHKeyframeFE[], pattern_transform: boolean },
+ *   prop_parents: { cjumps: ConditionalJump[], dynf64: MAHDynamicF64[] },
+ *   cjump_to_kf_map: Map<ConditionalJump, MAHKeyframeFE>
+ * }} UserParamLinked
+ */
+
 import { DeviceWSController } from "../device-ws-controller.mjs";
 import { PatternEvaluator } from "../pattern-evaluator.mjs";
 import { assert_unreachable } from "../util.mjs";
@@ -565,13 +573,6 @@ export class MAHPatternDesignFE {
 	}
 
 	get_user_parameters_to_linked_map() {
-		/**
-		 * @typedef {{
-		 *   items: { keyframes: MAHKeyframeFE[], pattern_transform: boolean },
-		 *   prop_parents: { cjumps: ConditionalJump[], dynf64: MAHDynamicF64[] },
-		 *   cjump_to_kf_map: Map<ConditionalJump, MAHKeyframeFE>
-		 * }} UserParamLinked
-		 */
 		/** @type {Map<string, UserParamLinked>} */
 		const uparam_to_linked_map = new Map();
 		const get_up_linked_or_default = (param_name) => {
@@ -598,6 +599,7 @@ export class MAHPatternDesignFE {
 						const up_linked = get_up_linked_or_default(param_name);
 						up_linked.items.keyframes.push(keyframe);
 						up_linked.prop_parents.cjumps.push(cjump);
+						up_linked.cjump_to_kf_map.set(cjump, keyframe);
 					}
 				}
 			}
@@ -669,9 +671,10 @@ export class MAHPatternDesignFE {
 	 *
 	 * @param {string} old_name
 	 * @param {string} new_name
+	 * @returns {boolean}
 	 */
 	rename_evaluator_user_param(old_name, new_name) {
-		this.#_rename_or_delete_evaluator_user_param(old_name, new_name);
+		return this.#_rename_or_delete_evaluator_user_param(old_name, new_name);
 	}
 
 	/**
@@ -679,7 +682,7 @@ export class MAHPatternDesignFE {
 	 *
 	 * @param {string} old_name
 	 * @param {string=} new_name
-	 * @returns
+	 * @returns {boolean}
 	 */
 	#_rename_or_delete_evaluator_user_param(old_name, new_name) {
 		const up_linked = this.get_user_parameters_to_linked_map().get(old_name);
@@ -687,11 +690,11 @@ export class MAHPatternDesignFE {
 
 		if (!new_name && up_linked && up_linked.prop_parents.cjumps.length > 0) {
 			const confirmation = confirm(`The parameter "${old_name}" is still used in ${up_linked?.prop_parents.cjumps.length} conditional jump(s).\nAre you sure you want to delete the parameter?\nDeleting the parameter will also delete the linked conditional jumps.`);
-			if (!confirmation) return;
+			if (!confirmation) return false;
 		}
 		if (new_name && this.filedata.user_parameter_definitions[new_name]) {
 			const confirmation = confirm(`The parameter "${new_name}" already exists.\nAre you sure you want to overwrite it?`);
-			if (!confirmation) return;
+			if (!confirmation) return false;
 		}
 
 		this.save_state();
@@ -702,36 +705,39 @@ export class MAHPatternDesignFE {
 		this.evaluator_params.user_parameters.delete(old_name);
 		if (new_name) this.evaluator_params.user_parameters.set(new_name, old_value || 0);
 
-		if (!up_linked) return;
-		if (new_name) { //rename at usage
-			for (const cj of up_linked.prop_parents.cjumps) {
-				cj.condition.parameter = new_name;
-			}
-			for (const dynf64 of up_linked.prop_parents.dynf64) {
-				dynf64.value = new_name;
-			}
-		} else { //delete at usage
-			for (const cj of up_linked.prop_parents.cjumps) {
-				const kf = up_linked.cjump_to_kf_map.get(cj);
-				if (kf && "cjumps" in kf) {
-					kf.cjumps = kf.cjumps.filter((cj_f) => cj_f != cj);
-				} else throw new Error("bad cjump->kf map");
-			}
-			for (const dynf64 of up_linked.prop_parents.dynf64) {
-				dynf64.type = "f64";
-				dynf64.value = old_value || 0;
+		if (up_linked) {
+			if (new_name) { //rename at usage
+				for (const cj of up_linked.prop_parents.cjumps) {
+					cj.condition.parameter = new_name;
+				}
+				for (const dynf64 of up_linked.prop_parents.dynf64) {
+					dynf64.value = new_name;
+				}
+			} else { //delete at usage
+				for (const cj of up_linked.prop_parents.cjumps) {
+					const kf = up_linked.cjump_to_kf_map.get(cj);
+					if (kf && "cjumps" in kf) {
+						kf.cjumps = kf.cjumps.filter((cj_f) => cj_f != cj);
+					} else throw new Error("bad cjump->kf map");
+				}
+				for (const dynf64 of up_linked.prop_parents.dynf64) {
+					dynf64.type = "f64";
+					dynf64.value = old_value || 0;
+				}
 			}
 		}
 
-		const updated_keyframes = up_linked.items.keyframes;
+		const updated_keyframes = up_linked?.items.keyframes || [];
 		// just use geo_transform: true for now, since we don't keep track of which properties exactly change, and if they are geo transforms
-		const pattern_transform = up_linked.items.pattern_transform ? { geo_transform: true } : undefined;
+		const pattern_transform = up_linked?.items.pattern_transform ? { geo_transform: true } : undefined;
 		const user_param_definitions = new_name ? [new_name, old_name] : [old_name];
 
 		this.commit_operation({ updated_keyframes, pattern_transform, user_param_definitions });
 
 		const ce = new StateChangeEvent("parameters_update", { detail: { time: false } });
 		this.state_change_events.dispatchEvent(ce);
+
+		return true;
 	}
 
 	apply_user_param_definitions() {
@@ -743,6 +749,17 @@ export class MAHPatternDesignFE {
 				this.update_evaluator_user_params(param_name, new_value);
 			}
 		}
+	}
+
+	/**
+	 *
+	 * @param {MAHDynamicF64} dynf64
+	 * @returns {number}
+	 */
+	resolve_dynamic_f64(dynf64) {
+		if (dynf64.type == "f64") return dynf64.value;
+		else if (dynf64.type == "dynamic") return this.evaluator_params.user_parameters.get(dynf64.value) ?? this.filedata.user_parameter_definitions[dynf64.value].default ?? 0;
+		else assert_unreachable(dynf64);
 	}
 
 

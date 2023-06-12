@@ -16,13 +16,16 @@
     --hitbox: green;
     --hitbox: none;
 
-    --error: #cd5c5c;
+    --error-dim: #cd5c5c;
+    --error: #f97070;
+    --warn: #ecb474;
 
     --text-normal: rgb(250, 250, 255);
     --text-low-priority: rgb(210, 210, 213);
     --text-dark: hsl(240, 20%, 20%);
     --focus-ring: hsl(240, 20%, 50%);
-    --text-error: #f97070;
+    --text-error: var(--error);
+    --text-warn: var(--warn);
 
     --selected-konva-stage: hsl(204, 40%, 75%);
 
@@ -646,9 +649,13 @@ div.parametereditor div.userparameters > div:first-child {
 div.parametereditor div.userparameters > * {
     display: contents;
 }
-div.parametereditor div.userparameters > user-param-control span:nth-child(2) {
+div.parametereditor div.userparameters > user-param-control span.eq {
     font-weight: bold;
 }
+user-param-control.unused, user-param-control.unused input {
+    color: var(--text-low-priority);
+}
+
 .hide {
     display: none;
 }
@@ -668,12 +675,37 @@ div.parametereditor > div {
 }
 div.parametereditor > div > h2 {
     margin: 0.2ex 0ex 0ex;
-    display: flex;
+    display: grid;
+    grid-template-columns: auto auto 1fr;
     gap: 0.5ex;
     align-items: center;
 }
 div.parametereditor div.playback {
     background-color: var(--background-titlebar);
+}
+div.parametereditor div.playback span.warning {
+    visibility: hidden;
+    justify-self: end;
+    color: var(--text-error);
+    color: var(--warn);
+    font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 100, 'opsz' 24;
+    animation: warning 1.5s infinite alternate-reverse;
+    user-select: none;
+    cursor: pointer;
+}
+div.parametereditor div.playback.warning span.warning {
+    visibility: visible;
+}
+@keyframes warning {
+    0% {
+        font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 100, 'opsz' 24;
+    }
+    15% {
+        font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 50, 'opsz' 24;
+    }
+    30% {
+        font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 100, 'opsz' 24;
+    }
 }
 div.parametereditor div.timecontrol {
     display: grid;

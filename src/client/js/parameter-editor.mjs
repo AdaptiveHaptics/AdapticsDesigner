@@ -7,19 +7,27 @@ export class ParameterEditor {
 	/**
 	 *
 	 * @param {MAHPatternDesignFE} pattern_design
-	 * @param {HTMLDivElement} patterneditor_div
+	 * @param {HTMLDivElement} parametereditor_div
 	 */
-	constructor(pattern_design, patterneditor_div) {
+	constructor(pattern_design, parametereditor_div) {
 		this._pattern_design = pattern_design;
-		this._patterneditor_div = patterneditor_div;
-		this._userparameters_div = notnull(this._patterneditor_div.querySelector("div.userparameters"));
+		this._parametereditor_div = parametereditor_div;
+		this._userparameters_div = notnull(this._parametereditor_div.querySelector("div.userparameters"));
 		/** @type {HTMLButtonElement} */
-		this._addparam_button = notnull(this._patterneditor_div.querySelector("button.addparam"));
+		this._addparam_button = notnull(this._parametereditor_div.querySelector("button.addparam"));
 
 		this.user_param_dialog = new UserParamDialog(pattern_design);
 
-		{ //init timecontrol
-			this._timecontrol_div = notnull(document.querySelector("div.timecontrol"));
+		{ //init playback (timecontrol)
+			/** @type {HTMLDivElement} */
+			this._playback_div = notnull(this._parametereditor_div.querySelector("div.playback"));
+			this._playback_div.querySelector("span.warning")?.addEventListener("click", _ev => {
+				alert(this._playback_div.title);
+			});
+
+
+			/** @type {HTMLDivElement} */
+			this._timecontrol_div = notnull(this._parametereditor_div.querySelector("div.timecontrol"));
 			this._timecontrol_input = notnull(this._timecontrol_div.querySelector("input"));
 			this._timecontrol_input.addEventListener("change", _ => {
 				const v = parseFloat(this._timecontrol_input.value);
@@ -98,9 +106,9 @@ export class ParameterEditor {
 			up_el.remove();
 		}
 		for (const [param, up_linked] of new Map([...up_linked_map].sort((a, b) => a[0].localeCompare(b[0])))) {
-			const up_el = userparam_els_by_name.get(param) || (this._pattern_design.update_evaluator_user_params(param, 0), new UserParamControl(this._pattern_design, param, 0, up_linked.items.keyframes));
+			const up_el = userparam_els_by_name.get(param) || (this._pattern_design.update_evaluator_user_params(param, 0), new UserParamControl(this._pattern_design, param, 0, up_linked));
 
-			up_el.linked_keyframes = up_linked.items.keyframes;
+			up_el.up_linked = up_linked;
 
 			this._userparameters_div.appendChild(up_el);
 		}
@@ -123,9 +131,24 @@ export class ParameterEditor {
 		if (this._pattern_design.is_playing()) {
 			this._timecontrol_play.style.display = "none";
 			this._timecontrol_pause.style.display = "";
+
+
+			if (this._pattern_design.resolve_dynamic_f64(this._pattern_design.filedata.pattern_transform.playback_speed) == 0) {
+				this._playback_div.classList.add("warning");
+				this._playback_div.title = "Warning: Playback speed is currently set to 0.\nCheck Post Processing -> Playback Speed";
+			} else if (this._pattern_design.resolve_dynamic_f64(this._pattern_design.filedata.pattern_transform.intensity_factor) == 0) {
+				this._playback_div.classList.add("warning");
+				this._playback_div.title = "Warning: Intensity is currently set to 0.\nCheck Post Processing -> Intensity";
+			} else {
+				this._playback_div.classList.remove("warning");
+				this._playback_div.title = "";
+			}
 		} else {
 			this._timecontrol_play.style.display = "";
 			this._timecontrol_pause.style.display = "none";
+
+			this._playback_div.classList.remove("warning");
+			this._playback_div.title = "";
 		}
 	}
 
@@ -136,19 +159,21 @@ class UserParamControl extends HTMLElement {
 	#_pattern_design;
 	#_name_input = document.createElement("input");
 	#_val_input = document.createElement("input");
+	/** @type {import("./fe/patterndesign.mjs").UserParamLinked} */
+	#_up_linked;
 
 	/**
 	 *
 	 * @param {MAHPatternDesignFE} pattern_design
 	 * @param {string} key
 	 * @param {number} val
-	 * @param {MAHKeyframeFE[]} linked_keyframes
+	 * @param {import("./fe/patterndesign.mjs").UserParamLinked} up_linked
 	 */
-	constructor(pattern_design, key, val, linked_keyframes) {
+	constructor(pattern_design, key, val, up_linked) {
 		super();
 
 		this.#_pattern_design = pattern_design;
-		this.linked_keyframes = linked_keyframes;
+		this.up_linked = up_linked;
 
 		this.classList.add("userparam");
 
@@ -157,6 +182,7 @@ class UserParamControl extends HTMLElement {
 		this.appendChild(this.#_name_input);
 
 		const eq_span = document.createElement("span");
+		eq_span.classList.add("eq");
 		eq_span.innerText = "=";
 		this.appendChild(eq_span);
 
@@ -183,15 +209,28 @@ class UserParamControl extends HTMLElement {
 	set param_value(v) {
 		this.#_val_input.value = v;
 	}
+	/**
+	 * @param {import("./fe/patterndesign.mjs").UserParamLinked} v
+	 */
+	set up_linked(v) {
+		this.#_up_linked = v;
+		const hasProps = this.#_up_linked.prop_parents.dynf64.length + this.#_up_linked.prop_parents.cjumps.length > 0;
+		/** @typedef {todo("setup unused ReadableByteStreamController, add delete button(?) add edit button"); } */
+		this.classList.toggle("unused", !hasProps);
+	}
+	get up_linked() {
+		return this.#_up_linked;
+	}
 
 	on_name_input_change() {
 		const new_name = this.param_name;
-		if (this.#_pattern_design.evaluator_params.user_parameters.has(new_name)) {
-			alert(`Parameter with the name '${new_name}' already exists!`);
-			this.param_name = this.#_val_input.name; // reset to old name to avoid merging/collision
-		} else {
-			this.#_pattern_design.rename_evaluator_user_param(this.#_val_input.name, new_name);
+		if (
+			(new_name != "" || confirm(`Delete parameter '${this.#_val_input.name}'?`)) && // if delete, confirm
+			this.#_pattern_design.rename_evaluator_user_param(this.#_val_input.name, new_name)
+		) {
 			this.param_name = new_name;
+		} else {
+			this.param_name = this.#_val_input.name; // reset to old name to avoid merging/collision
 		}
 	}
 	on_val_input_change() {
@@ -205,7 +244,7 @@ class UserParamControl extends HTMLElement {
 
 	select_linked() {
 		this.#_pattern_design.deselect_all_items();
-		this.#_pattern_design.select_items({ keyframes: this.linked_keyframes });
+		this.#_pattern_design.select_items({ keyframes: this.up_linked.items.keyframes });
 	}
 }
 
@@ -264,9 +303,8 @@ class UserParamDialog {
 				this._userparamdialog_dialog.close("dismiss");
 			}
 		});
-		this._userparamdialog_form.addEventListener("change", _ => {
-			this.onchange();
-		});
+		this._userparamdialog_form.addEventListener("input", _ => this.oninput());
+		this._userparamdialog_form.addEventListener("change", _ => this.oninput());
 		this._userparamdialog_form.addEventListener("submit", _ => {
 			const { name, default_value, min, max, step } = this.get_values();
 			pattern_design.update_user_param_definition(name, { default: default_value, min, max, step });
@@ -276,11 +314,11 @@ class UserParamDialog {
 
 	reset() {
 		this._userparamdialog_form.reset();
-		this.onchange();
+		this.oninput();
 		this._userparamdialog_errortext_div.textContent = "";
 	}
 
-	onchange() {
+	oninput() {
 		this._userparamdialog_min_input.disabled = !this._userparamdialog_clampmin_input.checked;
 		this._userparamdialog_max_input.disabled = !this._userparamdialog_clampmax_input.checked;
 
@@ -291,7 +329,7 @@ class UserParamDialog {
 		if (name === "") {
 			this._userparamdialog_errortext_div.textContent = "Name must not be empty";
 		} else if (name in this.#_pattern_design.filedata.user_parameter_definitions) {
-			this._userparamdialog_errortext_div.textContent = "Parameter with name '${}' already exists";
+			this._userparamdialog_errortext_div.textContent = `Parameter with name '${name}' already exists`;
 		} else if (!Number.isFinite(default_value)) {
 			this._userparamdialog_errortext_div.textContent = "Default value must be a number";
 		} else if (!Number.isFinite(step)) {

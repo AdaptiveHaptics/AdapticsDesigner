@@ -79,7 +79,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 
 		/** @type {HTMLDivElement} */
 		this.context_menu = notnull(resize_container.querySelector("div.contextmenu"));
-		this.context_menu.style.display = "none";
+		this.context_menu.style.visibility = "hidden";
 		/** @type {NodeListOf<HTMLButtonElement>} */
 		const addkf_buttons = this.context_menu.querySelectorAll("button.addkf");
 		addkf_buttons.forEach(el => el.addEventListener("click", () => {
@@ -89,10 +89,10 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 			const new_keyframe = this.pattern_design.insert_new_keyframe({ type: type, time: parseFloat(this.context_menu.dataset.time || "0") });
 			this.pattern_design.commit_operation({ new_keyframes: [new_keyframe] });
 
-			this.context_menu.style.display = "none";
+			this.context_menu.style.visibility = "hidden";
 		}));
 		window.addEventListener("click", () => {
-			this.context_menu.style.display = "none";
+			this.context_menu.style.visibility = "hidden";
 		});
 
 
@@ -248,7 +248,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 			const { x } = this.keyframe_rect.getRelativePointerPosition();
 			const t = this.raw_x_to_t({ raw_x: x, snap: true });
 
-			this.context_menu.style.display = "";
+			this.context_menu.style.visibility = "visible";
 			this.context_menu.style.left = ev.evt.clientX + "px";
 			this.context_menu.style.top = ev.evt.clientY + "px";
 

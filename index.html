@@ -22,8 +22,18 @@
 	<div class="app">
 		<div class="titlebar">
 			<div class="isection file">
+				<div class="filemenu">
+					<button class="file"><span class="material-symbols-outlined">menu</span>File</button>
+					<div class="menulist">
+						<button class="open" title="Open a file"><span class="material-symbols-outlined">folder_open</span> Open</button>
+						<button class="download" title="Use standard browser file download"><span class="material-symbols-outlined">download</span> Download</button>
+						<button class="save" title="Save to last used file handle"><span class="material-symbols-outlined">save</span> Save</button>
+						<button class="save_as" title="Save to new file"><span class="material-symbols-outlined">save_as</span> Save As</button>
+					</div>
+				</div>
+
 				<!-- <span class="icon">💾</span> -->
-				<span class="filename">test.json</span>
+				<span class="filename">LOADING</span>
 				<span class="status savedstate">loading....</span>
 			</div>
 			<div class="verticalrule"></div>
@@ -43,7 +53,7 @@
 			</div>
 			<div class="gutter column leftcenter"></div>
 			<div class="center konvastagecontainer" tabindex="0">
-				<div class="contextmenu">
+				<div class="contextmenu" style="visibility: hidden;">
 					<div class="menulist">
 						<div class="nested">
 							<span class="nestedtitle"><span class="material-symbols-outlined">add</span>Add Keyframe</span>
@@ -64,9 +74,9 @@
 			<div class="gutter column centerright"></div>
 			<div class="right">
 				<div class="tabs">
-					<button class="tab active" data-tabpanel="help">Editor Help</button>
-					<button class="tab" data-tabpanel="ukfecontainer">Keyframe Editor</button>
-					<button class="tab" data-tabpanel="pattern">Post Processing</button>
+					<button class="tab active" data-tabpanel="help"><span class="material-symbols-outlined">info</span> Editor Help</button>
+					<button class="tab" data-tabpanel="ukfecontainer"><span class="material-symbols-outlined">auto_awesome_motion</span> Keyframe Editor</button>
+					<button class="tab" data-tabpanel="pattern"><span class="material-symbols-outlined">lens_blur</span> Post Processing</button>
 				</div>
 				<div class="tabpanelcontainer betterscroll">
 					<div class="help">
@@ -104,7 +114,7 @@
 					</div>
 					<form class="pattern">
 						<div class="header">
-							<h2>Pattern Post Processing</h2>
+							<h2>Post Processing Transformations</h2>
 							<button type="reset">RESET</button>
 						</div>
 						<div class="transformcontrol labelinputgrid">
@@ -114,9 +124,9 @@
 					<div class="ukfecontainer">
 						<h1>Keyframe Editor</h1>
 						<div class="helptext">
-							<div>Select one or more keyframes to edit them here.</div>
-							<div>The selected keyframes' properties will be "unioned" together.</div>
-							<div>If some properties are different, the field may be blank or display "multiple types".</div>
+							<div>Select one or more keyframes to edit them in this space.</div>
+							<div>The properties of the selected keyframes will be merged.</div>
+							<div>If a certain property varies across the selected keyframes, the corresponding field may remain blank or display 'multiple values'.</div>
 						</div>
 						<form class="ukfe">
 							<div class="typecontainer">
@@ -212,7 +222,7 @@
 									<div class="table">
 										<div class="thead">
 											<div>
-												<div style="visibility: hidden;">⋮⋮</div>
+												<div style="visibility: hidden;"><span class="material-symbols-outlined">drag_handle</span></div>
 												<div><span class="labeltext">Parameter</span></div>
 												<div><span class="labeltext">Operator</span></div>
 												<div><span class="labeltext">Value</span></div>
@@ -227,7 +237,7 @@
 									<button class="add">+ Add Conditional Jump</button>
 									<template class="cjumprow">
 										<div class="cjump">
-											<div class="draghandle">⋮⋮</div>
+											<div class="draghandle"><span class="material-symbols-outlined">drag_handle</span></div>
 											<input type="text" name="parameter">
 											<select name="conditionoperatortype" class="conditionoperator type">
 												<option hidden disabled selected value="multipletypes">multiple types</option>
@@ -254,23 +264,28 @@
 			<div class="gutter row topbottom"></div>
 			<div class="bottom">
 				<div class="parametereditor betterscroll">
-					<h1>Parameters <span class="material-symbols-outlined">tune</span></h1>
-					<!-- <h2>Playback</h2> -->
-					<div class="timecontrol">
-						<label><span class="labeltext"><span class="material-symbols-outlined">av_timer</span>Time<span class="unit"> ms</span></span><input type="number" name="time" min="0" step="1"></label>
-						<button class="reset"><span class="material-symbols-outlined">restart_alt</span></button>
-						<button class="play"><span class="material-symbols-outlined">play_arrow</span></button>
-						<button class="pause" style="display: none;"><span class="material-symbols-outlined">pause</span></button>
+					<!-- <h1>Parameters <span class="material-symbols-outlined">tune</span></h1> -->
+					<div class="playback">
+						<h2>Playback <span class="material-symbols-outlined">slow_motion_video</span> <span class="material-symbols-outlined warning">warning</span></h2>
+						<div class="timecontrol">
+							<label><span class="labeltext"><span class="material-symbols-outlined">av_timer</span>Time<span class="unit"> ms</span></span><input type="number" name="time" min="0" step="1"></label>
+							<button class="reset"><span class="material-symbols-outlined">restart_alt</span></button>
+							<button class="play"><span class="material-symbols-outlined">play_arrow</span></button>
+							<button class="pause" style="display: none;"><span class="material-symbols-outlined">pause</span></button>
+						</div>
 					</div>
-					<h2>User/Dynamic <span class="material-symbols-outlined">discover_tune</span></h2>
-					<div class="userparameters">
-						<div><span>Name</span><span></span><span>Value</span></div>
-						<div><span class="helpmsg">To add a parameter here, simply use it in a keyframe (e.g. as the parameter in a conditional jump).</span></div>
+					<div class="params">
+						<h2>User/Dynamic <span class="material-symbols-outlined">discover_tune</span></h2>
+						<div class="userparameters">
+							<div><span>Name</span><span></span><span>Value</span><span></span></div>
+							<!-- <div><span class="helpmsg">To add a parameter here, simply use it in a keyframe (e.g. as the parameter in a conditional jump).</span></div> -->
+						</div>
+						<button class="addparam">+ Add Parameter</button>
 					</div>
 				</div>
 				<div class="gutter column"></div>
 				<div class="timeline konvastagecontainer" tabindex="0">
-					<div class="contextmenu">
+					<div class="contextmenu" style="visibility: hidden;">
 						<div class="menulist">
 							<div class="nested">
 								<span class="nestedtitle"><span class="material-symbols-outlined">add</span>Add Keyframe</span>
@@ -291,6 +306,28 @@
 			</div>
 		</div>
 	</div>
+	<dialog id="userparamdialog">
+		<form method="dialog">
+			<div class="dialogtitlebar">
+				<span class="titletext add">Add Parameter Definition</span>
+				<span class="titletext edit">Edit Parameter Definition</span>
+				<button class="close" type="button" title="Close"><span class="material-symbols-outlined">close</span></button>
+			</div>
+			<div class="labelinputgrid">
+				<label><span class="labeltext">Name</span> <input type="text" name="paramname" value=""></label>
+				<label><span class="labeltext">Default Value</span> <input type="number" name="default" value="0"></label>
+				<label><span class="labeltext">Minimum Value</span> <div class="optionalinput"><input type="checkbox" name="clampmin"> <input type="number" name="min" value="-1" disabled></div></label>
+				<label><span class="labeltext">Maximum Value</span> <div class="optionalinput"><input type="checkbox" name="clampmax"> <input type="number" name="max" value="1" disabled></div></label>
+				<hr>
+				<label title="Non-constraining step size used in editor GUI"><span class="labeltext">Step Size (GUI only)</span> <input type="number" name="step" value="0.05"></label>
+			</div>
+			<div class="errortext"></div>
+			<div class="buttons">
+				<button class="reset" type="button" title="Reset"><span class="material-symbols-outlined">restart_alt</span></button>
+				<button type="submit" disabled>Save</button>
+			</div>
+		</form>
+	</dialog>
 </body>
 
 </html>

@@ -12,7 +12,7 @@
 export type TupleOf_MidAirHapticsAnimationFileFormatAnd_PatternEvaluatorParametersAnd_BrushAtAnimLocalTimeAnd_ArrayOf_BrushAtAnimLocalTime =
   [MidAirHapticsAnimationFileFormat, PatternEvaluatorParameters, BrushAtAnimLocalTime, BrushAtAnimLocalTime[]];
 export type MidAirHapticsAnimationFileFormatDataFormatName = "MidAirHapticsAnimationFileFormat";
-export type DataFormatRevision = "0.0.9-alpha.2";
+export type DataFormatRevision = "0.0.10-alpha.1";
 export type MAHKeyframe =
   | {
       brush?: BrushWithTransition | null;
@@ -131,6 +131,9 @@ export interface MidAirHapticsAnimationFileFormat {
   keyframes: MAHKeyframe[];
   name: string;
   pattern_transform: PatternTransformation;
+  user_parameter_definitions: {
+    [k: string]: MAHUserParameterDefinition;
+  };
 }
 export interface BrushWithTransition {
   brush: MAHBrush;
@@ -192,6 +195,12 @@ export interface MAHCoordsDynamic {
   x: MAHDynamicF64;
   y: MAHDynamicF64;
   z: MAHDynamicF64;
+}
+export interface MAHUserParameterDefinition {
+  default: number;
+  max?: number | null;
+  min?: number | null;
+  step: number;
 }
 export interface PatternEvaluatorParameters {
   geometric_transform: GeometricTransformMatrix;

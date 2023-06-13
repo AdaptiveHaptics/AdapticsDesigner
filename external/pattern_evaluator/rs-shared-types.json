@@ -95,7 +95,7 @@
     "DataFormatRevision": {
       "type": "string",
       "enum": [
-        "0.0.9-alpha.2"
+        "0.0.10-alpha.1"
       ]
     },
     "GeometricTransformMatrix": {
@@ -673,6 +673,37 @@
         }
       ]
     },
+    "MAHUserParameterDefinition": {
+      "type": "object",
+      "required": [
+        "default",
+        "step"
+      ],
+      "properties": {
+        "default": {
+          "type": "number",
+          "format": "double"
+        },
+        "max": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "double"
+        },
+        "min": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "double"
+        },
+        "step": {
+          "type": "number",
+          "format": "double"
+        }
+      }
+    },
     "MidAirHapticsAnimationFileFormat": {
       "type": "object",
       "required": [
@@ -680,7 +711,8 @@
         "$REVISION",
         "keyframes",
         "name",
-        "pattern_transform"
+        "pattern_transform",
+        "user_parameter_definitions"
       ],
       "properties": {
         "$DATA_FORMAT": {
@@ -700,6 +732,12 @@
         },
         "pattern_transform": {
           "$ref": "#/definitions/PatternTransformation"
+        },
+        "user_parameter_definitions": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/MAHUserParameterDefinition"
+          }
         }
       }
     },

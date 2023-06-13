@@ -3,6 +3,7 @@
 /** @typedef {import("../../../shared/types").MidAirHapticsClipboardFormat} MidAirHapticsClipboardFormat */
 /** @typedef {import("../../../shared/types").PatternTransformation} PatternTransformation */
 /** @typedef {import("../../../shared/types").ConditionalJump} ConditionalJump */
+/** @typedef {import("../../../shared/types").MAHUserParameterDefinition} MAHUserParameterDefinition */
 /** @typedef {import("../../../external/pattern_evaluator/rs-shared-types").MAHDynamicF64} MAHDynamicF64 */
 /** @typedef {import("./keyframes/index.mjs").MAHKeyframeFE} MAHKeyframeFE */
 /** @typedef {import("../pattern-evaluator.mjs").PatternEvaluatorParameters} PatternEvaluatorParameters */
@@ -21,7 +22,15 @@
  */
 
 /** @type {import("../../../shared/types").REVISION_STRING} */
-const MAH_$REVISION = "0.0.9-alpha.2";
+const MAH_$REVISION = "0.0.10-alpha.1";
+
+/**
+ * @typedef {{
+ *   items: { keyframes: MAHKeyframeFE[], pattern_transform: boolean },
+ *   prop_parents: { cjumps: ConditionalJump[], dynf64: MAHDynamicF64[] },
+ *   cjump_to_kf_map: Map<ConditionalJump, MAHKeyframeFE>
+ * }} UserParamLinked
+ */
 
 import { DeviceWSController } from "../device-ws-controller.mjs";
 import { PatternEvaluator } from "../pattern-evaluator.mjs";
@@ -47,6 +56,7 @@ const MAH_DYNAMIC_F64_PATHS = PARSED_JSON_SCHEMA.find_paths_to_wanted_on_type(PA
  * @property {{ time: boolean }} parameters_update
  * @property {{ }} playstart_update
  * @property {{ geo_transform: boolean }} pattern_transform_update
+ * @property {{ user_param_definitions: string[] }} user_param_definitions_update
  */
 
 /**
@@ -81,13 +91,15 @@ class StateChangeEventTarget extends EventTarget {
 }
 
 export class MAHPatternDesignFE {
+	#_filename; get filename() { return this.#_filename; }
+
 	/**
 	 *
 	 * @param {string} filename
 	 * @param {MidAirHapticsAnimationFileFormat} filedata
 	 */
 	constructor(filename, filedata, undo_states = [], redo_states = [], undo_states_size = 50, redo_states_size = 50) {
-		this.filename = filename;
+		this.#_filename = filename;
 
 		/** @type {MAHAnimationFileFormatFE} */
 		this.filedata = this.load_filedata_into_fe_format(filedata);
@@ -104,6 +116,7 @@ export class MAHPatternDesignFE {
 		//pattern eval
 		/** @type {PatternEvaluatorParameters}  */
 		this.evaluator_params = { time: 0, user_parameters: new Map(), geometric_transform: PatternEvaluator.default_geo_transform_matrix() };
+		this.apply_user_param_definitions();
 		/** @type {NextEvalParams} */
 		this.evaluator_next_eval_params = PatternEvaluator.default_next_eval_params();
 		this.pattern_evaluator = new PatternEvaluator(this.filedata);
@@ -134,6 +147,10 @@ export class MAHPatternDesignFE {
 		this.state_change_events.addEventListener("playback_update", _ => {
 			if (this.last_eval[0].stop) this.update_playstart(0);
 		});
+		this.state_change_events.addEventListener("user_param_definitions_update", _ => {
+			this.apply_user_param_definitions();
+		});
+
 		this.last_eval = this.#_eval_pattern(); //set in constructor for typecheck
 	}
 
@@ -184,9 +201,10 @@ export class MAHPatternDesignFE {
 	 * 	updated_keyframes?: MAHKeyframeFE[] | Set<MAHKeyframeFE>
 	 * 	deleted_keyframes?: MAHKeyframeFE[] | Set<MAHKeyframeFE>
 	 * 	pattern_transform?: { geo_transform: boolean },
+	 *  user_param_definitions?: string[],
 	 * }} param0
 	 */
-	commit_operation({ rerender, pattern_transform, new_keyframes, updated_keyframes, deleted_keyframes }) {
+	commit_operation({ rerender, pattern_transform, new_keyframes, updated_keyframes, deleted_keyframes, user_param_definitions }) {
 		if (this.committed) {
 			alert("commit_operation before save");
 			throw new Error("commit_operation before save");
@@ -226,6 +244,11 @@ export class MAHPatternDesignFE {
 			const change_event = new StateChangeEvent("pattern_transform_update", { detail: { geo_transform: pattern_transform.geo_transform } });
 			this.state_change_events.dispatchEvent(change_event);
 		}
+
+		if (user_param_definitions) {
+			const change_event = new StateChangeEvent("user_param_definitions_update", { detail: { user_param_definitions } });
+			this.state_change_events.dispatchEvent(change_event);
+		}
 	}
 
 	undo() {
@@ -236,7 +259,7 @@ export class MAHPatternDesignFE {
 		if (this.redo_states.length > this.redo_states_size) this.redo_states.shift();
 
 		this.selected_keyframes.clear();
-		this.filedata = this.load_filedata_into_fe_format(fd);
+		this.filedata = this.load_filedata_into_fe_format(fd); //could fail to due to incorrect data structure revision
 		this.committed = false;
 		this.commit_operation({ rerender: true });
 		return true;
@@ -250,7 +273,7 @@ export class MAHPatternDesignFE {
 		if (this.undo_states.length > this.undo_states_size) this.undo_states.shift();
 
 		this.selected_keyframes.clear();
-		this.filedata = this.load_filedata_into_fe_format(fd);
+		this.filedata = this.load_filedata_into_fe_format(fd); //could fail to due to incorrect data structure revision
 		this.committed = false;
 		this.commit_operation({ rerender: true });
 		return true;
@@ -499,12 +522,25 @@ export class MAHPatternDesignFE {
 		this.state_change_events.dispatchEvent(ce);
 	}
 
+
+	/**
+	 *
+	 * @param {string} param
+	 * @param {number=} value
+	 * @returns
+	 */
+	#_clamp_user_param(param, value) {
+		const def = this.filedata.user_parameter_definitions[param];
+		if (!def) throw new TypeError("undefined user parameter");
+		const clamped_value = Math.max((def.min ?? -Infinity), Math.min((def.max ?? Infinity), value ?? def.default));
+		return clamped_value;
+	}
 	/**
 	 * @param {string} param
 	 * @param {number} value
 	 */
 	update_evaluator_user_params(param, value) {
-		this.evaluator_params.user_parameters.set(param, value);
+		this.evaluator_params.user_parameters.set(param, this.#_clamp_user_param(param, value));
 		const ce = new StateChangeEvent("parameters_update", { detail: { time: false } });
 		this.state_change_events.dispatchEvent(ce);
 	}
@@ -518,22 +554,43 @@ export class MAHPatternDesignFE {
 		this.state_change_events.dispatchEvent(ce);
 	}
 
+	/**
+	 *
+	 * @param {string} param_name
+	 * @param {MAHUserParameterDefinition} param_def
+	 */
+	update_user_param_definition(param_name, param_def) {
+		this.save_state();
+		this.filedata.user_parameter_definitions[param_name] = param_def;
+		this.commit_operation({ user_param_definitions: [param_name] });
+	}
+	/**
+	 *
+	 * @param {string} param_name
+	 */
+	delete_user_param(param_name) {
+		this.#_rename_or_delete_evaluator_user_param(param_name);
+	}
+
 	get_user_parameters_to_linked_map() {
-		/** @type {Map<string, { items: { keyframes: MAHKeyframeFE[], pattern_transform: boolean }, prop_parents: { cjumps: ConditionalJump[], dynf64: MAHDynamicF64[] } }>} */
-		const uparam_to_item_map = new Map();
+		/** @type {Map<string, UserParamLinked>} */
+		const uparam_to_linked_map = new Map();
 		const get_up_linked_or_default = (param_name) => {
-			const up_linked = uparam_to_item_map.get(param_name);
+			const up_linked = uparam_to_linked_map.get(param_name);
 			if (up_linked) return up_linked;
 
+			/** @type {UserParamLinked} */
 			const new_up_linked = {
 				items: { keyframes: [], pattern_transform: false },
-				prop_parents: { cjumps: [], dynf64: [] }
+				prop_parents: { cjumps: [], dynf64: [] },
+				cjump_to_kf_map: new Map(),
 			};
-			uparam_to_item_map.set(param_name, new_up_linked);
+			uparam_to_linked_map.set(param_name, new_up_linked);
 			return new_up_linked;
 		};
 
 
+		// check cjumps
 		for (const keyframe of this.filedata.keyframes) {
 			if ("cjumps" in keyframe) {
 				for (const cjump of keyframe.cjumps) {
@@ -542,6 +599,7 @@ export class MAHPatternDesignFE {
 						const up_linked = get_up_linked_or_default(param_name);
 						up_linked.items.keyframes.push(keyframe);
 						up_linked.prop_parents.cjumps.push(cjump);
+						up_linked.cjump_to_kf_map.set(cjump, keyframe);
 					}
 				}
 			}
@@ -550,7 +608,7 @@ export class MAHPatternDesignFE {
 
 		//check pattern transform
 		// TODO: compute this from json schema (json-schema-parser.mjs)
-		const DYN_F64_LIST = [
+		const PATTERN_TRANSFORM_DYN_F64_LIST = [
 			this.filedata.pattern_transform.playback_speed,
 			this.filedata.pattern_transform.intensity_factor,
 			this.filedata.pattern_transform.geometric_transforms.rotation,
@@ -562,7 +620,7 @@ export class MAHPatternDesignFE {
 			this.filedata.pattern_transform.geometric_transforms.translate.z,
 		];
 
-		for (const mah_dyn_f64 of DYN_F64_LIST) {
+		for (const mah_dyn_f64 of PATTERN_TRANSFORM_DYN_F64_LIST) {
 			if (mah_dyn_f64.type == "dynamic") {
 				const param_name = mah_dyn_f64.value;
 				const up_linked = get_up_linked_or_default(param_name);
@@ -590,33 +648,120 @@ export class MAHPatternDesignFE {
 		}
 
 
-		return uparam_to_item_map;
+		{ // create_user_param_definitions_for_orphans
+			for (const [uparam_name, _up_linked] of uparam_to_linked_map) {
+				if (this.filedata.user_parameter_definitions[uparam_name]) continue;
+				this.filedata.user_parameter_definitions[uparam_name] = {
+					default: 0,
+					min: -Infinity,
+					max: Infinity,
+					step: 0.05,
+				};
+			}
+		}
+		//add unused user parameters to uparam map
+		for (const [uparam_name, _uparam_def] of Object.entries(this.filedata.user_parameter_definitions)) {
+			get_up_linked_or_default(uparam_name);
+		}
+
+		return uparam_to_linked_map;
 	}
 
+	/**
+	 *
+	 * @param {string} old_name
+	 * @param {string} new_name
+	 * @returns {boolean}
+	 */
 	rename_evaluator_user_param(old_name, new_name) {
+		return this.#_rename_or_delete_evaluator_user_param(old_name, new_name);
+	}
+
+	/**
+	 * Omit new_name to delete the parameter
+	 *
+	 * @param {string} old_name
+	 * @param {string=} new_name
+	 * @returns {boolean}
+	 */
+	#_rename_or_delete_evaluator_user_param(old_name, new_name) {
+		const up_linked = this.get_user_parameters_to_linked_map().get(old_name);
+		const old_value = this.evaluator_params.user_parameters.get(old_name);
+
+		if (!new_name && up_linked && up_linked.prop_parents.cjumps.length > 0) {
+			const confirmation = confirm(`The parameter "${old_name}" is still used in ${up_linked?.prop_parents.cjumps.length} conditional jump(s).\nAre you sure you want to delete the parameter?\nDeleting the parameter will also delete the linked conditional jumps.`);
+			if (!confirmation) return false;
+		}
+		if (new_name && this.filedata.user_parameter_definitions[new_name]) {
+			const confirmation = confirm(`The parameter "${new_name}" already exists.\nAre you sure you want to overwrite it?`);
+			if (!confirmation) return false;
+		}
+
 		this.save_state();
 
-		const value = this.evaluator_params.user_parameters.get(old_name);
+		if (new_name) this.filedata.user_parameter_definitions[new_name] = this.filedata.user_parameter_definitions[old_name];
+		delete this.filedata.user_parameter_definitions[old_name];
+
 		this.evaluator_params.user_parameters.delete(old_name);
-		this.evaluator_params.user_parameters.set(new_name, value || 0);
+		if (new_name) this.evaluator_params.user_parameters.set(new_name, old_value || 0);
 
-		const up_linked = this.get_user_parameters_to_linked_map().get(old_name);
-		if (!up_linked) throw new Error("no linked items found (should not happen)");
-		for (const cj of up_linked.prop_parents.cjumps) {
-			cj.condition.parameter = new_name;
+		if (up_linked) {
+			if (new_name) { //rename at usage
+				for (const cj of up_linked.prop_parents.cjumps) {
+					cj.condition.parameter = new_name;
+				}
+				for (const dynf64 of up_linked.prop_parents.dynf64) {
+					dynf64.value = new_name;
+				}
+			} else { //delete at usage
+				for (const cj of up_linked.prop_parents.cjumps) {
+					const kf = up_linked.cjump_to_kf_map.get(cj);
+					if (kf && "cjumps" in kf) {
+						kf.cjumps = kf.cjumps.filter((cj_f) => cj_f != cj);
+					} else throw new Error("bad cjump->kf map");
+				}
+				for (const dynf64 of up_linked.prop_parents.dynf64) {
+					dynf64.type = "f64";
+					dynf64.value = old_value || 0;
+				}
+			}
 		}
-		for (const dynf64 of up_linked.prop_parents.dynf64) {
-			dynf64.value = new_name;
-		}
-		const updated_keyframes = up_linked.items.keyframes;
+
+		const updated_keyframes = up_linked?.items.keyframes || [];
 		// just use geo_transform: true for now, since we don't keep track of which properties exactly change, and if they are geo transforms
-		const pattern_transform = up_linked.items.pattern_transform ? { geo_transform: true } : undefined;
+		const pattern_transform = up_linked?.items.pattern_transform ? { geo_transform: true } : undefined;
+		const user_param_definitions = new_name ? [new_name, old_name] : [old_name];
 
-		this.commit_operation({ updated_keyframes, pattern_transform });
+		this.commit_operation({ updated_keyframes, pattern_transform, user_param_definitions });
 
 		const ce = new StateChangeEvent("parameters_update", { detail: { time: false } });
 		this.state_change_events.dispatchEvent(ce);
+
+		return true;
 	}
+
+	apply_user_param_definitions() {
+		//apply this.filedata.user_parameter_definitions constraints
+		for (const [param_name, _param_def] of Object.entries(this.filedata.user_parameter_definitions)) {
+			const param_value = this.evaluator_params.user_parameters.get(param_name);
+			const new_value = this.#_clamp_user_param(param_name, param_value);
+			if (param_value != new_value) {
+				this.update_evaluator_user_params(param_name, new_value);
+			}
+		}
+	}
+
+	/**
+	 *
+	 * @param {MAHDynamicF64} dynf64
+	 * @returns {number}
+	 */
+	resolve_dynamic_f64(dynf64) {
+		if (dynf64.type == "f64") return dynf64.value;
+		else if (dynf64.type == "dynamic") return this.evaluator_params.user_parameters.get(dynf64.value) ?? this.filedata.user_parameter_definitions[dynf64.value].default ?? 0;
+		else assert_unreachable(dynf64);
+	}
+
 
 	#_eval_pattern() {
 		const eval_result = this.pattern_evaluator.eval_brush_at_anim_local_time_for_max_t(this.evaluator_params, this.evaluator_next_eval_params);
@@ -733,6 +878,8 @@ export class MAHPatternDesignFE {
 	 * @param {MidAirHapticsAnimationFileFormat} filedata
 	 */
 	load_filedata_into_fe_format(filedata) {
+		if (filedata.$DATA_FORMAT != "MidAirHapticsAnimationFileFormat") throw new Error(`incorrect $DATA_FORMAT ${filedata.$DATA_FORMAT} expected ${"MidAirHapticsAnimationFileFormat"}`);
+		if (filedata.$REVISION != MAH_$REVISION) throw new Error(`incorrect revision ${filedata.$REVISION} expected ${MAH_$REVISION}`);
 		const keyframesFE = filedata.keyframes.map(kf => create_correct_keyframefe_wrapper(kf, this));
 		const filedataFE = { ...filedata, keyframes: keyframesFE };
 		return filedataFE;
@@ -746,6 +893,31 @@ export class MAHPatternDesignFE {
 		filedata.$DATA_FORMAT = "MidAirHapticsAnimationFileFormat";
 		filedata.$REVISION = MAH_$REVISION;
 		return filedata;
+	}
+
+	export_file() {
+		return new File([JSON.stringify(this.clone_filedata(), undefined, "\t")], this.filename, { type: "application/json" });
+	}
+
+	/**
+	 * @param {string} filename
+	 */
+	update_filename(filename) {
+		this.save_state();
+		this.#_filename = filename;
+		this.commit_operation({ rerender: true });
+	}
+
+	/**
+	 * @param {File} file
+	 */
+	async import_file(file) {
+		const filedata_text = await file.text();
+		const filedataFE = this.load_filedata_into_fe_format(JSON.parse(filedata_text));
+		this.save_state();
+		this.#_filename = file.name;
+		this.filedata = filedataFE;
+		this.commit_operation({ rerender: true });
 	}
 
 	serialize() {
@@ -762,8 +934,6 @@ export class MAHPatternDesignFE {
 	 */
 	static deserialize(json_str) {
 		const { filename, filedata, undo_states, redo_states, undo_states_size, redo_states_size } = JSON.parse(json_str);
-		if (filedata.$DATA_FORMAT != "MidAirHapticsAnimationFileFormat") throw new Error(`incorrect $DATA_FORMAT ${filedata.$DATA_FORMAT} expected ${"MidAirHapticsAnimationFileFormat"}`);
-		if (filedata.$REVISION != MAH_$REVISION) throw new Error(`incorrect revision ${filedata.$REVISION} expected ${MAH_$REVISION}`);
 		return new MAHPatternDesignFE(filename, filedata, undo_states, redo_states, undo_states_size, redo_states_size);
 	}
 
@@ -783,11 +953,11 @@ export class MAHPatternDesignFE {
 }
 
 /** @type {[string, MidAirHapticsAnimationFileFormat]} */
-MAHPatternDesignFE.DEFAULT = ["test.json", {
+MAHPatternDesignFE.DEFAULT = ["untitled.json", {
 	$DATA_FORMAT: "MidAirHapticsAnimationFileFormat",
 	$REVISION: MAH_$REVISION,
 
-	name: "test",
+	name: "untitled",
 
 	keyframes: [
 		{
@@ -833,5 +1003,7 @@ MAHPatternDesignFE.DEFAULT = ["test.json", {
 		}
 	],
 
-	pattern_transform: PatternEvaluator.default_pattern_transformation()
+	pattern_transform: PatternEvaluator.default_pattern_transformation(),
+
+	user_parameter_definitions: {}
 }];

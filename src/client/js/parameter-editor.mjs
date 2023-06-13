@@ -1,7 +1,7 @@
 /** @typedef {import("./fe/patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
 /** @typedef {import("./fe/patterndesign.mjs").MAHKeyframeFE} MAHKeyframeFE */
 
-import { notnull } from "./util.mjs";
+import { assert_unreachable, notnull } from "./util.mjs";
 
 export class ParameterEditor {
 	/**
@@ -106,7 +106,12 @@ export class ParameterEditor {
 			up_el.remove();
 		}
 		for (const [param, up_linked] of new Map([...up_linked_map].sort((a, b) => a[0].localeCompare(b[0])))) {
-			const up_el = userparam_els_by_name.get(param) || (this._pattern_design.update_evaluator_user_params(param, 0), new UserParamControl(this._pattern_design, param, 0, up_linked));
+			const pvalue = this._pattern_design.resolve_dynamic_f64({ type: "dynamic", value: param });
+			const step_size = this._pattern_design.filedata.user_parameter_definitions[param]?.step ?? 0.05;
+			const up_el = userparam_els_by_name.get(param) ||  (
+				this._pattern_design.update_evaluator_user_params(param, pvalue),
+				new UserParamControl(this._pattern_design, param, pvalue, step_size, up_linked, this.user_param_dialog)
+			);
 
 			up_el.up_linked = up_linked;
 
@@ -161,19 +166,25 @@ class UserParamControl extends HTMLElement {
 	#_val_input = document.createElement("input");
 	/** @type {import("./fe/patterndesign.mjs").UserParamLinked} */
 	#_up_linked;
+	/** @type {UserParamDialog} */
+	#_user_param_dialog;
 
 	/**
 	 *
 	 * @param {MAHPatternDesignFE} pattern_design
 	 * @param {string} key
 	 * @param {number} val
+	 * @param {number} step_size
 	 * @param {import("./fe/patterndesign.mjs").UserParamLinked} up_linked
+	 * @param {UserParamDialog} user_param_dialog
 	 */
-	constructor(pattern_design, key, val, up_linked) {
+	constructor(pattern_design, key, val, step_size, up_linked, user_param_dialog) {
 		super();
 
 		this.#_pattern_design = pattern_design;
+		this.#_user_param_dialog = user_param_dialog;
 		this.up_linked = up_linked;
+
 
 		this.classList.add("userparam");
 
@@ -187,11 +198,19 @@ class UserParamControl extends HTMLElement {
 		this.appendChild(eq_span);
 
 		this.#_val_input.name = key;
-		this.#_val_input.step = "0.05";
+		this.step_size = step_size;
 		this.#_val_input.type = "number";
 		this.#_val_input.value = val.toString();
 		this.#_val_input.addEventListener("change", _ => this.on_val_input_change());
 		this.appendChild(this.#_val_input);
+
+		const edit_button = document.createElement("button");
+		edit_button.classList.add("textonly");
+		edit_button.style.padding = "0";
+		edit_button.innerHTML = '<span class="material-symbols-outlined">settings</span>';
+		edit_button.title = "Edit Parameter Definition";
+		edit_button.addEventListener("click", _ => this.#_user_param_dialog.open(this.param_name));
+		this.appendChild(edit_button);
 
 		this.addEventListener("click", _ev => this.select_linked());
 	}
@@ -210,12 +229,17 @@ class UserParamControl extends HTMLElement {
 		this.#_val_input.value = v;
 	}
 	/**
+	 * @param {number} v
+	 */
+	set step_size(v) {
+		this.#_val_input.step = v.toString();
+	}
+	/**
 	 * @param {import("./fe/patterndesign.mjs").UserParamLinked} v
 	 */
 	set up_linked(v) {
 		this.#_up_linked = v;
 		const hasProps = this.#_up_linked.prop_parents.dynf64.length + this.#_up_linked.prop_parents.cjumps.length > 0;
-		/** @typedef {todo("setup unused ReadableByteStreamController, add delete button(?) add edit button"); } */
 		this.classList.toggle("unused", !hasProps);
 	}
 	get up_linked() {
@@ -299,8 +323,7 @@ class UserParamDialog {
 		this._userparamdialog_dialog.addEventListener("click", ev => {
 			// light dismiss
 			if (ev.target === this._userparamdialog_dialog) {
-				console.log("light dismiss");
-				this._userparamdialog_dialog.close("dismiss");
+				this.#_confirm_dismiss();
 			}
 		});
 		this._userparamdialog_form.addEventListener("input", _ => this.oninput());
@@ -328,7 +351,7 @@ class UserParamDialog {
 		this._userparamdialog_save_button.disabled = true;
 		if (name === "") {
 			this._userparamdialog_errortext_div.textContent = "Name must not be empty";
-		} else if (name in this.#_pattern_design.filedata.user_parameter_definitions) {
+		} else if (name in this.#_pattern_design.filedata.user_parameter_definitions && !this._userparamdialog_paramname_input.disabled) {
 			this._userparamdialog_errortext_div.textContent = `Parameter with name '${name}' already exists`;
 		} else if (!Number.isFinite(default_value)) {
 			this._userparamdialog_errortext_div.textContent = "Default value must be a number";
@@ -355,7 +378,50 @@ class UserParamDialog {
 		return { name, default_value, min, max, step };
 	}
 
-	open() {
+	#_confirm_dismiss() {
+		// if edit mode, confirm discard changes
+		if (this._userparamdialog_paramname_input.disabled) {
+			const { name, default_value, min, max, step } = this.get_values();
+			const { default: initial_default_value, min: initial_min, max: initial_max, step: initial_step } = this.#_pattern_design.filedata.user_parameter_definitions[name];
+			if (default_value != initial_default_value || min != initial_min || max != initial_max || step != initial_step) {
+				if (!confirm("Changes have not been saved. Discard?")) {
+					return;
+				}
+			}
+		}
+		this._userparamdialog_dialog.close("dismiss");
+	}
+
+	/**
+	 *
+	 * @param {string=} edit_param_name
+	 */
+	open(edit_param_name) {
+		if (edit_param_name) {
+			this._userparamdialog_dialog.classList.remove("add");
+			this._userparamdialog_dialog.classList.add("edit");
+
+			this._userparamdialog_paramname_input.disabled = true;
+			this._userparamdialog_paramname_input.value = edit_param_name;
+			const { default: default_value, min, max, step } = this.#_pattern_design.filedata.user_parameter_definitions[edit_param_name];
+			this._userparamdialog_default_input.value = (Math.round(default_value*100000)/100000).toString();
+			if (min && min !== -Infinity) {
+				this._userparamdialog_clampmin_input.checked = true;
+				this._userparamdialog_min_input.value = (Math.round(min*100000)/100000).toString();
+			}
+			if (max && max !== Infinity) {
+				this._userparamdialog_clampmax_input.checked = true;
+				this._userparamdialog_max_input.value = (Math.round(max*100000)/100000).toString();
+			}
+			this._userparamdialog_step_input.value = (Math.round(step*100000)/100000).toString();
+
+		} else {
+			this._userparamdialog_dialog.classList.remove("edit");
+			this._userparamdialog_dialog.classList.add("add");
+			this._userparamdialog_paramname_input.disabled = false;
+		}
+
+		this.oninput(); // update error text
 		this._userparamdialog_dialog.showModal();
 	}
 

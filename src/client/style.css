@@ -221,6 +221,11 @@ button:focus {
     outline: none;
     box-shadow: 0 0 0 2px var(--focus-ring);
 }
+button.textonly {
+    background-color: transparent;
+    /* color: var(--background-interactive); */
+    /* border: solid 2px var(--background-interactive); */
+}
 
 input[type="checkbox"] {
     appearance: none;
@@ -638,7 +643,7 @@ div.parametereditor {
 
 div.parametereditor div.userparameters {
     display: grid;
-    grid-template-columns: 1.5fr auto 1fr;
+    grid-template-columns: 1.5fr auto 1fr auto;
     gap: 1ex;
     align-items: center;
     justify-content: center;
@@ -686,7 +691,6 @@ div.parametereditor div.playback {
 div.parametereditor div.playback span.warning {
     visibility: hidden;
     justify-self: end;
-    color: var(--text-error);
     color: var(--warn);
     font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 100, 'opsz' 24;
     animation: warning 1.5s infinite alternate-reverse;
@@ -809,4 +813,11 @@ div.menulist div.nested:hover div.menulist {
     visibility: visible;
     opacity: 1;
     transition-delay: 0ms;
+}
+
+#userparamdialog:not(.add) span.titletext.add {
+    display: none;
+}
+#userparamdialog:not(.edit) span.titletext.edit {
+    display: none;
 }

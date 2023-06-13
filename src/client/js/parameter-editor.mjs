@@ -336,7 +336,9 @@ class UserParamDialog {
 
 
 	reset() {
+		const old_param_name = this._userparamdialog_paramname_input.value;
 		this._userparamdialog_form.reset();
+		if (this._userparamdialog_paramname_input.disabled) this._userparamdialog_paramname_input.value = old_param_name; // keep old name if editing existing param
 		this.oninput();
 		this._userparamdialog_errortext_div.textContent = "";
 	}

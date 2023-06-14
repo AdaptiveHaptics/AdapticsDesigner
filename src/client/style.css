@@ -146,6 +146,43 @@ div.dialogtitlebar > button.close {
     /* outline: 1px solid slategrey; */
 }
 
+dynamic-f64-input > label {
+    display: contents;
+}
+dynamic-f64-input div.vinput {
+    display: grid;
+    position: relative;
+}
+dynamic-f64-input div.menulist.autocomplete {
+    z-index: 50;
+    position: absolute;
+    box-sizing: border-box;
+    width: 100%;
+    top: 100%;
+    outline: 2px solid var(--background-tertiary);
+    border-color: var(--background-tertiary);
+    border-style: solid;
+    border-width: 0px 0.2ex 0.2ex;
+    visibility: hidden;
+}
+dynamic-f64-input:focus-within div.menulist.autocomplete {
+    visibility: visible;
+}
+dynamic-f64-input div.menulist.autocomplete button.df64autocompletion.autoaction {
+    background-color: var(--background-interactive-active);
+}
+dynamic-f64-input div.menulist.autocomplete button.df64autocompletion {
+    grid-template-columns: 1fr auto;
+}
+dynamic-f64-input div.menulist.autocomplete button.df64autocompletion span.value {
+    justify-self: start;
+    font-weight: bold;
+}
+dynamic-f64-input div.menulist.autocomplete button.df64autocompletion span.type {
+    color: var(--text-low-priority);
+    font-family: monospace;
+}
+
 div.labelinputgrid {
     display: grid;
     grid-template-columns: auto 1fr;
@@ -762,7 +799,7 @@ div.menulist {
     /* border: 5px solid var(--background-titlebar); */
     padding: var(--contextmenu-border);
     display: grid;
-    grid-template-columns: max-content;
+    grid-template-columns: minmax(max-content, auto);
     background-color: var(--background-titlebar);
     gap: 1px;
 }

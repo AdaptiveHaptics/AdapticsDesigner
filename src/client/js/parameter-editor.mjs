@@ -1,7 +1,7 @@
 /** @typedef {import("./fe/patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
 /** @typedef {import("./fe/patterndesign.mjs").MAHKeyframeFE} MAHKeyframeFE */
 
-import { assert_unreachable, notnull } from "./util.mjs";
+import { notnull } from "./util.mjs";
 
 export class ParameterEditor {
 	/**
@@ -98,6 +98,7 @@ export class ParameterEditor {
 		const userparam_els_by_name = new Map();
 		const uparam_children = [...this._userparameters_div.children];
 		for (const up_el of uparam_children) {
+			if (up_el.classList.contains("unusedcontainer")) up_el.remove();
 			if (!(up_el instanceof UserParamControl)) continue;
 			const user_param_name = up_el.param_name;
 			if (up_linked_map.has(user_param_name)) {
@@ -105,18 +106,48 @@ export class ParameterEditor {
 			}
 			up_el.remove();
 		}
-		for (const [param, up_linked] of new Map([...up_linked_map].sort((a, b) => a[0].localeCompare(b[0])))) {
-			const pvalue = this._pattern_design.resolve_dynamic_f64({ type: "dynamic", value: param });
-			const step_size = this._pattern_design.filedata.user_parameter_definitions[param]?.step ?? 0.05;
-			const up_el = userparam_els_by_name.get(param) ||  (
-				this._pattern_design.update_evaluator_user_params(param, pvalue),
-				new UserParamControl(this._pattern_design, param, pvalue, step_size, up_linked, this.user_param_dialog)
-			);
 
-			up_el.up_linked = up_linked;
 
-			this._userparameters_div.appendChild(up_el);
+		const append_uparams = (uparams_map) => {
+			for (const [param, up_linked] of uparams_map) {
+				const pvalue = this._pattern_design.resolve_dynamic_f64({ type: "dynamic", value: param });
+				const step_size = this._pattern_design.filedata.user_parameter_definitions[param]?.step ?? 0.05;
+				const up_el = userparam_els_by_name.get(param) ||  (
+					this._pattern_design.update_evaluator_user_params(param, pvalue),
+					new UserParamControl(this._pattern_design, param, pvalue, step_size, up_linked, this.user_param_dialog)
+				);
+
+				up_el.up_linked = up_linked;
+
+				this._userparameters_div.appendChild(up_el);
+			}
+		};
+
+		const used_params = new Map();
+		const unused_params = new Map();
+		[...up_linked_map].sort((a, b) => a[0].localeCompare(b[0])).forEach(([param, up_linked]) => {
+			if (up_linked.unused) unused_params.set(param, up_linked);
+			else used_params.set(param, up_linked);
+		});
+		append_uparams(used_params);
+		if (unused_params.size > 0) {
+			const unusedcontainer_div = this._userparameters_div.appendChild(document.createElement("div"));
+			unusedcontainer_div.classList.add("unusedcontainer");
+			unusedcontainer_div.appendChild(document.createElement("hr"));
+			const unusedheader_span = unusedcontainer_div.appendChild(document.createElement("span"));
+			unusedheader_span.classList.add("unusedheader");
+			unusedheader_span.textContent = "Unused Parameters";
+			const delete_unused_button = unusedcontainer_div.appendChild(document.createElement("button"));
+			delete_unused_button.classList.add("deleteunused", "textonly");
+			delete_unused_button.innerHTML = '<span class="material-symbols-outlined">delete_forever</span>';
+			delete_unused_button.addEventListener("click", _ev => {
+				for (const [param, _up_linked] of unused_params) {
+					this._pattern_design.delete_evaluator_user_param(param);
+				}
+			});
+			append_uparams(unused_params);
 		}
+
 
 		this.#_update_user_parameters_values();
 	}
@@ -239,8 +270,7 @@ class UserParamControl extends HTMLElement {
 	 */
 	set up_linked(v) {
 		this.#_up_linked = v;
-		const hasProps = this.#_up_linked.prop_parents.dynf64.length + this.#_up_linked.prop_parents.cjumps.length > 0;
-		this.classList.toggle("unused", !hasProps);
+		this.classList.toggle("unused", v.unused);
 	}
 	get up_linked() {
 		return this.#_up_linked;

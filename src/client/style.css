@@ -688,8 +688,24 @@ div.parametereditor div.userparameters {
 div.parametereditor div.userparameters > div:first-child {
     font-weight: bold;
 }
-div.parametereditor div.userparameters > * {
+div.parametereditor div.userparameters > div:first-child, div.parametereditor div.userparameters > user-param-control {
     display: contents;
+}
+div.parametereditor div.userparameters > div.unusedcontainer {
+    display: contents;
+}
+div.parametereditor div.userparameters > div.unusedcontainer > hr {
+    margin: 0;
+}
+div.parametereditor div.userparameters > div.unusedcontainer > span.unusedheader {
+    grid-column: 1 / -2;
+    font-weight: bold;
+    color: var(--text-low-priority);
+    font-size: 1.2em;
+}
+div.parametereditor div.userparameters > div.unusedcontainer > button.deleteunused.textonly {
+    /* background-color: var(--delete-color); */
+    color: var(--delete-color);
 }
 div.parametereditor div.userparameters > user-param-control span.eq {
     font-weight: bold;

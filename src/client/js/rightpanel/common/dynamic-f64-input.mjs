@@ -19,6 +19,7 @@ export class DynamicF64Input extends HTMLElement {
 	#_max;
 	/** @type {Parameters<DynamicF64Input["update_value"]>[0]} */
 	#_last_value = null;
+	#_paramonly;
 
 	/**
 	 *
@@ -31,13 +32,17 @@ export class DynamicF64Input extends HTMLElement {
 	 * @param {number=} param3.step
 	 * @param {number=} param3.min
 	 * @param {number=} param3.max
+	 * @param {boolean=} param3.nolabel
+	 * @param {boolean=} param3.paramonly
 	 */
-	constructor(pattern_design, name, { get, set, unit, step, min, max }) {
+	constructor(pattern_design, name, { get, set, unit, step, min, max, nolabel, paramonly }) {
 		super();
 
 		this.#_pattern_design = pattern_design;
 		this.#_set = set;
 		this.#_get = get;
+
+		// this.#_paramonly = paramonly;
 
 		this.#_labeltext_span.classList.add("labeltext");
 		this.#_name = name;
@@ -87,9 +92,13 @@ export class DynamicF64Input extends HTMLElement {
 		this.#_val_input_div.appendChild(this.#_autocomplete_div);
 
 
-		this.#_label.appendChild(this.#_val_input_div);
+		if (nolabel) {
+			this.appendChild(this.#_val_input_div);
+		} else {
+			this.#_label.appendChild(this.#_val_input_div);
+			this.appendChild(this.#_label);
+		}
 
-		this.appendChild(this.#_label);
 
 		this.#_val_input.addEventListener("input", _ev => {
 			console.log("input");
@@ -218,14 +227,18 @@ export class DynamicF64Input extends HTMLElement {
 		const df64v = this.#_parse_input_value();
 		const user_params = [...this.#_pattern_design.get_user_parameters_to_linked_map().keys()];
 
+		let autoaction = true;
 		if (df64v.type === "f64") {
-			insert_autocompletion(df64v, { autoaction: true });
-		} else {
-			if (user_params.includes(this.#_val_input.value)) {
-				insert_autocompletion({ type: "dynamic", value: this.#_val_input.value }, { autoaction: true });
-			} else if (this.#_val_input.value !== "") {
-				insert_autocompletion({ type: "dynamic", value: this.#_val_input.value }, { type: "create new parameter", autoaction: true });
-			}
+			insert_autocompletion(df64v, { autoaction });
+			autoaction = false;
+		}
+
+		if (user_params.includes(this.#_val_input.value)) {
+			insert_autocompletion({ type: "dynamic", value: this.#_val_input.value }, { autoaction });
+			autoaction = false;
+		} else if (this.#_val_input.value !== "" && df64v.type !== "f64") { //dont show creation for empty string or param names that can be parsed as f64. Creation of these is technically still allowed (by the json format, and elsewhere in gui, but we will not allow it here to reduce confusion)
+			insert_autocompletion({ type: "dynamic", value: this.#_val_input.value }, { type: "create new parameter", autoaction });
+			autoaction = false;
 		}
 
 		user_params.filter(p =>

@@ -138,6 +138,7 @@ export class ParameterEditor {
 			unusedheader_span.classList.add("unusedheader");
 			unusedheader_span.textContent = "Unused Parameters";
 			const delete_unused_button = unusedcontainer_div.appendChild(document.createElement("button"));
+			delete_unused_button.title = "Delete All Unused Parameters";
 			delete_unused_button.classList.add("deleteunused", "textonly");
 			delete_unused_button.innerHTML = '<span class="material-symbols-outlined">delete_forever</span>';
 			delete_unused_button.addEventListener("click", _ev => {
@@ -358,17 +359,32 @@ class UserParamDialog {
 		});
 		this._userparamdialog_form.addEventListener("input", _ => this.oninput());
 		this._userparamdialog_form.addEventListener("change", _ => this.oninput());
-		this._userparamdialog_form.addEventListener("submit", _ => {
+		this._userparamdialog_form.addEventListener("submit", ev => {
 			const { name, default_value, min, max, step } = this.get_values();
+			if (!this.#_is_edit_mode()) { // check if name can be parsed as a number and if so, ask for confirmation
+				const v_num = Number(name);
+				const v_pf = parseFloat(name);
+				if (Number.isFinite(v_num) && v_num === v_pf) {
+					const confirmation = confirm(`Parameter name '${name}' can be parsed as a number. Are you sure you want to use it as a parameter name?`);
+					if (!confirmation) {
+						this._userparamdialog_paramname_input.focus();
+						ev.preventDefault();
+						return false;
+					}
+				}
+			}
 			pattern_design.update_user_param_definition(name, { default: default_value, min, max, step });
 		});
 	}
 
+	#_is_edit_mode() {
+		return this._userparamdialog_paramname_input.disabled;
+	}
 
 	reset() {
 		const old_param_name = this._userparamdialog_paramname_input.value;
 		this._userparamdialog_form.reset();
-		if (this._userparamdialog_paramname_input.disabled) this._userparamdialog_paramname_input.value = old_param_name; // keep old name if editing existing param
+		if (this.#_is_edit_mode()) this._userparamdialog_paramname_input.value = old_param_name; // keep old name if editing existing param
 		this.oninput();
 		this._userparamdialog_errortext_div.textContent = "";
 	}
@@ -383,7 +399,7 @@ class UserParamDialog {
 		this._userparamdialog_save_button.disabled = true;
 		if (name === "") {
 			this._userparamdialog_errortext_div.textContent = "Name must not be empty";
-		} else if (name in this.#_pattern_design.filedata.user_parameter_definitions && !this._userparamdialog_paramname_input.disabled) {
+		} else if (name in this.#_pattern_design.filedata.user_parameter_definitions && !this.#_is_edit_mode()) {
 			this._userparamdialog_errortext_div.textContent = `Parameter with name '${name}' already exists`;
 		} else if (!Number.isFinite(default_value)) {
 			this._userparamdialog_errortext_div.textContent = "Default value must be a number";
@@ -412,7 +428,7 @@ class UserParamDialog {
 
 	#_confirm_dismiss() {
 		// if edit mode, confirm discard changes
-		if (this._userparamdialog_paramname_input.disabled) {
+		if (this.#_is_edit_mode()) {
 			const { name, default_value, min, max, step } = this.get_values();
 			const { default: initial_default_value, min: initial_min, max: initial_max, step: initial_step } = this.#_pattern_design.filedata.user_parameter_definitions[name];
 			if (default_value != initial_default_value || min != initial_min || max != initial_max || step != initial_step) {

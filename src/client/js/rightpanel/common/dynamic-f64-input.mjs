@@ -60,7 +60,10 @@ export class DynamicF64Input extends HTMLElement {
 		if (this.#_get) this.#_val_input.value = this.#_get().value.toString();
 		this.#_val_input.addEventListener("keydown", ev => {
 			const value = this.#_parse_input_value();
-			if (ev.key === "Escape") this.#_reset_value();
+			if (ev.key === "Escape") {
+				this.#_reset_value();
+				this.#_blur_delayed();
+			}
 			if (value.type === "f64") {
 				if (ev.key === "ArrowUp") {
 					this.#_val_input.value = (value.value + this.#_step).toString();
@@ -203,13 +206,7 @@ export class DynamicF64Input extends HTMLElement {
 					ev.preventDefault();
 					this.update_value(df64v);
 					this.#_on_val_input_change();
-					requestAnimationFrame(() => {
-						// console.log(document.activeElement);
-						if (document.activeElement instanceof HTMLElement) {
-							document.activeElement.blur();
-						}
-						// console.log(document.activeElement);
-					});
+					this.#_blur_delayed();
 				});
 
 				this.#_autocomplete_div.appendChild(autocompletion_button);
@@ -238,6 +235,16 @@ export class DynamicF64Input extends HTMLElement {
 			insert_autocompletion({ type: "dynamic", value: p });
 		});
 
+	}
+
+	#_blur_delayed() {
+		requestAnimationFrame(() => {
+			// console.log(document.activeElement);
+			if (document.activeElement instanceof HTMLElement) {
+				document.activeElement.blur();
+			}
+			// console.log(document.activeElement);
+		});
 	}
 }
 

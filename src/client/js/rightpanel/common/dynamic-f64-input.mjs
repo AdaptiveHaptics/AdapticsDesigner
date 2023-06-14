@@ -79,7 +79,7 @@ export class DynamicF64Input extends HTMLElement {
 		this.#_val_input.addEventListener("change", ev => {
 			ev.stopPropagation(); //i cant use shadowroot because subgrid isnt supported (and may not even work in shadow root)
 			if (this.#_val_input.value == "") this.#_reset_value();
-			this.#_on_val_input_change();
+			else this.#_on_val_input_change();
 		});
 		this.#_val_input_div.appendChild(this.#_val_input);
 

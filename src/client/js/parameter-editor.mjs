@@ -1,7 +1,7 @@
 /** @typedef {import("./fe/patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
 /** @typedef {import("./fe/patterndesign.mjs").MAHKeyframeFE} MAHKeyframeFE */
 
-import { notnull } from "./util.mjs";
+import { notnull, num_to_rounded_string } from "./util.mjs";
 
 export class ParameterEditor {
 	/**
@@ -118,6 +118,8 @@ export class ParameterEditor {
 				);
 
 				up_el.up_linked = up_linked;
+				up_el.step_size = step_size;
+				up_el.param_value = pvalue;
 
 				this._userparameters_div.appendChild(up_el);
 			}
@@ -158,7 +160,7 @@ export class ParameterEditor {
 			if (!(up_el instanceof UserParamControl)) continue;
 			const user_param_val = this._pattern_design.evaluator_params.user_parameters.get(up_el.param_name);
 			if (user_param_val !== undefined) {
-				up_el.param_value = user_param_val.toString();
+				up_el.param_value = user_param_val;
 			}
 		}
 	}
@@ -232,7 +234,7 @@ class UserParamControl extends HTMLElement {
 		this.#_val_input.name = key;
 		this.step_size = step_size;
 		this.#_val_input.type = "number";
-		this.#_val_input.value = val.toString();
+		this.param_value = val;
 		this.#_val_input.addEventListener("change", _ => this.on_val_input_change());
 		this.appendChild(this.#_val_input);
 
@@ -255,10 +257,10 @@ class UserParamControl extends HTMLElement {
 		this.#_val_input.name = v;
 	}
 	get param_value() {
-		return this.#_val_input.value;
+		return Number(this.#_val_input.value);
 	}
 	set param_value(v) {
-		this.#_val_input.value = v;
+		this.#_val_input.value = num_to_rounded_string(v);
 	}
 	/**
 	 * @param {number} v
@@ -289,11 +291,11 @@ class UserParamControl extends HTMLElement {
 		}
 	}
 	on_val_input_change() {
-		const v = parseFloat(this.param_value);
+		const v = this.param_value;
 		if (Number.isFinite(v)) {
 			this.#_pattern_design.update_evaluator_user_params(this.param_name, v);
 		} else {
-			this.param_value = this.#_pattern_design.evaluator_params.user_parameters.get(this.param_name)?.toFixed(2) || "0"; // reset to old value
+			this.param_value = this.#_pattern_design.resolve_dynamic_f64({ type: "dynamic", value: this.param_name });
 		}
 	}
 
@@ -452,16 +454,16 @@ class UserParamDialog {
 			this._userparamdialog_paramname_input.disabled = true;
 			this._userparamdialog_paramname_input.value = edit_param_name;
 			const { default: default_value, min, max, step } = this.#_pattern_design.filedata.user_parameter_definitions[edit_param_name];
-			this._userparamdialog_default_input.value = (Math.round(default_value*100000)/100000).toString();
+			this._userparamdialog_default_input.value = num_to_rounded_string(default_value);
 			if (min && min !== -Infinity) {
 				this._userparamdialog_clampmin_input.checked = true;
-				this._userparamdialog_min_input.value = (Math.round(min*100000)/100000).toString();
+				this._userparamdialog_min_input.value = num_to_rounded_string(min);
 			}
 			if (max && max !== Infinity) {
 				this._userparamdialog_clampmax_input.checked = true;
-				this._userparamdialog_max_input.value = (Math.round(max*100000)/100000).toString();
+				this._userparamdialog_max_input.value = num_to_rounded_string(max);
 			}
-			this._userparamdialog_step_input.value = (Math.round(step*100000)/100000).toString();
+			this._userparamdialog_step_input.value = num_to_rounded_string(step);
 
 		} else {
 			this._userparamdialog_dialog.classList.remove("edit");

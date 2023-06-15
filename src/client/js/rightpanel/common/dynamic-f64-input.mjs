@@ -2,7 +2,7 @@
 /** @typedef {import("../../fe/patterndesign.mjs").MAHKeyframeFE} MAHKeyframeFE */
 /** @typedef {import("../../../../external/pattern_evaluator/rs-shared-types").MAHDynamicF64} MAHDynamicF64 */
 
-import { assert_unreachable } from "../../util.mjs";
+import { assert_unreachable, num_to_rounded_string } from "../../util.mjs";
 
 export class DynamicF64Input extends HTMLElement {
 	#_pattern_design;
@@ -17,7 +17,7 @@ export class DynamicF64Input extends HTMLElement {
 	#_get;
 	#_min;
 	#_max;
-	/** @type {Parameters<DynamicF64Input["update_value"]>[0]} */
+	/** @type {MAHDynamicF64 | null} */
 	#_last_value = null;
 	#_paramonly;
 
@@ -62,7 +62,7 @@ export class DynamicF64Input extends HTMLElement {
 
 		this.#_val_input_div.classList.add("vinput");
 		this.#_val_input.type = "text";
-		if (this.#_get) this.#_val_input.value = this.#_get().value.toString();
+		if (this.#_get) this.update_value();
 		this.#_val_input.addEventListener("keydown", ev => {
 			const value = this.#_parse_input_value();
 			if (ev.key === "Escape") {
@@ -71,11 +71,11 @@ export class DynamicF64Input extends HTMLElement {
 			}
 			if (value && value.type === "f64") {
 				if (ev.key === "ArrowUp") {
-					this.#_val_input.value = (value.value + this.#_step).toString();
+					this.#_val_input.value = num_to_rounded_string(value.value + this.#_step);
 					this.#_on_val_input_change(); // constrain, set
 					ev.preventDefault();
 				} else if (ev.key === "ArrowDown") {
-					this.#_val_input.value = (value.value - this.#_step).toString();
+					this.#_val_input.value = num_to_rounded_string(value.value - this.#_step);
 					this.#_on_val_input_change(); // constrain, set
 					ev.preventDefault();
 				}
@@ -116,7 +116,7 @@ export class DynamicF64Input extends HTMLElement {
 	 */
 	static stringify_df64(v) {
 		if (v.type === "f64") {
-			return (Math.round(v.value*100000)/100000).toString();
+			return num_to_rounded_string(v.value);
 		} else {
 			return v.value;
 		}
@@ -126,11 +126,11 @@ export class DynamicF64Input extends HTMLElement {
 	 * @param {(MAHDynamicF64 | null)=} v
 	 */
 	update_value(v) {
-		this.#_last_value = v;
 		if (v === undefined) {
 			if (!this.#_get) throw new Error("Cannot auto update value without getter");
 			v = this.#_get();
 		}
+		this.#_last_value = v;
 		if (v === null) {
 			this.#_val_input.value = "";
 		} else {

@@ -157,7 +157,7 @@ dynamic-f64-input div.menulist.autocomplete {
     z-index: 50;
     position: absolute;
     box-sizing: border-box;
-    width: 100%;
+    min-width: 100%;
     top: 100%;
     outline: 2px solid var(--background-tertiary);
     border-color: var(--background-tertiary);

@@ -239,6 +239,7 @@ export class UnifiedKeyframeEditor {
 			this.cjump_details.style.display = "";
 			const for_type_check = selected.filter(supports_cjump);
 
+			/** @type {import("../../../../shared/types.js").ConditionalJump[][]} */
 			const cjumps_by_index = [];
 			for (const kf of for_type_check) {
 				for (let i = 0; i < kf.cjumps.length; i++) {
@@ -255,12 +256,15 @@ export class UnifiedKeyframeEditor {
 				// clone template row
 				const cjump_row = /** @type {ParentNode} */ (this.cjump_row_template.content.cloneNode(true));
 
-				const { cjump_parameter_input, cjump_value_input, cjump_jump_to_input, cjump_operator_select, cjump_remove_button }
+				notnull(cjump_row.querySelector("input[name=parameter]")).replaceWith(
+					new DynamicF64Input(this.pattern_design, "parameter", { paramonly: true, nolabel: true}));
+
+				const { cjump_parameter_df64_input, cjump_value_input, cjump_jump_to_input, cjump_operator_select, cjump_remove_button }
 					= get_children_from_cjump_row(cjump_row);
 				cjump_remove_button.addEventListener("click", () => {
 					this.on_cjump_remove(row_index);
 				});
-				cjump_parameter_input.value = this.get_if_field_identical(cjumps_at_index, cjump => cjump.condition.parameter) || "";
+				cjump_parameter_df64_input.update_value(this.get_if_field_identical(cjumps_at_index, cjump => { return { type: "dynamic", value: cjump.condition.parameter}; }));
 				cjump_operator_select.value = this.get_if_field_identical(cjumps_at_index, cjump => cjump.condition.operator.name) || "multipletypes";
 				cjump_value_input.value = this.get_if_field_identical(cjumps_at_index, cjump => cjump.condition.value)?.toString() || "";
 				cjump_jump_to_input.value = this.get_if_field_identical(cjumps_at_index, cjump => cjump.jump_to)?.toString() || "";
@@ -303,31 +307,57 @@ export class UnifiedKeyframeEditor {
 
 		this.pattern_design.commit_operation({ updated_keyframes: keyframes });
 	}
-	on_brush_change() {
-		this.pattern_design.save_state();
 
-		const keyframes = [...this.pattern_design.selected_keyframes].filter(supports_brush); //filter for type check (redundant since GUI restricts to correct types)
 
-		for (const [brush_input_name, brush_input] of this.brush_inputs) {
-			keyframes.forEach(kf => {
-				if (!kf.brush || brush_input.style.display == "none") return;
-				kf.brush.brush.params[brush_input_name] = brush_input.get_value();
+	/**
+	 * Helper function to update keyframes with new intensity or brush data.
+	 *
+	 * @template {MAHKeyframeFE} K
+	 * @param {MAHKeyframe[]} all_keyframes - All keyframes to check.
+	 * @param {Map<string, DynamicF64Input>} prop_inputs - The input elements to get the new data from.
+	 * @param {HTMLSelectElement} prop_type_select - The select element to get the new prop subtype from.
+	 * @param {HTMLSelectElement} prop_transition_select - The select element to get the new prop transition from.
+	 * @param {string} kf_prop_name - The new type value.
+	 * @param {(kf: MAHKeyframeFE) => kf is K} filter_kf_prop - A function to check if the keyframe supports the given type.
+	 * @param {(type: string) => any} create_default_for_type - A function to create a new prop object with a given type.
+	 */
+	#_update_keyframes_with_flat_inputs(all_keyframes, prop_inputs, prop_type_select, prop_transition_select, kf_prop_name, filter_kf_prop, create_default_for_type) {
+		const filtered_keyframes = all_keyframes.filter(filter_kf_prop);
+
+		for (const [input_name, input] of prop_inputs) {
+			filtered_keyframes.forEach(kf => {
+				if (!kf[kf_prop_name] || input.style.display == "none") return;
+				const val = input.get_value();
+				if (val != null) {
+					kf[kf_prop_name][kf_prop_name].params[input_name] = val;
+				}
 			});
 		}
 
-		keyframes.forEach(kf => {
-			if (!kf.brush) return;
-			if (kf.brush.brush.name == this.brush_type_select.value) return;
-			switch (this.brush_type_select.value) {
-				case "circle":
-					kf.brush.brush = {
-						name: this.brush_type_select.value,
+		filtered_keyframes.forEach(kf => {
+			if (!kf[kf_prop_name]) return;
+			if (kf[kf_prop_name][kf_prop_name].name == prop_type_select.value) return;
+			if (prop_type_select.value == "multipletypes") return;
+			kf[kf_prop_name][kf_prop_name] = create_default_for_type(prop_type_select.value);
+		});
+
+		filtered_keyframes.forEach(kf => { if (kf[kf_prop_name]) kf[kf_prop_name].transition.name = prop_transition_select.value; });
+	}
+
+	// Usage:
+	on_brush_change() {
+		this.pattern_design.save_state();
+		const keyframes = [...this.pattern_design.selected_keyframes];
+		this.#_update_keyframes_with_flat_inputs(
+			keyframes, this.brush_inputs, this.brush_type_select, this.brush_transition_select, "brush", supports_brush,
+			(type) => {
+				switch (type) {
+					case "circle": return {
+						name: type,
 						params: { radius: { type: "f64", value: 1 }, am_freq: { type: "f64", value: 0 } }
 					};
-					break;
-				case "line":
-					kf.brush.brush = {
-						name: this.brush_type_select.value,
+					case "line": return {
+						name: type,
 						params: {
 							length: { type: "f64", value: 5 },
 							thickness: { type: "f64", value: 1 },
@@ -335,58 +365,35 @@ export class UnifiedKeyframeEditor {
 							am_freq: { type: "f64", value: 0 },
 						}
 					};
-					break;
-				case "multipletypes":
-					break;
-				default: throw new Error(`unexpected brush type: ${this.brush_type_select.value}`);
+					default: throw new Error(`unexpected brush type: ${type}`);
+				}
 			}
-		});
-
-		// @ts-ignore
-		keyframes.forEach(kf => { if (kf.brush) kf.brush.transition.name = this.brush_transition_select.value; });
-
+		);
 		this.pattern_design.commit_operation({ updated_keyframes: keyframes });
 	}
+
 	on_intensity_change() {
 		this.pattern_design.save_state();
-
-		const keyframes = [...this.pattern_design.selected_keyframes].filter(supports_intensity); //filter for type check (redundant since GUI restricts to correct types)
-
-		for (const [intensity_input_name, intensity_input] of this.intensity_inputs) {
-			keyframes.forEach(kf => {
-				if (!kf.intensity || intensity_input.style.display == "none") return;
-				kf.intensity.intensity.params[intensity_input_name] = intensity_input.get_value();
-			});
-		}
-
-		keyframes.forEach(kf => {
-			if (!kf.intensity) return;
-			if (kf.intensity.intensity.name == this.intensity_type_select.value) return;
-			switch (this.intensity_type_select.value) {
-				case "constant":
-					kf.intensity.intensity = {
-						name: this.intensity_type_select.value,
+		const keyframes = [...this.pattern_design.selected_keyframes];
+		this.#_update_keyframes_with_flat_inputs(
+			keyframes, this.intensity_inputs, this.intensity_type_select, this.intensity_transition_select, "intensity", supports_intensity,
+			(type) => {
+				switch (type) {
+					case "constant": return {
+						name: type,
 						params: { value: { type: "f64", value: 1 } }
 					};
-					break;
-				case "random":
-					kf.intensity.intensity = {
-						name: this.intensity_type_select.value,
+					case "random": return {
+						name: type,
 						params: {
 							min: { type: "f64", value: 0 },
 							max: { type: "f64", value: 1 },
 						}
 					};
-					break;
-				case "multipletypes":
-					break;
-				default: throw new Error(`unexpected intensity type: ${this.intensity_type_select.value}`);
+					default: throw new Error(`unexpected intensity type: ${type}`);
+				}
 			}
-		});
-
-		// @ts-ignore
-		keyframes.forEach(kf => { if (kf.intensity) kf.intensity.transition.name = this.intensity_transition_select.value; });
-
+		);
 		this.pattern_design.commit_operation({ updated_keyframes: keyframes });
 	}
 	on_cjump_add() {
@@ -453,10 +460,11 @@ export class UnifiedKeyframeEditor {
 			const cjump_rows = this.cjumps_container_div.children;
 			for (let i = 0; i< cjump_rows.length; i++) {
 				const cjump_row =  cjump_rows[i];
-				const { cjump_parameter_input, cjump_value_input, cjump_jump_to_input, cjump_operator_select } = get_children_from_cjump_row(cjump_row);
+				const { cjump_parameter_df64_input, cjump_value_input, cjump_jump_to_input, cjump_operator_select } = get_children_from_cjump_row(cjump_row);
 				const cjump = kf.cjumps[i];
 				if (!cjump) return;
-				if (cjump_parameter_input.value) cjump.condition.parameter = cjump_parameter_input.value;
+				const cjump_param_df64_wrapped = cjump_parameter_df64_input.get_value();
+				if (cjump_param_df64_wrapped && cjump_param_df64_wrapped.type == "dynamic") cjump.condition.parameter = cjump_param_df64_wrapped.value;
 				switch (cjump_operator_select.value) {
 					case "lt":
 					case "lt_eq":
@@ -483,8 +491,8 @@ export class UnifiedKeyframeEditor {
  * @param {ParentNode} cjump_row
  */
 function get_children_from_cjump_row(cjump_row) {
-	/** @type {HTMLInputElement} */
-	const cjump_parameter_input = notnull(cjump_row.querySelector("input[name=parameter]"));
+	/** @type {DynamicF64Input} */
+	const cjump_parameter_df64_input = notnull(cjump_row.querySelector("dynamic-f64-input"));
 	/** @type {HTMLInputElement} */
 	const cjump_value_input = notnull(cjump_row.querySelector("input[name=value]"));
 	/** @type {HTMLInputElement} */
@@ -495,5 +503,5 @@ function get_children_from_cjump_row(cjump_row) {
 	/** @type {HTMLButtonElement} */
 	const cjump_remove_button = notnull(cjump_row.querySelector("button.remove"));
 
-	return { cjump_parameter_input, cjump_value_input, cjump_jump_to_input, cjump_operator_select, cjump_remove_button };
+	return { cjump_parameter_df64_input, cjump_value_input, cjump_jump_to_input, cjump_operator_select, cjump_remove_button };
 }

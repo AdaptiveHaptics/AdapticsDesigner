@@ -42,7 +42,7 @@ export class DynamicF64Input extends HTMLElement {
 		this.#_set = set;
 		this.#_get = get;
 
-		// this.#_paramonly = paramonly;
+		this.#_paramonly = paramonly;
 
 		this.#_labeltext_span.classList.add("labeltext");
 		this.#_name = name;
@@ -69,7 +69,7 @@ export class DynamicF64Input extends HTMLElement {
 				this.#_reset_value();
 				this.#_blur_delayed();
 			}
-			if (value.type === "f64") {
+			if (value && value.type === "f64") {
 				if (ev.key === "ArrowUp") {
 					this.#_val_input.value = (value.value + this.#_step).toString();
 					this.#_on_val_input_change(); // constrain, set
@@ -83,8 +83,7 @@ export class DynamicF64Input extends HTMLElement {
 		});
 		this.#_val_input.addEventListener("change", ev => {
 			ev.stopPropagation(); //i cant use shadowroot because subgrid isnt supported (and may not even work in shadow root)
-			if (this.#_val_input.value == "") this.#_reset_value();
-			else this.#_on_val_input_change();
+			this.#_on_val_input_change();
 		});
 		this.#_val_input_div.appendChild(this.#_val_input);
 
@@ -101,7 +100,6 @@ export class DynamicF64Input extends HTMLElement {
 
 
 		this.#_val_input.addEventListener("input", _ev => {
-			console.log("input");
 			this.#_update_autocomplete();
 		});
 	}
@@ -160,12 +158,15 @@ export class DynamicF64Input extends HTMLElement {
 
 	/**
 	 *
-	 * @returns {MAHDynamicF64}
+	 * @returns {MAHDynamicF64 | null}
 	 */
 	#_parse_input_value() {
+		if (this.#_val_input.value === "") {
+			return null;
+		}
 		const v_num = Number(this.#_val_input.value);
 		const v_pf = parseFloat(this.#_val_input.value);
-		if (Number.isFinite(v_num) && v_num === v_pf) {
+		if (Number.isFinite(v_num) && v_num === v_pf && !this.#_paramonly) {
 			return { type: "f64", value: this.#_constrain_f64(v_num) };
 		} else {
 			return { type: "dynamic", value: this.#_val_input.value };
@@ -173,10 +174,16 @@ export class DynamicF64Input extends HTMLElement {
 	}
 
 	#_on_val_input_change() {
+		const df64v = this.#_parse_input_value();
+		// if (df64v === this.#_last_value) return; // prevent emitting event on no change (hacky fix for clicking on an autocompletion triggering #_on_val_input_change() and a change event (because of blur) )
+		if (df64v === null) {
+			this.#_reset_value();
+			return;
+		}
 		this.dispatchEvent(new Event("change", { bubbles: true }));
 		if (this.#_set) {
 			this.#_pattern_design.save_state();
-			this.#_pattern_design.commit_operation(this.#_set(this.#_parse_input_value()));
+			this.#_pattern_design.commit_operation(this.#_set(df64v));
 		}
 	}
 
@@ -214,7 +221,7 @@ export class DynamicF64Input extends HTMLElement {
 				autocompletion_button.addEventListener("mousedown", ev => {
 					ev.preventDefault();
 					this.update_value(df64v);
-					this.#_on_val_input_change();
+					// this.#_on_val_input_change(); //blur will trigger change event
 					this.#_blur_delayed();
 				});
 
@@ -227,18 +234,20 @@ export class DynamicF64Input extends HTMLElement {
 		const df64v = this.#_parse_input_value();
 		const user_params = [...this.#_pattern_design.get_user_parameters_to_linked_map().keys()];
 
-		let autoaction = true;
-		if (df64v.type === "f64") {
-			insert_autocompletion(df64v, { autoaction });
-			autoaction = false;
-		}
+		if (df64v) {
+			let autoaction = true;
+			if (df64v.type === "f64") {
+				insert_autocompletion(df64v, { autoaction });
+				autoaction = false;
+			}
 
-		if (user_params.includes(this.#_val_input.value)) {
-			insert_autocompletion({ type: "dynamic", value: this.#_val_input.value }, { autoaction });
-			autoaction = false;
-		} else if (this.#_val_input.value !== "" && df64v.type !== "f64") { //dont show creation for empty string or param names that can be parsed as f64. Creation of these is technically still allowed (by the json format, and elsewhere in gui, but we will not allow it here to reduce confusion)
-			insert_autocompletion({ type: "dynamic", value: this.#_val_input.value }, { type: "create new parameter", autoaction });
-			autoaction = false;
+			if (user_params.includes(this.#_val_input.value)) {
+				insert_autocompletion({ type: "dynamic", value: this.#_val_input.value }, { autoaction });
+				autoaction = false;
+			} else if (this.#_val_input.value !== "" && df64v.type !== "f64") { //dont show creation for empty string or param names that can be parsed as f64. Creation of these is technically still allowed (by the json format, and elsewhere in gui, but we will not allow it here to reduce confusion)
+				insert_autocompletion({ type: "dynamic", value: this.#_val_input.value }, { type: "create new parameter", autoaction });
+				autoaction = false;
+			}
 		}
 
 		user_params.filter(p =>

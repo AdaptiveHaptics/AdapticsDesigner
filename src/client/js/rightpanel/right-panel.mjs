@@ -23,7 +23,7 @@ export class RightPanel {
 			const tab_button = ev.target.closest("button.tab");
 			if (tab_button) {
 				const tabpanel_name = tab_button.dataset.tabpanel;
-				this.update_tab(tabpanel_name);
+				this.switch_to_tab(tabpanel_name);
 			}
 		});
 
@@ -32,10 +32,14 @@ export class RightPanel {
 		this.unified_keyframe_editor = new UnifiedKeyframeEditor(pattern_design, notnull(this.tabpanelcontainer_div.querySelector("div.ukfecontainer")));
 		this.pattern_globals_editor = new PatternGlobalsEditor(pattern_design, notnull(this.tabpanelcontainer_div.querySelector("form.pattern")));
 
-		this.update_tab("help");
+		// this.pattern_design.state_change_events.addEventListener("item_select", ev => {
+		// 	if (ev.detail.keyframe) this.switch_to_tab("ukfecontainer"); // switch to UKFE tab when a keyframe is selected (might be annoying idk)
+		// });
+
+		this.switch_to_tab("help");
 	}
 
-	update_tab(tabpanel_name) {
+	switch_to_tab(tabpanel_name) {
 		[...this.tabpanelcontainer_div.children].forEach(tabpanel_div => {
 			if (tabpanel_div.classList.contains(tabpanel_name)) {
 				tabpanel_div.classList.remove("hidden");

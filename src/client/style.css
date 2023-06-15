@@ -121,14 +121,16 @@ dialog > form > div.buttons > button {
 }
 div.dialogtitlebar {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr;
+    grid-auto-flow: column;
+    grid-auto-columns: auto;
     gap: 1ex;
     align-items: end;
 }
 div.dialogtitlebar > span.titletext {
     font-size: 1.5em;
 }
-div.dialogtitlebar > button.close {
+div.dialogtitlebar > button {
     padding: 0.5ex;
 }
 
@@ -262,6 +264,9 @@ button.textonly {
     background-color: transparent;
     /* color: var(--background-interactive); */
     /* border: solid 2px var(--background-interactive); */
+}
+button.textonly.delete {
+    color: var(--delete-color);
 }
 
 input[type="checkbox"] {
@@ -703,10 +708,6 @@ div.parametereditor div.userparameters > div.unusedcontainer > span.unusedheader
     color: var(--text-low-priority);
     font-size: 1.2em;
 }
-div.parametereditor div.userparameters > div.unusedcontainer > button.deleteunused.textonly {
-    /* background-color: var(--delete-color); */
-    color: var(--delete-color);
-}
 div.parametereditor div.userparameters > user-param-control span.eq {
     font-weight: bold;
 }
@@ -872,5 +873,8 @@ div.menulist div.nested:hover div.menulist {
     display: none;
 }
 #userparamdialog:not(.edit) span.titletext.edit {
+    display: none;
+}
+#userparamdialog:not(.edit) button.delete {
     display: none;
 }

@@ -342,11 +342,19 @@ class UserParamDialog {
 		/** @type {HTMLButtonElement} */
 		this._userparamdialog_close_button = notnull(this._userparamdialog_form.querySelector("button.close"));
 		/** @type {HTMLButtonElement} */
+		this._userparamdialog_delete_button = notnull(this._userparamdialog_form.querySelector("button.delete"));
+		/** @type {HTMLButtonElement} */
 		this._userparamdialog_reset_button = notnull(this._userparamdialog_form.querySelector("button.reset"));
 		/** @type {HTMLDivElement} */
 		this._userparamdialog_errortext_div = notnull(this._userparamdialog_form.querySelector("div.errortext"));
 
 
+		this._userparamdialog_delete_button.addEventListener("click", _ => {
+			const { name } = this.get_values();
+			if (!confirm(`Delete parameter '${name}'?`)) return;
+			this.#_pattern_design.delete_evaluator_user_param(name);
+			this._userparamdialog_dialog.close("dismiss");
+		});
 		this._userparamdialog_close_button.addEventListener("click", _ => {
 			this._userparamdialog_dialog.close("dismiss");
 		});

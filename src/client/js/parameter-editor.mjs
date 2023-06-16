@@ -251,7 +251,10 @@ class UserParamControl extends HTMLElement {
 		edit_button.addEventListener("click", _ => this.#_user_param_dialog.open(this.param_name));
 		this.appendChild(edit_button);
 
-		this.addEventListener("click", _ev => this.select_linked());
+		this.addEventListener("click", ev => {
+			if (ev.target == this.#_val_input) return; // ignore clicks on the value input
+			this.select_linked();
+		});
 	}
 
 	get param_name() {

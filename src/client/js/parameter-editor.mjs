@@ -141,7 +141,7 @@ export class ParameterEditor {
 			unusedheader_span.textContent = "Unused Parameters";
 			const delete_unused_button = unusedcontainer_div.appendChild(document.createElement("button"));
 			delete_unused_button.title = "Delete All Unused Parameters";
-			delete_unused_button.classList.add("deleteunused", "textonly");
+			delete_unused_button.classList.add("delete", "textonly");
 			delete_unused_button.innerHTML = '<span class="material-symbols-outlined">delete_forever</span>';
 			delete_unused_button.addEventListener("click", _ev => {
 				for (const [param, _up_linked] of unused_params) {

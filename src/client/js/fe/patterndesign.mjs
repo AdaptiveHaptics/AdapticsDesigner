@@ -93,6 +93,8 @@ class StateChangeEventTarget extends EventTarget {
 
 export class MAHPatternDesignFE {
 	#_filename; get filename() { return this.#_filename; }
+	/** @type {string | null} */
+	#_last_used_user_param = null; get last_used_user_param() { return this.#_last_used_user_param; } set last_used_user_param(v) { this.#_last_used_user_param = v; }
 
 	/**
 	 *
@@ -148,8 +150,9 @@ export class MAHPatternDesignFE {
 		this.state_change_events.addEventListener("playback_update", _ => {
 			if (this.last_eval[0].stop) this.update_playstart(0);
 		});
-		this.state_change_events.addEventListener("user_param_definitions_update", _ => {
+		this.state_change_events.addEventListener("user_param_definitions_update", ev => {
 			this.apply_user_param_definitions();
+			this.#_last_used_user_param = ev.detail.user_param_definitions.find(p => this.filedata.user_parameter_definitions[p] !== undefined) ?? this.#_last_used_user_param;
 		});
 
 		this.last_eval = this.#_eval_pattern(); //set in constructor for typecheck

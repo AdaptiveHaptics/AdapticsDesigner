@@ -317,7 +317,10 @@ export class UnifiedKeyframeEditor {
 	 * @param {Map<string, DynamicF64Input>} prop_inputs - The input elements to get the new data from.
 	 * @param {HTMLSelectElement} prop_type_select - The select element to get the new prop subtype from.
 	 * @param {HTMLSelectElement} prop_transition_select - The select element to get the new prop transition from.
-	 * @param {string} kf_prop_name - The new type value.
+	 * @param {string} kf_prop_name - The name of the keyframe property to update.
+	 * These dont work
+	 * param {keyof K & keyof K[keyof K]} kf_prop_name
+	 * param {"brush"|"intensity"} kf_prop_name
 	 * @param {(kf: MAHKeyframeFE) => kf is K} filter_kf_prop - A function to check if the keyframe supports the given type.
 	 * @param {(type: string) => any} create_default_for_type - A function to create a new prop object with a given type.
 	 */
@@ -330,6 +333,9 @@ export class UnifiedKeyframeEditor {
 				const val = input.get_value();
 				if (val != null) {
 					kf[kf_prop_name][kf_prop_name].params[input_name] = val;
+					if (val.type == "dynamic") {
+						this.pattern_design.last_used_user_param = val.value;
+					}
 				}
 			});
 		}
@@ -401,10 +407,17 @@ export class UnifiedKeyframeEditor {
 
 		const keyframes = [...this.pattern_design.selected_keyframes].filter(supports_cjump);
 
+		const default_param_name = this.pattern_design.last_used_user_param ??
+			keyframes.find(kf => kf.cjumps.length != 0)?.cjumps[0].condition.parameter ??
+			Object.keys(this.pattern_design.filedata.user_parameter_definitions)[0] ??
+			"foo";
+
+		this.pattern_design.last_used_user_param = default_param_name;
+
 		keyframes.forEach(kf => {
 			kf.cjumps.push({
 				condition: {
-					parameter: "foo",
+					parameter: default_param_name,
 					operator: {
 						name: "lt_eq",
 						params: {}
@@ -464,7 +477,9 @@ export class UnifiedKeyframeEditor {
 				const cjump = kf.cjumps[i];
 				if (!cjump) return;
 				const cjump_param_df64_wrapped = cjump_parameter_df64_input.get_value();
-				if (cjump_param_df64_wrapped && cjump_param_df64_wrapped.type == "dynamic") cjump.condition.parameter = cjump_param_df64_wrapped.value;
+				if (cjump_param_df64_wrapped && cjump_param_df64_wrapped.type == "dynamic") {
+					this.pattern_design.last_used_user_param = cjump.condition.parameter = cjump_param_df64_wrapped.value;
+				}
 				switch (cjump_operator_select.value) {
 					case "lt":
 					case "lt_eq":

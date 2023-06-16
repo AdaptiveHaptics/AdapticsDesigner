@@ -35,8 +35,13 @@ export class DynamicF64Input extends HTMLElement {
 	 * @param {boolean=} param3.nolabel
 	 * @param {boolean=} param3.paramonly
 	 */
-	constructor(pattern_design, name, { get, set, unit, step, min, max, nolabel, paramonly }) {
+	constructor(pattern_design, name, { get, set, unit, step, min, max, nolabel, paramonly } = {}) {
 		super();
+
+		if (arguments.length === 0) {
+			// we are being cloned/created from DOM
+			// the rest of the initialization should actually be ok to run with undefined values, but interactions will be UB
+		}
 
 		this.#_pattern_design = pattern_design;
 		this.#_set = set;

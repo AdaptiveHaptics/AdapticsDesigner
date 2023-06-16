@@ -51,7 +51,7 @@ export class UnifiedKeyframeEditor {
 			["radius", { unit: "mm", min: 0, max: 100 }],
 			["length", { unit: "mm", min: 0, max: 100 }],
 			// ["thickness", { unit: "mm", min: 0, max: 100 } ],
-			["rotation", { unit: "deg", min: 0 }],
+			["rotation", { unit: "deg" }],
 			["am_freq", { unit: "hz", min: 0, max: 500 }]
 		];
 		this.brush_inputs = new Map(brush_input_specs.map(ifs => {

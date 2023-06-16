@@ -548,6 +548,13 @@ export class MAHPatternDesignFE {
 		const ce = new StateChangeEvent("parameters_update", { detail: { time: false } });
 		this.state_change_events.dispatchEvent(ce);
 	}
+	reset_user_parameters() {
+		for (const [param, def] of Object.entries(this.filedata.user_parameter_definitions)) {
+			this.evaluator_params.user_parameters.set(param, def.default);
+		}
+		const ce = new StateChangeEvent("parameters_update", { detail: { time: false } });
+		this.state_change_events.dispatchEvent(ce);
+	}
 	/**
 	 *
 	 * @param {GeometricTransformMatrix} transform_matrix

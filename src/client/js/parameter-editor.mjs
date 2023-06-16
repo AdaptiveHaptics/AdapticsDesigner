@@ -12,6 +12,7 @@ export class ParameterEditor {
 	constructor(pattern_design, parametereditor_div) {
 		this._pattern_design = pattern_design;
 		this._parametereditor_div = parametereditor_div;
+		this._user_params_reset_button = notnull(this._parametereditor_div.querySelector("div.userparamscontainer button.reset"));
 		this._userparameters_div = notnull(this._parametereditor_div.querySelector("div.userparameters"));
 		/** @type {HTMLButtonElement} */
 		this._addparam_button = notnull(this._parametereditor_div.querySelector("button.addparam"));
@@ -65,6 +66,10 @@ export class ParameterEditor {
 
 			this.#_update_playback_controls();
 		}
+
+		this._user_params_reset_button.addEventListener("click", _ev => {
+			this._pattern_design.reset_user_parameters();
+		});
 
 		{ //init userparameters
 			this._addparam_button.addEventListener("click", _ev => {

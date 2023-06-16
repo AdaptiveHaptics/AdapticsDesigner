@@ -226,6 +226,7 @@ export class NewKeyframeCommon {
 			const kf = current_keyframes_sorted[i];
 			if (is_keyframe_with_prop(kf, prop)) {
 				prev_prop = kf[prop];
+				break;
 			}
 		}
 		let next_prop = undefined;
@@ -233,6 +234,7 @@ export class NewKeyframeCommon {
 			const kf = current_keyframes_sorted[i];
 			if (is_keyframe_with_prop(kf, prop)) {
 				next_prop = kf[prop];
+				break;
 			}
 		}
 		return { prev: prev_prop, next: next_prop };

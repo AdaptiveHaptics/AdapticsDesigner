@@ -92,6 +92,7 @@ try {
 const focus_within_design_panes = () => {
 	return pattern_div.matches(":focus-within") || timeline_div.matches(":focus-within");
 };
+const focus_within_design_panes_or_nothing_focused = () => document.activeElement == document.body || focus_within_design_panes();
 document.addEventListener("keydown", ev => {
 	if (ev.key == "s" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
 		ev.preventDefault();
@@ -100,7 +101,7 @@ document.addEventListener("keydown", ev => {
 	}
 
 	// restrict keybinds to nothing focused, or design panes focused
-	if (document.activeElement == document.body || focus_within_design_panes()) {
+	if (focus_within_design_panes_or_nothing_focused()) {
 		if (ev.key == "z" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
 			ev.preventDefault();
 			console.log("undo");
@@ -120,7 +121,7 @@ document.addEventListener("keydown", ev => {
 				//do nothing
 			}
 		}
-		if (ev.key == "Delete" && !ev.ctrlKey && !ev.shiftKey && !ev.altKey && focus_within_design_panes()) {
+		if (ev.key == "Delete" && !ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
 			ev.preventDefault();
 			console.log("delete");
 			primary_design.delete_selected_items();
@@ -133,19 +134,19 @@ document.addEventListener("keydown", ev => {
 });
 
 document.addEventListener("cut", ev => {
-	if (focus_within_design_panes()) {
+	if (focus_within_design_panes_or_nothing_focused()) {
 		primary_design.cut_selected_to_clipboard();
 		ev.preventDefault();
 	}
 });
 document.addEventListener("copy", ev => {
-	if (focus_within_design_panes()) {
+	if (focus_within_design_panes_or_nothing_focused()) {
 		primary_design.copy_selected_to_clipboard();
 		ev.preventDefault();
 	}
 });
 document.addEventListener("paste", ev => {
-	if (focus_within_design_panes()) {
+	if (focus_within_design_panes_or_nothing_focused()) {
 		primary_design.paste_clipboard();
 		ev.preventDefault();
 	}

@@ -735,9 +735,12 @@ div.parametereditor > div {
 div.parametereditor > div > h2 {
     margin: 0.2ex 0ex 0ex;
     display: grid;
-    grid-template-columns: auto auto 1fr;
+    grid-template-columns: auto auto 1fr auto;
     gap: 0.5ex;
     align-items: center;
+}
+div.parametereditor > div > h2 > button {
+    display: flex;
 }
 div.parametereditor div.playback {
     background-color: var(--background-titlebar);

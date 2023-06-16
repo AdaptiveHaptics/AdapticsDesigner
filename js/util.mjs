@@ -58,3 +58,11 @@ export function deep_equals(a, b) {
 		Object.keys(a).every(k => deep_equals(a[k], b[k]))
 	);
 }
+
+/**
+ * @param {number} num
+ * @returns {string}
+ */
+export function num_to_rounded_string(num) {
+	return (Math.round(num*100000)/100000).toString();
+}

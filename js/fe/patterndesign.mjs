@@ -28,7 +28,8 @@ const MAH_$REVISION = "0.0.10-alpha.1";
  * @typedef {{
  *   items: { keyframes: MAHKeyframeFE[], pattern_transform: boolean },
  *   prop_parents: { cjumps: ConditionalJump[], dynf64: MAHDynamicF64[] },
- *   cjump_to_kf_map: Map<ConditionalJump, MAHKeyframeFE>
+ *   cjump_to_kf_map: Map<ConditionalJump, MAHKeyframeFE>,
+ * 	 unused: boolean,
  * }} UserParamLinked
  */
 
@@ -92,6 +93,8 @@ class StateChangeEventTarget extends EventTarget {
 
 export class MAHPatternDesignFE {
 	#_filename; get filename() { return this.#_filename; }
+	/** @type {string | null} */
+	#_last_used_user_param = null; get last_used_user_param() { return this.#_last_used_user_param; } set last_used_user_param(v) { this.#_last_used_user_param = v; }
 
 	/**
 	 *
@@ -147,8 +150,9 @@ export class MAHPatternDesignFE {
 		this.state_change_events.addEventListener("playback_update", _ => {
 			if (this.last_eval[0].stop) this.update_playstart(0);
 		});
-		this.state_change_events.addEventListener("user_param_definitions_update", _ => {
+		this.state_change_events.addEventListener("user_param_definitions_update", ev => {
 			this.apply_user_param_definitions();
+			this.#_last_used_user_param = ev.detail.user_param_definitions.find(p => this.filedata.user_parameter_definitions[p] !== undefined) ?? this.#_last_used_user_param;
 		});
 
 		this.last_eval = this.#_eval_pattern(); //set in constructor for typecheck
@@ -584,6 +588,7 @@ export class MAHPatternDesignFE {
 				items: { keyframes: [], pattern_transform: false },
 				prop_parents: { cjumps: [], dynf64: [] },
 				cjump_to_kf_map: new Map(),
+				unused: true,
 			};
 			uparam_to_linked_map.set(param_name, new_up_linked);
 			return new_up_linked;
@@ -659,6 +664,13 @@ export class MAHPatternDesignFE {
 				};
 			}
 		}
+		{ // mark used
+			for (const [_uparam_name, up_linked] of uparam_to_linked_map) {
+				up_linked.unused = false;
+			}
+		}
+
+
 		//add unused user parameters to uparam map
 		for (const [uparam_name, _uparam_def] of Object.entries(this.filedata.user_parameter_definitions)) {
 			get_up_linked_or_default(uparam_name);
@@ -667,6 +679,14 @@ export class MAHPatternDesignFE {
 		return uparam_to_linked_map;
 	}
 
+	/**
+	 *
+	 * @param {string} old_name
+	 * @returns {boolean}
+	 */
+	delete_evaluator_user_param(old_name) {
+		return this.#_rename_or_delete_evaluator_user_param(old_name);
+	}
 	/**
 	 *
 	 * @param {string} old_name

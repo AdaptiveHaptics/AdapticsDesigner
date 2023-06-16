@@ -278,7 +278,6 @@
 						<h2>User/Dynamic <span class="material-symbols-outlined">discover_tune</span></h2>
 						<div class="userparameters">
 							<div><span>Name</span><span></span><span>Value</span><span></span></div>
-							<!-- <div><span class="helpmsg">To add a parameter here, simply use it in a keyframe (e.g. as the parameter in a conditional jump).</span></div> -->
 						</div>
 						<button class="addparam">+ Add Parameter</button>
 					</div>
@@ -311,15 +310,16 @@
 			<div class="dialogtitlebar">
 				<span class="titletext add">Add Parameter Definition</span>
 				<span class="titletext edit">Edit Parameter Definition</span>
+				<button class="delete textonly" type="button" title="Delete Paramter"><span class="material-symbols-outlined">delete_forever</span></button>
 				<button class="close" type="button" title="Close"><span class="material-symbols-outlined">close</span></button>
 			</div>
 			<div class="labelinputgrid">
 				<label><span class="labeltext">Name</span> <input type="text" name="paramname" value=""></label>
-				<label><span class="labeltext">Default Value</span> <input type="number" name="default" value="0"></label>
+				<label><span class="labeltext">Default Value</span> <input type="number" name="default" value="0" step="any"></label>
 				<label><span class="labeltext">Minimum Value</span> <div class="optionalinput"><input type="checkbox" name="clampmin"> <input type="number" name="min" value="-1" disabled></div></label>
 				<label><span class="labeltext">Maximum Value</span> <div class="optionalinput"><input type="checkbox" name="clampmax"> <input type="number" name="max" value="1" disabled></div></label>
 				<hr>
-				<label title="Non-constraining step size used in editor GUI"><span class="labeltext">Step Size (GUI only)</span> <input type="number" name="step" value="0.05"></label>
+				<label title="Non-constraining step size used in editor GUI"><span class="labeltext">Step Size (GUI only)</span> <input type="number" name="step" value="0.05" step="any"></label>
 			</div>
 			<div class="errortext"></div>
 			<div class="buttons">

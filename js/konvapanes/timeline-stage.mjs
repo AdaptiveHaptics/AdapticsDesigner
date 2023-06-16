@@ -745,6 +745,15 @@ export class KonvaCJumpFlag {
 		this.flag.on("dragmove", _ev => {
 			this.update_time({ time: this.timeline_stage.raw_x_to_t({ raw_x: this.flag.x(), snap: true }) });
 		});
+		this.flag.on("transform", _ev => {
+			this.flag.scale({ x: 1, y: 1 });
+			this.flag.skew({ x: 0, y: 0 });
+			this.flag.rotation(0);
+			this.update_time({ time: this.timeline_stage.raw_x_to_t({ raw_x: this.flag.x(), snap: false }) });
+		});
+		this.flag.on("dragend transformend", _ev => {
+			this.update_time({ time: this.timeline_stage.raw_x_to_t({ raw_x: this.flag.x(), snap: true }) });
+		});
 
 		timeline_stage.pattern_design.state_change_events.addEventListener("item_select", ev => {
 			if (ev.detail.cjump_flag != this) return;

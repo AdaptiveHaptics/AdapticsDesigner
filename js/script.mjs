@@ -99,35 +99,36 @@ document.addEventListener("keydown", ev => {
 		else file_save_button.click();
 	}
 
-	// begin design pane restricted keybinds
-	if (!focus_within_design_panes()) return;
-	if (ev.key == "z" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
-		ev.preventDefault();
-		console.log("undo");
-		if (primary_design.undo()) {
-			//success
-		} else {
-			//do nothing
+	// restrict keybinds to nothing focused, or design panes focused
+	if (document.activeElement == document.body || focus_within_design_panes()) {
+		if (ev.key == "z" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
+			ev.preventDefault();
+			console.log("undo");
+			if (primary_design.undo()) {
+				//success
+			} else {
+				//do nothing
+			}
 		}
-	}
-	if (ev.key == "Z" && ev.ctrlKey && ev.shiftKey && !ev.altKey ||
-		ev.key == "y" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
-		ev.preventDefault();
-		console.log("redo");
-		if (primary_design.redo()) {
-			//success
-		} else {
-			//do nothing
+		if (ev.key == "Z" && ev.ctrlKey && ev.shiftKey && !ev.altKey ||
+			ev.key == "y" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
+			ev.preventDefault();
+			console.log("redo");
+			if (primary_design.redo()) {
+				//success
+			} else {
+				//do nothing
+			}
 		}
-	}
-	if (ev.key == "Delete" && !ev.ctrlKey && !ev.shiftKey && !ev.altKey && focus_within_design_panes()) {
-		ev.preventDefault();
-		console.log("delete");
-		primary_design.delete_selected_items();
-	}
-	if (ev.key == "a" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
-		ev.preventDefault();
-		primary_design.select_all_keyframes();
+		if (ev.key == "Delete" && !ev.ctrlKey && !ev.shiftKey && !ev.altKey && focus_within_design_panes()) {
+			ev.preventDefault();
+			console.log("delete");
+			primary_design.delete_selected_items();
+		}
+		if (ev.key == "a" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
+			ev.preventDefault();
+			primary_design.select_all_keyframes();
+		}
 	}
 });
 

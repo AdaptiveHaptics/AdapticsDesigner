@@ -121,14 +121,16 @@ dialog > form > div.buttons > button {
 }
 div.dialogtitlebar {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr;
+    grid-auto-flow: column;
+    grid-auto-columns: auto;
     gap: 1ex;
     align-items: end;
 }
 div.dialogtitlebar > span.titletext {
     font-size: 1.5em;
 }
-div.dialogtitlebar > button.close {
+div.dialogtitlebar > button {
     padding: 0.5ex;
 }
 
@@ -144,6 +146,43 @@ div.dialogtitlebar > button.close {
 .betterscroll::-webkit-scrollbar-thumb {
     background: var(--scrollbar-thumb-color);
     /* outline: 1px solid slategrey; */
+}
+
+dynamic-f64-input > label {
+    display: contents;
+}
+dynamic-f64-input div.vinput {
+    display: grid;
+    position: relative;
+}
+dynamic-f64-input div.menulist.autocomplete {
+    z-index: 50;
+    position: absolute;
+    box-sizing: border-box;
+    min-width: 100%;
+    top: 100%;
+    outline: 2px solid var(--background-tertiary);
+    border-color: var(--background-tertiary);
+    border-style: solid;
+    border-width: 0px 0.2ex 0.2ex;
+    visibility: hidden;
+}
+dynamic-f64-input:focus-within div.menulist.autocomplete {
+    visibility: visible;
+}
+dynamic-f64-input div.menulist.autocomplete button.df64autocompletion.autoaction {
+    background-color: var(--background-interactive-active);
+}
+dynamic-f64-input div.menulist.autocomplete button.df64autocompletion {
+    grid-template-columns: 1fr auto;
+}
+dynamic-f64-input div.menulist.autocomplete button.df64autocompletion span.value {
+    justify-self: start;
+    font-weight: bold;
+}
+dynamic-f64-input div.menulist.autocomplete button.df64autocompletion span.type {
+    color: var(--text-low-priority);
+    font-family: monospace;
 }
 
 div.labelinputgrid {
@@ -225,6 +264,9 @@ button.textonly {
     background-color: transparent;
     /* color: var(--background-interactive); */
     /* border: solid 2px var(--background-interactive); */
+}
+button.textonly.delete {
+    color: var(--delete-color);
 }
 
 input[type="checkbox"] {
@@ -651,8 +693,20 @@ div.parametereditor div.userparameters {
 div.parametereditor div.userparameters > div:first-child {
     font-weight: bold;
 }
-div.parametereditor div.userparameters > * {
+div.parametereditor div.userparameters > div:first-child, div.parametereditor div.userparameters > user-param-control {
     display: contents;
+}
+div.parametereditor div.userparameters > div.unusedcontainer {
+    display: contents;
+}
+div.parametereditor div.userparameters > div.unusedcontainer > hr {
+    margin: 0;
+}
+div.parametereditor div.userparameters > div.unusedcontainer > span.unusedheader {
+    grid-column: 1 / -2;
+    font-weight: bold;
+    color: var(--text-low-priority);
+    font-size: 1.2em;
 }
 div.parametereditor div.userparameters > user-param-control span.eq {
     font-weight: bold;
@@ -762,7 +816,7 @@ div.menulist {
     /* border: 5px solid var(--background-titlebar); */
     padding: var(--contextmenu-border);
     display: grid;
-    grid-template-columns: max-content;
+    grid-template-columns: minmax(max-content, auto);
     background-color: var(--background-titlebar);
     gap: 1px;
 }
@@ -819,5 +873,8 @@ div.menulist div.nested:hover div.menulist {
     display: none;
 }
 #userparamdialog:not(.edit) span.titletext.edit {
+    display: none;
+}
+#userparamdialog:not(.edit) button.delete {
     display: none;
 }

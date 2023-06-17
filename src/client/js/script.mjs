@@ -250,7 +250,14 @@ if ("showSaveFilePicker" in window && "showOpenFilePicker" in window) {
 		}
 	});
 	file_new_button.addEventListener("click", async () => {
-		await primary_design.import_file(new File([JSON.stringify(MAHPatternDesignFE.DEFAULT)], "untitled.json", {type: "application/json"}));
+		if (filename_span.classList.contains("unsaved")) {
+			const confirmation = confirm(`'${primary_design.filename}' is not saved. Are you sure you want to discard your changes?`);
+			if (!confirmation) return;
+		}
+		/** @type {MidAirHapticsAnimationFileFormat} */
+		const default_filedata = MAHPatternDesignFE.DEFAULT[1];
+		await primary_design.import_file(new File([JSON.stringify(default_filedata)], "untitled.json", {type: "application/json"}));
+		pattern_div.focus();
 	});
 } else {
 	file_save_button.disabled = true;

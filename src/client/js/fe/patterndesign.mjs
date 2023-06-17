@@ -262,7 +262,7 @@ export class MAHPatternDesignFE {
 		this.redo_states.push(this.clone_filedata());
 		if (this.redo_states.length > this.redo_states_size) this.redo_states.shift();
 
-		this.selected_keyframes.clear();
+		this.deselect_all_items({ no_emit: true });
 		this.filedata = this.load_filedata_into_fe_format(fd); //could fail to due to incorrect data structure revision
 		this.committed = false;
 		this.commit_operation({ rerender: true });
@@ -276,7 +276,7 @@ export class MAHPatternDesignFE {
 		this.undo_states.push(this.clone_filedata());
 		if (this.undo_states.length > this.undo_states_size) this.undo_states.shift();
 
-		this.selected_keyframes.clear();
+		this.deselect_all_items({ no_emit: true });
 		this.filedata = this.load_filedata_into_fe_format(fd); //could fail to due to incorrect data structure revision
 		this.committed = false;
 		this.commit_operation({ rerender: true });
@@ -330,23 +330,27 @@ export class MAHPatternDesignFE {
 	 *
 	 * @param {SelectItemsStruct} param0
 	 */
-	deselect_items({ keyframes = [], cjump_flags = [] }) {
+	deselect_items({ keyframes = [], cjump_flags = [] }, { no_emit = false } = {}) {
 		for (const keyframe of keyframes) {
 			this.selected_keyframes.delete(keyframe);
-			const change_event = new StateChangeEvent("item_deselect", { detail: { keyframe, cjump_flag: undefined } });
-			this.state_change_events.dispatchEvent(change_event);
+			if (!no_emit) {
+				const change_event = new StateChangeEvent("item_deselect", { detail: { keyframe, cjump_flag: undefined } });
+				this.state_change_events.dispatchEvent(change_event);
+			}
 		}
 		for (const cjump_flag of cjump_flags) {
 			this.selected_cjump_flags.delete(cjump_flag);
-			const change_event = new StateChangeEvent("item_deselect", { detail: { keyframe: undefined, cjump_flag } });
-			this.state_change_events.dispatchEvent(change_event);
+			if (!no_emit) {
+				const change_event = new StateChangeEvent("item_deselect", { detail: { keyframe: undefined, cjump_flag } });
+				this.state_change_events.dispatchEvent(change_event);
+			}
 		}
 	}
 	select_all_keyframes() {
 		this.select_items({ keyframes: this.filedata.keyframes });
 	}
-	deselect_all_items() {
-		this.deselect_items({ keyframes: [...this.selected_keyframes], cjump_flags: [...this.selected_cjump_flags] });
+	deselect_all_items({ no_emit = false } = {}) {
+		this.deselect_items({ keyframes: [...this.selected_keyframes], cjump_flags: [...this.selected_cjump_flags] }, { no_emit });
 	}
 	/**
 	 * @param {Object} param0
@@ -941,6 +945,7 @@ export class MAHPatternDesignFE {
 	async import_file(file) {
 		const filedata_text = await file.text();
 		const filedataFE = this.load_filedata_into_fe_format(JSON.parse(filedata_text));
+		this.deselect_all_items({ no_emit: true });
 		this.save_state();
 		this.#_filename = file.name;
 		this.filedata = filedataFE;

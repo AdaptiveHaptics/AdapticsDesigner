@@ -50,6 +50,8 @@ const websocket_disconnect_button = notnull(document.querySelector(".isection.we
 const websocket_state_span = notnull(document.querySelector(".isection.websocket span.websocketstate"));
 
 /** @type {HTMLButtonElement} */
+const file_new_button = notnull(document.querySelector(".isection.file button.new"));
+/** @type {HTMLButtonElement} */
 const file_open_button = notnull(document.querySelector(".isection.file button.open"));
 /** @type {HTMLButtonElement} */
 const file_download_button = notnull(document.querySelector(".isection.file button.download"));
@@ -246,6 +248,16 @@ if ("showSaveFilePicker" in window && "showOpenFilePicker" in window) {
 				throw e;
 			}
 		}
+	});
+	file_new_button.addEventListener("click", async () => {
+		if (filename_span.classList.contains("unsaved")) {
+			const confirmation = confirm(`'${primary_design.filename}' is not saved. Are you sure you want to discard your changes?`);
+			if (!confirmation) return;
+		}
+		/** @type {MidAirHapticsAnimationFileFormat} */
+		const default_filedata = MAHPatternDesignFE.DEFAULT[1];
+		await primary_design.import_file(new File([JSON.stringify(default_filedata)], "untitled.json", {type: "application/json"}));
+		pattern_div.focus();
 	});
 } else {
 	file_save_button.disabled = true;

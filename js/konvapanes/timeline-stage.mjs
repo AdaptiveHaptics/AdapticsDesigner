@@ -202,7 +202,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 			cjump_flag.destroy();
 		}
 		this.cjump_flags.clear();
-		for (const kf of this.pattern_design.filedata.keyframes) {
+		for (const kf of this.pattern_design.filedata.keyframes) { //this doesnt work if frames are deleted or if rerender occurs
 			kf[KonvaTimelineKeyframeSymbol]?.destroy();
 		}
 		this.scrolling_layer.destroyChildren();
@@ -536,6 +536,7 @@ class KonvaTimelineKeyframe {
 
 
 		this.listener_abort = new AbortController();
+		timeline_stage.pattern_design.state_change_events.addEventListener("rerender", _ev => { this.destroy(); }); // we don't get destroyed in render_design if rerender occurs (kinda hacky, would be better to have seperate tracking for GUI objects probably on timeline stage)
 		timeline_stage.pattern_design.state_change_events.addEventListener("kf_delete", ev => {
 			if (ev.detail.keyframe != keyframe) return;
 			if ("cjumps" in keyframe) this.update_cjump_flags([]);

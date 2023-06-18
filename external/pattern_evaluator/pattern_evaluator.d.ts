@@ -63,10 +63,10 @@ export interface InitOutput {
   readonly patternevaluator_default_geo_transform_matrix: (a: number) => void;
   readonly patternevaluator_geo_transform_simple_apply: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => void;
   readonly patternevaluator_geo_transform_simple_inverse: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => void;
-  readonly __wbindgen_malloc: (a: number) => number;
-  readonly __wbindgen_realloc: (a: number, b: number, c: number) => number;
+  readonly __wbindgen_malloc: (a: number, b: number) => number;
+  readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
   readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
-  readonly __wbindgen_free: (a: number, b: number) => void;
+  readonly __wbindgen_free: (a: number, b: number, c: number) => void;
   readonly __wbindgen_exn_store: (a: number) => void;
 }
 
@@ -89,4 +89,4 @@ export function initSync(module: SyncInitInput): InitOutput;
 *
 * @returns {Promise<InitOutput>}
 */
-export default function init (module_or_path?: InitInput | Promise<InitInput>): Promise<InitOutput>;
+export default function __wbg_init (module_or_path?: InitInput | Promise<InitInput>): Promise<InitOutput>;

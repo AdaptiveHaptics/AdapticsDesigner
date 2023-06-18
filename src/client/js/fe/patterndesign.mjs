@@ -667,6 +667,9 @@ export class MAHPatternDesignFE {
 		{ // create_user_param_definitions_for_orphans
 			for (const [uparam_name, _up_linked] of uparam_to_linked_map) {
 				if (this.filedata.user_parameter_definitions[uparam_name]) continue;
+				// does not necessarily need a commit, as this doesnt actually change execution, simply explicity defines the defaults used by the evaluator
+				// performing a commit here, and therefore emitting user_param_definitions_update may cause infinite recursion
+				// feels kinda fragile, maybe fix later
 				this.filedata.user_parameter_definitions[uparam_name] = {
 					default: 0,
 					min: -Infinity,

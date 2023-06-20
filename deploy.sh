@@ -1,5 +1,7 @@
 set -ex
 
+tsc --project ./jsconfig.json
+
 rm -rf dist
 
 git worktree add dist gh-pages

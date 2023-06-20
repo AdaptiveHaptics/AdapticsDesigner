@@ -22,6 +22,7 @@
 
     --text-normal: rgb(250, 250, 255);
     --text-low-priority: rgb(210, 210, 213);
+    --text-link: var(--text-normal);
     --text-dark: hsl(240, 20%, 20%);
     --focus-ring: hsl(240, 20%, 50%);
     --text-error: var(--error);
@@ -248,6 +249,10 @@ select, option, input {
     min-width: 4ex;
 }
 
+a {
+    color: var(--text-link);
+    text-decoration: none;
+}
 button {
     font-size: 1em;
     padding: 0.25ex 1ex;
@@ -352,6 +357,18 @@ div.titlebar button {
     display: flex;
     align-items: center;
     gap: 0.5ex;
+}
+div.titlebar a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+div.titlebar a:last-child {
+    /* justify-self: flex-end; */
+    margin-left: auto;
+}
+div.titlebar img {
+    height: 3.5ex;
 }
 div.isection.file span.filename.unsaved::after {
     content: '*';

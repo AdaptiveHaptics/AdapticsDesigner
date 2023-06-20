@@ -360,7 +360,7 @@ export class UnifiedKeyframeEditor {
 				switch (type) {
 					case "circle": return {
 						name: type,
-						params: { radius: { type: "f64", value: 1 }, am_freq: { type: "f64", value: 0 } }
+						params: { radius: { type: "f64", value: 10 }, am_freq: { type: "f64", value: 0 } }
 					};
 					case "line": return {
 						name: type,

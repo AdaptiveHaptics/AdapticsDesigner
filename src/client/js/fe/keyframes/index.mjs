@@ -183,7 +183,7 @@ export class NewKeyframeCommon {
 		} else if (secondnext_keyframe && next_keyframe) {
 			Object.keys(coords).forEach(k => coords[k] = 2*next_keyframe.coords.coords[k] - secondnext_keyframe.coords.coords[k]);
 		} else if (prev_keyframe) {
-			Object.keys(coords).forEach(k => coords[k] = prev_keyframe.coords.coords[k] + 5);
+			Object.keys(coords).forEach(k => coords[k] = prev_keyframe.coords.coords[k] + 15);
 			coords.z = prev_keyframe.coords.coords.z; // just copy previous z
 		}
 		coords = BoundsCheck.coords(coords);
@@ -246,7 +246,7 @@ export class NewKeyframeCommon {
 		brush: {
 			name: "circle",
 			params: {
-				radius: { type: "f64", value: 1.0 },
+				radius: { type: "f64", value: 10.0 },
 				am_freq: { type: "f64", value: 0 },
 			}
 		},

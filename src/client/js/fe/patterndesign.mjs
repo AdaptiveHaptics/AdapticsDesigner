@@ -1025,7 +1025,7 @@ MAHPatternDesignFE.DEFAULT = ["untitled.json", {
 				brush: {
 					name: "circle",
 					params: {
-						radius: { type: "f64", value: 1.0 },
+						radius: { type: "f64", value: 10.0 },
 						am_freq: { type: "f64", value: 0.0 },
 					}
 				},

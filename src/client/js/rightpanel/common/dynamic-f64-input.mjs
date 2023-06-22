@@ -2,7 +2,7 @@
 /** @typedef {import("../../fe/patterndesign.mjs").MAHKeyframeFE} MAHKeyframeFE */
 /** @typedef {import("../../../../external/pattern_evaluator/rs-shared-types").MAHDynamicF64} MAHDynamicF64 */
 
-import { assert_unreachable, num_to_rounded_string } from "../../util.mjs";
+import { assert_unreachable, deep_equals, num_to_rounded_string } from "../../util.mjs";
 
 export class DynamicF64Input extends HTMLElement {
 	#_pattern_design;
@@ -135,13 +135,14 @@ export class DynamicF64Input extends HTMLElement {
 			if (!this.#_get) throw new Error("Cannot auto update value without getter");
 			v = this.#_get();
 		}
+		const no_change = deep_equals(this.#_last_value, v);
 		this.#_last_value = v;
 		if (v === null) {
 			this.#_val_input.value = "";
 		} else {
 			this.#_val_input.value = DynamicF64Input.stringify_df64(v);
 		}
-		this.#_update_autocomplete();
+		if (!no_change) this.#_update_autocomplete();
 	}
 	get_value() {
 		return this.#_parse_input_value();

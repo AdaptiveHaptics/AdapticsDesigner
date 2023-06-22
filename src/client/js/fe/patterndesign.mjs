@@ -50,7 +50,9 @@ const MAH_DYNAMIC_F64_PATHS = PARSED_JSON_SCHEMA.find_paths_to_wanted_on_type(PA
  * @property {{ keyframe: MAHKeyframeFE }} kf_update
  * @property {{}} rerender
  * @property {{ keyframe: MAHKeyframeFE, cjump_flag: undefined } | { keyframe: undefined, cjump_flag: KonvaCJumpFlag }} item_select
+ * @property {{ keyframes: MAHKeyframeFE[], cjump_flags: KonvaCJumpFlag[] }} item_select_batch
  * @property {{ keyframe: MAHKeyframeFE, cjump_flag: undefined } | { keyframe: undefined, cjump_flag: KonvaCJumpFlag }} item_deselect
+ * @property {{ keyframes: MAHKeyframeFE[], cjump_flags: KonvaCJumpFlag[] }} item_deselect_batch
  * @property {{ keyframe: MAHKeyframeFE }} kf_reorder
  * @property {{ committed: boolean }} commit_update
  * @property {{ }} playback_update
@@ -325,6 +327,9 @@ export class MAHPatternDesignFE {
 			const change_event = new StateChangeEvent("item_select", { detail: { keyframe: undefined, cjump_flag } });
 			this.state_change_events.dispatchEvent(change_event);
 		}
+
+		const change_event = new StateChangeEvent("item_select_batch", { detail: { keyframes, cjump_flags } });
+		this.state_change_events.dispatchEvent(change_event);
 	}
 	/**
 	 *
@@ -345,6 +350,9 @@ export class MAHPatternDesignFE {
 				this.state_change_events.dispatchEvent(change_event);
 			}
 		}
+
+		const change_event = new StateChangeEvent("item_deselect_batch", { detail: { keyframes, cjump_flags } });
+		this.state_change_events.dispatchEvent(change_event);
 	}
 	select_all_keyframes() {
 		this.select_items({ keyframes: this.filedata.keyframes });

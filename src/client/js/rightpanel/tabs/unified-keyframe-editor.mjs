@@ -21,11 +21,11 @@ export class UnifiedKeyframeEditor {
 
 		this.pattern_design.state_change_events.addEventListener("rerender", _ev => this.select_update());
 		this.pattern_design.state_change_events.addEventListener("kf_reorder", _ev => this.select_update());
-		this.pattern_design.state_change_events.addEventListener("item_select", _ev => this.select_update());
 		this.pattern_design.state_change_events.addEventListener("kf_update", ev => {
 			if (this.pattern_design.selected_keyframes.has(ev.detail.keyframe)) this.select_update();
 		});
-		this.pattern_design.state_change_events.addEventListener("item_deselect", _ev => this.select_update());
+		this.pattern_design.state_change_events.addEventListener("item_select_batch", _ev => this.select_update());
+		this.pattern_design.state_change_events.addEventListener("item_deselect_batch", _ev => this.select_update());
 
 		/** @type {HTMLFormElement} */
 		this.ukfeForm = notnull(ukfecontainerDiv.querySelector("form.ukfe"));

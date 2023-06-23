@@ -40,6 +40,7 @@ export class DeviceWSController {
 		});
 		this.ws.addEventListener("message", ev => {
 			const m = JSON.parse(ev.data);
+			// console.log(m);
 			this.handle_message(m);
 		});
 	}
@@ -100,6 +101,7 @@ export class DeviceWSController {
 			cmd,
 			data
 		};
+		// console.log(o);
 		this.ws.send(JSON.stringify(o));
 	}
 

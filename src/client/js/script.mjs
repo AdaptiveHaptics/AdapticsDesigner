@@ -254,6 +254,7 @@ if ("showSaveFilePicker" in window && "showOpenFilePicker" in window) {
 			const confirmation = confirm(`'${primary_design.filename}' is not saved. Are you sure you want to discard your changes?`);
 			if (!confirmation) return;
 		}
+		last_file_handle = null;
 		/** @type {MidAirHapticsAnimationFileFormat} */
 		const default_filedata = MAHPatternDesignFE.DEFAULT[1];
 		await primary_design.import_file(new File([JSON.stringify(default_filedata)], "untitled.json", {type: "application/json"}));

@@ -183,6 +183,15 @@ websocket_disconnect_button.addEventListener("click", () => {
 
 
 
+/** @type {FilePickerAcceptType[]} */
+const FILE_TYPES = [
+	{
+		description: "Adaptics Pattern File",
+		accept: {
+			"application/json": [".adaptics", ".json"],
+		},
+	},
+];
 
 let last_file_handle = null;
 
@@ -197,14 +206,8 @@ if ("showSaveFilePicker" in window && "showOpenFilePicker" in window) {
 	file_save_as_button.addEventListener("click", async () => {
 		try {
 			last_file_handle = await window.showSaveFilePicker({
-				types: [
-					{
-						description: "JSON Pattern file",
-						accept: {
-							"application/json": [".json"],
-						},
-					},
-				],
+				types: FILE_TYPES,
+				excludeAcceptAllOption: false,
 				suggestedName: primary_design.filename,
 			});
 			primary_design.update_filename(last_file_handle.name);
@@ -227,14 +230,7 @@ if ("showSaveFilePicker" in window && "showOpenFilePicker" in window) {
 	file_open_button.addEventListener("click", async () => {
 		try {
 			const [fileHandle] = await window.showOpenFilePicker({
-				types: [
-					{
-						description: "JSON Pattern file",
-						accept: {
-							"application/json": [".json"],
-						},
-					},
-				],
+				types: FILE_TYPES,
 				multiple: false,
 			});
 			last_file_handle = fileHandle;
@@ -255,9 +251,9 @@ if ("showSaveFilePicker" in window && "showOpenFilePicker" in window) {
 			if (!confirmation) return;
 		}
 		last_file_handle = null;
-		/** @type {MidAirHapticsAnimationFileFormat} */
-		const default_filedata = MAHPatternDesignFE.DEFAULT[1];
-		await primary_design.import_file(new File([JSON.stringify(default_filedata)], "untitled.json", {type: "application/json"}));
+		/** @type {[string, MidAirHapticsAnimationFileFormat]} */
+		const [default_filename, default_filedata] = MAHPatternDesignFE.DEFAULT;
+		await primary_design.import_file(new File([JSON.stringify(default_filedata)], default_filename, { type: "application/json" }));
 		pattern_div.focus();
 	});
 } else {
@@ -277,7 +273,7 @@ if ("showSaveFilePicker" in window && "showOpenFilePicker" in window) {
 	file_open_button.addEventListener("click", async () => {
 		const input = document.createElement("input");
 		input.type = "file";
-		input.accept = ".json";
+		input.accept = ".adaptics,.json";
 		input.addEventListener("change", () => {
 			if (input.files == null) return;
 			const file = input.files[0];

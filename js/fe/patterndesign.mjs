@@ -133,13 +133,10 @@ export class MAHPatternDesignFE {
 			}
 		});
 		this.state_change_events.addEventListener("parameters_update", ev => {
-			if (this.is_playing() && this.websocket?.is_connected()) {
-				if (ev.detail.time) {
-					//wait for playback_update from websocket
-				} else {
-					this.websocket.update_parameters(this.evaluator_params);
-				}
-			} else {
+			if (!ev.detail.time) { // dont send time updates
+				this.websocket?.update_parameters(this.evaluator_params);
+			}
+			if (!this.websocket?.is_connected() || !this.is_playing()) { //eval if websocket not connected, or not playing (cause websocket wont send update back if not playing)
 				this.#_eval_pattern();
 			}
 		});
@@ -996,7 +993,7 @@ export class MAHPatternDesignFE {
 }
 
 /** @type {[string, MidAirHapticsAnimationFileFormat]} */
-MAHPatternDesignFE.DEFAULT = ["untitled.json", {
+MAHPatternDesignFE.DEFAULT = ["untitled.adaptics", {
 	$DATA_FORMAT: "MidAirHapticsAnimationFileFormat",
 	$REVISION: MAH_$REVISION,
 

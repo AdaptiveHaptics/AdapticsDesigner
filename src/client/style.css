@@ -192,19 +192,19 @@ div.labelinputgrid {
     gap: 0.5ex 1ex;
     align-items: center;
 }
-div.labelinputgrid > label, div.labelinputgrid > dynamic-f64-input {
+div.labelinputgrid > label, div.labelinputgrid > dynamic-f64-input, div.labelinputgrid > div.optionalinput {
     display: contents;
 }
-div.labelinputgrid > label > .labeltext {
+div.labelinputgrid > * > .labeltext {
     justify-self: end;
 }
-div.labelinputgrid > label > div.optionalinput {
+div.labelinputgrid > div.optionalinput > div.inputs {
     display: grid;
     grid-template-columns: auto 1fr;
     gap: 0.5ex;
     align-items: center;
 }
-label > .labeltext > span.material-symbols-outlined {
+.labeltext > span.material-symbols-outlined {
     margin-right: 0.5ex;
 }
 
@@ -277,7 +277,8 @@ button.textonly.delete {
 input[type="checkbox"] {
     appearance: none;
     width: 4ex;
-    height: 4ex;
+    min-height: 4ex;
+    height: 100%;
     cursor: pointer;
     position: relative;
     margin: 0px;

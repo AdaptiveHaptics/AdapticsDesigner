@@ -472,13 +472,11 @@ class KonvaTimelineKeyframe {
 			fontSize: 14,
 			fontStyle: "bold",
 		}));
-		this.flag.on("click", ev => {
+		this.flag.on("click", async ev => {
 			this.select_this(ev.evt.ctrlKey, false);
 
 			if (ev.evt.altKey) {
-				timeline_stage.pattern_design.save_state();
-				const deleted_keyframes = timeline_stage.pattern_design.delete_keyframes([...timeline_stage.pattern_design.selected_keyframes]);
-				timeline_stage.pattern_design.commit_operation({ deleted_keyframes });
+				await timeline_stage.pattern_design.delete_selected_items();
 				return;
 			}
 		});
@@ -724,7 +722,7 @@ export class KonvaCJumpFlag {
 			fill: "white",
 		}));
 
-		this.flag.on("click", ev => {
+		this.flag.on("click", async ev => {
 			if (ev.evt.detail == 2) {
 				console.log("double click");
 				this.timeline_stage.pattern_design.deselect_all_items();
@@ -732,6 +730,11 @@ export class KonvaCJumpFlag {
 			} else {
 				console.log("click");
 				this.select_this(ev.evt.ctrlKey, false);
+
+				if (ev.evt.altKey) {
+					await timeline_stage.pattern_design.delete_selected_items();
+					return;
+				}
 			}
 		});
 		this.flag.on("mouseenter", _ev => {

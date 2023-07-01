@@ -509,13 +509,11 @@ class KonvaPatternControlPoint {
 			strokeWidth: 2,
 			draggable: true,
 		});
-		this.k_cp_circle.on("click", ev => {
+		this.k_cp_circle.on("click", async ev => {
 			this.select_this(ev.evt.ctrlKey, false);
 
 			if (ev.evt.altKey) {
-				pattern_stage.pattern_design.save_state();
-				const deleted_keyframes = pattern_stage.pattern_design.delete_keyframes([...pattern_stage.pattern_design.selected_keyframes]);
-				pattern_stage.pattern_design.commit_operation({ deleted_keyframes });
+				await pattern_stage.pattern_design.delete_selected_items();
 				return;
 			}
 		});

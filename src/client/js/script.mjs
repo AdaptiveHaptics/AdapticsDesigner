@@ -2,6 +2,7 @@ import Split from "../thirdparty/split-grid.mjs";
 import { MAHPatternDesignFE } from "./fe/patterndesign.mjs";
 import { KonvaPatternStage } from "./konvapanes/pattern-stage.mjs";
 import { KonvaTimelineStage } from "./konvapanes/timeline-stage.mjs";
+import { DesignLibrary } from "./leftpanel/design-library.mjs";
 import { ParameterEditor } from "./parameter-editor.mjs";
 import { RightPanel } from "./rightpanel/right-panel.mjs";
 import { notnull } from "./util.mjs";
@@ -15,7 +16,7 @@ window.addEventListener("unhandledrejection", event => {
 	if (ignoreErrorsContaining.findIndex(istr => estr.includes(istr)) == -1) alert(estr);
 });
 window.addEventListener("error", event => {
-	// console.error(event);
+	console.error(event);
 	// @ts-ignore
 	const estr = `Unhandled Error: ${event}\n${event?event.name||"":""}\n${event?event.message||"":""}\n${event?event.stack||"":""}`;
 	// console.error(estr);
@@ -36,9 +37,18 @@ const rightpanel_div = notnull(mainsplitgrid_div.querySelector("div.right"));
 /** @type {HTMLDivElement} */
 const pattern_div = notnull(mainsplitgrid_div.querySelector("div.center"));
 /** @type {HTMLDivElement} */
+const patternstage_div = notnull(pattern_div.querySelector("div#patternstage"));
+/** @type {HTMLDivElement} */
 const timeline_div = notnull(document.querySelector("div.timeline"));
-/** @type {HTMLSpanElement} */
-const savedstate_span = notnull(document.querySelector("span.savedstate"));
+/** @type {HTMLDivElement} */
+const timelinestage_div = notnull(timeline_div.querySelector("div#timelinestage"));
+
+/** @type {HTMLDivElement} */
+const leftpanel_div = notnull(mainsplitgrid_div.querySelector("div.left"));
+/** @type {HTMLDivElement} */
+const designlibrary_div = notnull(leftpanel_div.querySelector("div.designlibrary"));
+
+
 
 /** @type {HTMLInputElement} */
 const websocketurl_input = notnull(document.querySelector(".isection.websocket input.websocketurl"));
@@ -61,6 +71,8 @@ const file_save_button = notnull(document.querySelector(".isection.file button.s
 const file_save_as_button = notnull(document.querySelector(".isection.file button.save_as"));
 /** @type {HTMLSpanElement} */
 const filename_span = notnull(document.querySelector(".isection.file span.filename"));
+/** @type {HTMLSpanElement} */
+const savedstate_span = notnull(document.querySelector("span.savedstate"));
 
 
 const _mainsplit = SplitGrid({
@@ -294,11 +306,15 @@ primary_design.state_change_events.addEventListener("commit_update", ev => {
 
 
 primary_design.commit_operation({ rerender: true });
-const konva_pattern_stage = new KonvaPatternStage(primary_design, "patternstage", pattern_div);
-const konva_timeline_stage = new KonvaTimelineStage(primary_design, "timelinestage", timeline_div);
+const konva_pattern_stage = new KonvaPatternStage(primary_design, patternstage_div, pattern_div);
+const konva_timeline_stage = new KonvaTimelineStage(primary_design, timelinestage_div, timeline_div);
 const right_panel = new RightPanel(primary_design, rightpanel_div);
 const unified_keyframe_editor = right_panel.unified_keyframe_editor;
 const parameter_editor = new ParameterEditor(primary_design, notnull(document.querySelector("div.parametereditor")));
+
+const design_library = new DesignLibrary(primary_design, designlibrary_div, new Map([
+	["heartbeat", fetch("./example-patterns/heartbeat.adaptics").then(r => (/** @type {Promise<MidAirHapticsAnimationFileFormat>} */ (r.json()))) ]
+]));
 
 Object.assign(window, {
 	primary_design,
@@ -307,4 +323,5 @@ Object.assign(window, {
 	right_panel,
 	unified_keyframe_editor,
 	parameter_editor,
+	design_library,
 });

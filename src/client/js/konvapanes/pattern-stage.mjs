@@ -35,14 +35,14 @@ export class KonvaPatternStage extends KonvaResizeStage {
 	/**
 	 *
 	 * @param {MAHPatternDesignFE} pattern_design
-	 * @param {string} direct_container_id
+	 * @param {HTMLDivElement} direct_container
 	 * @param {HTMLElement} resize_container
 	 */
-	constructor(pattern_design, direct_container_id, resize_container, {
+	constructor(pattern_design, direct_container, resize_container, {
 		pattern_square_size = KonvaPatternStage.pattern_square_size,
 		pattern_padding = KonvaPatternStage.pattern_padding,
 	} = {}) {
-		super(direct_container_id, resize_container, {
+		super(direct_container, resize_container, {
 			stageWidth: pattern_square_size + 2*pattern_padding,
 			stageHeight: pattern_square_size + 2*pattern_padding,
 		});

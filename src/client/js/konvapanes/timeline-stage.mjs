@@ -65,11 +65,11 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 	/**
 	 *
 	 * @param {MAHPatternDesignFE} pattern_design
-	 * @param {string} direct_container_id
+	 * @param {HTMLDivElement} direct_container
 	 * @param {HTMLElement} resize_container
 	 */
-	constructor(pattern_design, direct_container_id, resize_container) {
-		super(direct_container_id, resize_container, {
+	constructor(pattern_design, direct_container, resize_container) {
+		super(direct_container, resize_container, {
 			stageWidth: 1500, stageHeight: 500,
 			fullWidth: 2500, fullHeight: 800,
 			// flipDefaultScrollDirection: true, //disabled because this sucks on trackpads. audacity also keeps regular scrolling directions

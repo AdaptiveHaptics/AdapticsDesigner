@@ -93,6 +93,13 @@ class StateChangeEventTarget extends EventTarget {
 	}
 }
 
+/**
+ * @returns {PatternEvaluatorParameters}
+ */
+function default_eval_params() {
+	return { time: 0, user_parameters: new Map(), geometric_transform: PatternEvaluator.default_geo_transform_matrix() };
+}
+
 export class MAHPatternDesignFE {
 	#_filename; get filename() { return this.#_filename; }
 	/** @type {string | null} */
@@ -120,7 +127,7 @@ export class MAHPatternDesignFE {
 
 		//pattern eval
 		/** @type {PatternEvaluatorParameters}  */
-		this.evaluator_params = { time: 0, user_parameters: new Map(), geometric_transform: PatternEvaluator.default_geo_transform_matrix() };
+		this.evaluator_params = default_eval_params();
 		this.apply_user_param_definitions();
 		/** @type {NextEvalParams} */
 		this.evaluator_next_eval_params = PatternEvaluator.default_next_eval_params();
@@ -952,10 +959,23 @@ export class MAHPatternDesignFE {
 	 */
 	async import_file(file) {
 		const filedata_text = await file.text();
-		const filedataFE = this.load_filedata_into_fe_format(JSON.parse(filedata_text));
+		const filedata = JSON.parse(filedata_text);
+		this.import_file_from_filedata(filedata, file.name);
+	}
+	/**
+	 *
+	 * @param {MidAirHapticsAnimationFileFormat} filedata
+	 * @param {string} filename
+	 * @returns
+	 */
+	import_file_from_filedata(filedata, filename) {
+		const filedataFE = this.load_filedata_into_fe_format(filedata);
 		this.deselect_all_items({ no_emit: true });
+		this.#_playstart_timestamp = 0;
+		this.evaluator_params = default_eval_params();
+		this.evaluator_next_eval_params = PatternEvaluator.default_next_eval_params();
 		this.save_state();
-		this.#_filename = file.name;
+		this.#_filename = filename;
 		this.filedata = filedataFE;
 		this.commit_operation({ rerender: true });
 	}

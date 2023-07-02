@@ -54,8 +54,35 @@
 		</div>
 		<div class="mainsplitgrid">
 			<div class="left">
-				<div class="designs">
-
+				<div class="designlibrary">
+					<div class="searchbox">
+						<label>
+							<span class="material-symbols-outlined">search</span>
+							<input type="text" placeholder="Search Design Library">
+						</label>
+						<button class="material-symbols-outlined close">close</button>
+					</div>
+					<div class="designtree">
+						<div class="children">
+							<details class="folder">
+								<summary>LOADING... Examples</summary>
+								<div class="children">
+									<button class="file">Battery</button>
+									<button class="file">Spin</button>
+									<details class="folder">
+										<summary>Buttons</summary>
+										<div class="children">
+											<button class="file">ButtonA</button>
+											<button class="file">ButtonB</button>
+										</div>
+									</details>
+									<button class="file">Slider</button>
+								</div>
+							</details>
+							<button class="file">LOADING... Test1</button>
+							<button class="file">LOADING... Test2</button>
+						</div>
+					</div>
 				</div>
 			</div>
 			<div class="gutter column leftcenter"></div>
@@ -76,7 +103,7 @@
 
 					</div>
 				</div>
-				<div id="patternstage" class="konvastage"></div>
+				<div id="patternstage" class="konvastage patternstage"></div>
 			</div>
 			<div class="gutter column centerright"></div>
 			<div class="right">
@@ -312,7 +339,7 @@
 
 						</div>
 					</div>
-					<div id="timelinestage" class="konvastage"></div>
+					<div id="timelinestage" class="konvastage timelinestage"></div>
 				</div>
 			</div>
 		</div>

@@ -171,10 +171,10 @@ export class MAHPatternDesignFE {
 
 
 
-	/** @type {MidAirHapticsAnimationFileFormat[]} */
+	/** @type {{ filename: string, filedata: MidAirHapticsAnimationFileFormat }[]} */
 	undo_states = [];
 	undo_states_size = 50;
-	/** @type {MidAirHapticsAnimationFileFormat[]} */
+	/** @type {{ filename: string, filedata: MidAirHapticsAnimationFileFormat }[]} */
 	redo_states = [];
 	redo_states_size = 50;
 
@@ -188,6 +188,13 @@ export class MAHPatternDesignFE {
 		this._committed = v;
 	}
 
+	#_create_undo_redo_state() {
+		return {
+			filename: this.filename,
+			filedata: this.clone_filedata(),
+		};
+	}
+
 	/**
 	 * must be followed by commit_operation
 	 */
@@ -198,7 +205,7 @@ export class MAHPatternDesignFE {
 		}
 		this.committed = false;
 		this.redo_states.length = 0;
-		this.undo_states.push(this.clone_filedata());
+		this.undo_states.push(this.#_create_undo_redo_state());
 		if (this.undo_states.length > this.undo_states_size) this.undo_states.shift();
 
 		this.save_design_fe_state();
@@ -263,28 +270,26 @@ export class MAHPatternDesignFE {
 	}
 
 	undo() {
-		const fd = this.undo_states.pop();
-		if (fd == null) return false;
-
-		this.redo_states.push(this.clone_filedata());
-		if (this.redo_states.length > this.redo_states_size) this.redo_states.shift();
-
-		this.deselect_all_items({ no_emit: true });
-		this.filedata = this.load_filedata_into_fe_format(fd); //could fail to due to incorrect data structure revision
-		this.committed = false;
-		this.commit_operation({ rerender: true });
-		return true;
+		this.#_undo_redo(false);
 	}
 
 	redo() {
-		const fd = this.redo_states.pop();
-		if (fd == null) return false;
+		this.#_undo_redo(true);
+	}
 
-		this.undo_states.push(this.clone_filedata());
-		if (this.undo_states.length > this.undo_states_size) this.undo_states.shift();
+	#_undo_redo(redo = false) {
+		const u_states_take = redo ? this.redo_states : this.undo_states;
+		const u_states_push = redo ? this.undo_states : this.redo_states;
+		const u_states_push_max_len = redo ? this.undo_states_size : this.redo_states_size;
+		const u_state = u_states_take.pop();
+		if (u_state == null) return false;
+
+		u_states_push.push(this.#_create_undo_redo_state());
+		if (u_states_push.length > u_states_push_max_len) u_states_push.shift();
 
 		this.deselect_all_items({ no_emit: true });
-		this.filedata = this.load_filedata_into_fe_format(fd); //could fail to due to incorrect data structure revision
+		this.filedata = this.load_filedata_into_fe_format(u_state.filedata); //could fail to due to incorrect data structure revision
+		this.#_filename = u_state.filename;
 		this.committed = false;
 		this.commit_operation({ rerender: true });
 		return true;

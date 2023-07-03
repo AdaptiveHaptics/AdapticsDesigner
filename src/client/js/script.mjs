@@ -211,10 +211,13 @@ const FILE_TYPES = [
 	},
 ];
 
-let last_file_handle = null;
+
 
 if ("showSaveFilePicker" in window && "showOpenFilePicker" in window) {
+	const last_file_handle_map = new Map();
+
 	file_download_button.style.display = "none";
+	/** @type {(filehandle: FileSystemFileHandle) => Promise<void>} */
 	const save_to_filehandle = async (fileHandle) => {
 		const writable = await fileHandle.createWritable();
 		await writable.write(primary_design.export_file());
@@ -223,13 +226,14 @@ if ("showSaveFilePicker" in window && "showOpenFilePicker" in window) {
 	};
 	file_save_as_button.addEventListener("click", async () => {
 		try {
-			last_file_handle = await window.showSaveFilePicker({
+			const file_handle = await window.showSaveFilePicker({
 				types: FILE_TYPES,
 				excludeAcceptAllOption: false,
 				suggestedName: primary_design.filename,
 			});
-			primary_design.update_filename(last_file_handle.name);
-			await save_to_filehandle(last_file_handle);
+			last_file_handle_map.set(file_handle.name, file_handle);
+			primary_design.update_filename(file_handle.name);
+			await save_to_filehandle(file_handle);
 		} catch (e) {
 			if (e.name == "AbortError") {
 				//do nothing
@@ -239,20 +243,20 @@ if ("showSaveFilePicker" in window && "showOpenFilePicker" in window) {
 		}
 	});
 	file_save_button.addEventListener("click", async () => {
-		if (last_file_handle == null) {
+		if (!last_file_handle_map.has(primary_design.filename)) {
 			file_save_as_button.click();
 			return;
 		}
-		await save_to_filehandle(last_file_handle);
+		await save_to_filehandle(last_file_handle_map.get(primary_design.filename));
 	});
 	file_open_button.addEventListener("click", async () => {
 		try {
-			const [fileHandle] = await window.showOpenFilePicker({
+			const [file_handle] = await window.showOpenFilePicker({
 				types: FILE_TYPES,
 				multiple: false,
 			});
-			last_file_handle = fileHandle;
-			const file = await fileHandle.getFile();
+			last_file_handle_map.set(file_handle.name, file_handle);
+			const file = await file_handle.getFile();
 			await primary_design.import_file(file);
 			filename_span.classList.remove("unsaved");
 		} catch (e) {
@@ -268,13 +272,14 @@ if ("showSaveFilePicker" in window && "showOpenFilePicker" in window) {
 			const confirmation = confirm(`'${primary_design.filename}' is not saved. Are you sure you want to discard your changes?`);
 			if (!confirmation) return;
 		}
-		last_file_handle = null;
+		last_file_handle_map.clear();
 		/** @type {[string, MidAirHapticsAnimationFileFormat]} */
 		const [default_filename, default_filedata] = MAHPatternDesignFE.DEFAULT;
 		await primary_design.import_file(new File([JSON.stringify(default_filedata)], default_filename, { type: "application/json" }));
 		pattern_div.focus();
 	});
-} else {
+
+} else { // fallback for browsers that don't support the File System Access API
 	file_save_button.disabled = true;
 	file_save_as_button.disabled = true;
 	file_save_as_button.title = file_save_button.title = "This browser does not support the File System Access API `showSaveFilePicker` and `showOpenFilePicker`.";

@@ -100,6 +100,8 @@ function default_eval_params() {
 	return { time: 0, user_parameters: new Map(), geometric_transform: PatternEvaluator.default_geo_transform_matrix() };
 }
 
+/** @typedef {((serialized: string) => void) | null} SaveSerializedDesignFEStateFN */
+
 export class MAHPatternDesignFE {
 	#_filename; get filename() { return this.#_filename; }
 	/** @type {string | null} */
@@ -109,9 +111,12 @@ export class MAHPatternDesignFE {
 	 *
 	 * @param {string} filename
 	 * @param {MidAirHapticsAnimationFileFormat} filedata
+	 * @param {SaveSerializedDesignFEStateFN} save_design_fe_state
 	 */
-	constructor(filename, filedata, undo_states = [], redo_states = [], undo_states_size = 50, redo_states_size = 50) {
+	constructor(filename, filedata, save_design_fe_state, undo_states = [], redo_states = [], undo_states_size = 50, redo_states_size = 50) {
 		this.#_filename = filename;
+
+		this.save_design_fe_state = save_design_fe_state == null ? () => {} : () => save_design_fe_state(this.serialize());
 
 		/** @type {MAHAnimationFileFormatFE} */
 		this.filedata = this.load_filedata_into_fe_format(filedata);
@@ -196,11 +201,7 @@ export class MAHPatternDesignFE {
 		this.undo_states.push(this.clone_filedata());
 		if (this.undo_states.length > this.undo_states_size) this.undo_states.shift();
 
-		this.save_to_localstorage();
-
-		//# this is not atomic
-		// if (this.save_working_copy_to_localstorage_timer) clearTimeout(this.save_working_copy_to_localstorage_timer);
-		// setTimeout(() => this.save_to_localstorage(), 1800);
+		this.save_design_fe_state();
 	}
 	/**
 	 * must be preceded by save_state
@@ -219,7 +220,7 @@ export class MAHPatternDesignFE {
 			alert("commit_operation before save");
 			throw new Error("commit_operation before save");
 		}
-		this.save_to_localstorage();
+		this.save_design_fe_state();
 		this.committed = true;
 
 
@@ -990,25 +991,12 @@ export class MAHPatternDesignFE {
 	/**
 	 *
 	 * @param {string} json_str
+	 * @param {SaveSerializedDesignFEStateFN} save_func
 	 * @returns {MAHPatternDesignFE}
 	 */
-	static deserialize(json_str) {
-		const { filename, filedata, undo_states, redo_states, undo_states_size, redo_states_size } = JSON.parse(json_str);
-		return new MAHPatternDesignFE(filename, filedata, undo_states, redo_states, undo_states_size, redo_states_size);
-	}
-
-	static get LOCAL_STORAGE_KEY() { return "primary_design"; }
-
-	save_to_localstorage() {
-		window.localStorage.setItem(MAHPatternDesignFE.LOCAL_STORAGE_KEY, this.serialize());
-	}
-	static load_from_localstorage() {
-		const lssf = window.localStorage.getItem(MAHPatternDesignFE.LOCAL_STORAGE_KEY);
-		if (lssf) {
-			return this.deserialize(lssf);
-		} else {
-			return null;
-		}
+	static deserialize(json_str, save_func) {
+		const { filename, filedata, undo_states, redo_states, undo_states_size, redo_states_size } = /** @type {MAHPatternDesignFE} */(JSON.parse(json_str));
+		return new MAHPatternDesignFE(filename, filedata, save_func, undo_states, redo_states, undo_states_size, redo_states_size);
 	}
 }
 

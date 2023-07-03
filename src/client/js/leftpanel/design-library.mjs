@@ -6,6 +6,10 @@ import { KonvaTimelineStage } from "../konvapanes/timeline-stage.mjs";
 import { notnull } from "../util.mjs";
 
 export class DesignLibrary {
+	/** @type {HTMLInputElement} */
+	#_search_input;
+	/** @type {HTMLButtonElement} */
+	#_clear_button;
 
 	/**
 	 *
@@ -18,17 +22,23 @@ export class DesignLibrary {
 		this.designlibrary_div = designlibrary_div;
 		/** @type {HTMLDivElement} */
 		this.designtree_div = notnull(designlibrary_div.querySelector("div.designtree"));
-		/** @type {HTMLInputElement} */
-		const search_input = notnull(this.designlibrary_div.querySelector("input[type=text]"));
+
+		this.#_search_input = notnull(this.designlibrary_div.querySelector("input[type=text]"));
+		this.#_clear_button = notnull(this.designlibrary_div.querySelector("button.clear"));
 
 		this.designs_map = designs_map;
 		this.render_designs(this.designs_map);
-		search_input.addEventListener("input", _ev => {
-			this.#_on_search_input(search_input.value);
+		this.#_search_input.addEventListener("input", _ev => {
+			this.#_on_search_input();
+		});
+
+		this.#_clear_button.addEventListener("click", _ev => {
+			this.#_search_input.value = "";
+			this.#_on_search_input();
 		});
 
 		{
-			this._preview_pattern_design = new MAHPatternDesignFE(...MAHPatternDesignFE.DEFAULT);
+			this._preview_pattern_design = new MAHPatternDesignFE(...MAHPatternDesignFE.DEFAULT, null);
 			this._preview_pattern_design.commit_operation({ rerender: true });
 
 			const pattern_resize_div = document.createElement("div");
@@ -62,7 +72,8 @@ export class DesignLibrary {
 		}
 	}
 
-	#_on_search_input(search_text) {
+	#_on_search_input() {
+		const search_text = this.#_search_input.value;
 		const filtered = new Map([...this.designs_map].filter(([design_path, _design]) => design_path.includes(search_text)));
 		this.render_designs(filtered);
 	}
@@ -86,6 +97,7 @@ export class DesignLibrary {
 			const design = notnull(designs.get(design_path) ?? null);
 			const design_path_split = design_path.split("/");
 			const [filename, ...folders_rev] = design_path_split.reverse();
+			const filename_with_ext = filename + ".adaptics";
 			const folders = folders_rev.reverse();
 			/** @type {FolderDef} */
 			let folders_map_curr = { children_div: designtree_children_div, child_folders: designtree_folders_map };
@@ -105,7 +117,7 @@ export class DesignLibrary {
 			folders_map_curr.children_div.appendChild(file_div);
 			file_div.addEventListener("mouseover", async () => {
 				try {
-					this._preview_pattern_design.import_file_from_filedata(await design, filename);
+					this._preview_pattern_design.import_file_from_filedata(await design, filename_with_ext);
 					file_div.appendChild(this._preview_div);
 
 					this._preview_pattern_design.update_playstart(Date.now());
@@ -117,6 +129,9 @@ export class DesignLibrary {
 			file_div.addEventListener("mouseout", () => {
 				this._preview_pattern_design.update_playstart(0);
 				this._preview_div.remove();
+			});
+			file_button.addEventListener("click", async () => {
+				this.pattern_design.import_file_from_filedata(await design, filename_with_ext);
 			});
 
 		}

@@ -93,13 +93,19 @@ const _bottomsplit = SplitGrid({
 });
 
 
+const PRIMARY_DESIGN_LOCAL_STORAGE_KEY = "primary_design";
+
+
 /** @type {MAHPatternDesignFE} */
 let primary_design;
+const lssf = window.localStorage.getItem(PRIMARY_DESIGN_LOCAL_STORAGE_KEY);
+const save_func = serialized => window.localStorage.setItem(PRIMARY_DESIGN_LOCAL_STORAGE_KEY, serialized);
+const create_default = () => new MAHPatternDesignFE(...MAHPatternDesignFE.DEFAULT, save_func);
 try {
-	primary_design = MAHPatternDesignFE.load_from_localstorage() || new MAHPatternDesignFE(...MAHPatternDesignFE.DEFAULT);
+	primary_design = lssf ? MAHPatternDesignFE.deserialize(lssf, save_func) : create_default();
 } catch (e) {
-	alert("loading design from local storage failed.\nProbably due to the format changing, and migration not being implemented during initial development (version<1.0.0).\n\nloading default pattern...");
-	primary_design = new MAHPatternDesignFE(...MAHPatternDesignFE.DEFAULT);
+	alert("loading design from local storage failed.\nProbably due to the format changing.\n\nloading default pattern...");
+	primary_design = create_default();
 	console.error(e);
 }
 

@@ -379,11 +379,15 @@ div.isection.file span.filename.unsaved::after {
     content: '*';
     color: var(--text-low-priority);
 }
+div.isection.file .filemenu {
+    position: relative;
+}
 div.isection.file .filemenu > div.menulist {
     visibility: hidden;
     opacity: 0;
     position: absolute;
     z-index: 70;
+    border: solid 1ex var(--background-secondary);
 }
 div.isection.file .filemenu:focus-within > div.menulist {
     visibility: visible;
@@ -422,6 +426,7 @@ div.designlibrary {
     grid-template-rows: auto 1fr;
     height: 100%;
     gap: 0.5ex;
+    background-color: var(--background-tertiary-alt);
 }
 div.designlibrary > div.searchbox {
     display: grid;
@@ -455,7 +460,7 @@ div.designlibrary div.designtree div.file {
 }
 div.designlibrary div.designtree div.file button {
     padding: 0.6ex;
-    margin: 0 0.5ex;
+    margin: 0 0.3ex;
 }
 div.designlibrary div.designtree div.file div.preview {
     background-color: var(--background-titlebar);

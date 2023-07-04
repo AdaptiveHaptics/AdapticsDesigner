@@ -158,6 +158,13 @@ export class MAHPatternDesignFE {
 				this.#_tick_playback();
 			}
 		});
+		this.state_change_events.addEventListener("rerender", _ => {
+			// this.websocket?.update_playstart(0); # make "atomic"
+			this.websocket?.update_playstart(this.#_playstart_timestamp);
+			this.websocket?.update_parameters(this.evaluator_params);
+			this.websocket?.update_pattern(this.filedata);
+			// this.websocket?.update_playstart(this.#_playstart_timestamp); # make "atomic"
+		});
 		this.state_change_events.addEventListener("playback_update", _ => {
 			if (this.last_eval[0].stop) this.update_playstart(0);
 		});
@@ -834,8 +841,12 @@ export class MAHPatternDesignFE {
 		if (this.websocket) this.websocket.destroy();
 		const websocket = new DeviceWSController(url);
 		websocket.state_change_events.addEventListener("connected", _ev => {
+			// we cant send next_eval_params (atm), so we pause and start playback again at correct timestamp. this seems to work better logically in some cases
+			this.update_playstart(0); // stop playback first, in case something is playing
+			this.update_pattern_time(this.last_eval[0]?.pattern_time ?? 0); // start at last pattern time
 			websocket.update_pattern(this.filedata);
-			websocket.update_playstart(this.#_playstart_timestamp);
+			websocket.update_parameters(this.evaluator_params);
+			this.update_playstart(Date.now() - this.evaluator_params.time);
 		});
 		websocket.state_change_events.addEventListener("disconnected", _ev => {
 			this.#_eval_pattern();
@@ -1000,7 +1011,7 @@ export class MAHPatternDesignFE {
 	import_file_from_filedata(filedata, filename) {
 		const filedataFE = this.load_filedata_into_fe_format(filedata);
 		this.deselect_all_items({ no_emit: true });
-		this.#_playstart_timestamp = 0;
+		this.update_playstart(0);
 		this.evaluator_params = default_eval_params();
 		this.evaluator_next_eval_params = PatternEvaluator.default_next_eval_params();
 		this.save_state();

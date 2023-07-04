@@ -12,7 +12,7 @@
 					"params": {
 						"radius": {
 							"type": "f64",
-							"value": 1
+							"value": 5
 						},
 						"am_freq": {
 							"type": "f64",
@@ -62,7 +62,7 @@
 					"params": {
 						"radius": {
 							"type": "f64",
-							"value": 1
+							"value": 5
 						},
 						"am_freq": {
 							"type": "f64",
@@ -329,8 +329,8 @@
 			"step": 0.05
 		},
 		"contact": {
-			"default": 5,
-			"min": 5,
+			"default": 7,
+			"min": 7,
 			"max": 20,
 			"step": 1
 		}

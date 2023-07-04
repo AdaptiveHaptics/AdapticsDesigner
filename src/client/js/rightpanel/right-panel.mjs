@@ -5,6 +5,8 @@ import { PatternGlobalsEditor } from "./tabs/pattern-globals-editor.mjs";
 import { UnifiedKeyframeEditor } from "./tabs/unified-keyframe-editor.mjs";
 
 export class RightPanel {
+	#_tab_switched_manually = false;
+
 	/**
 	 *
 	 * @param {MAHPatternDesignFE} pattern_design
@@ -24,6 +26,7 @@ export class RightPanel {
 			if (tab_button) {
 				const tabpanel_name = tab_button.dataset.tabpanel;
 				this.switch_to_tab(tabpanel_name);
+				this.#_tab_switched_manually = true;
 			}
 		});
 
@@ -32,9 +35,10 @@ export class RightPanel {
 		this.unified_keyframe_editor = new UnifiedKeyframeEditor(pattern_design, notnull(this.tabpanelcontainer_div.querySelector("div.ukfecontainer")));
 		this.pattern_globals_editor = new PatternGlobalsEditor(pattern_design, notnull(this.tabpanelcontainer_div.querySelector("form.pattern")));
 
-		// this.pattern_design.state_change_events.addEventListener("item_select", ev => {
-		// 	if (ev.detail.keyframe) this.switch_to_tab("ukfecontainer"); // switch to UKFE tab when a keyframe is selected (might be annoying idk)
-		// });
+		// switch to UKFE tab when a keyframe is selected if tabs have not been manually switched
+		this.pattern_design.state_change_events.addEventListener("item_select", ev => {
+			if (!this.#_tab_switched_manually && ev.detail.keyframe) this.switch_to_tab("ukfecontainer");
+		});
 
 		this.switch_to_tab("help");
 	}

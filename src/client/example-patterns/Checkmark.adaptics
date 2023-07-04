@@ -1,0 +1,334 @@
+{
+	"$DATA_FORMAT": "MidAirHapticsAnimationFileFormat",
+	"$REVISION": "0.0.10-alpha.1",
+	"name": "untitled",
+	"keyframes": [
+		{
+			"time": 0,
+			"type": "standard",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "f64",
+							"value": 10
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 1
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"coords": {
+				"coords": {
+					"x": -25,
+					"y": -5,
+					"z": 0
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 150,
+			"type": "pause",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "f64",
+							"value": 10
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 1
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 300,
+			"type": "standard",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "f64",
+							"value": 10
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 1
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"coords": {
+				"coords": {
+					"x": -5,
+					"y": -20,
+					"z": 0
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 500,
+			"type": "pause",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "f64",
+							"value": 10
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 1
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 625,
+			"type": "standard",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "f64",
+							"value": 10
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 1
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"coords": {
+				"coords": {
+					"x": 20,
+					"y": 0,
+					"z": 0
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 750,
+			"type": "standard",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "f64",
+							"value": 10
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"coords": {
+				"coords": {
+					"x": 45,
+					"y": 20,
+					"z": 0
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 825,
+			"type": "stop"
+		}
+	],
+	"pattern_transform": {
+		"geometric_transforms": {
+			"translate": {
+				"x": {
+					"type": "f64",
+					"value": 0
+				},
+				"y": {
+					"type": "f64",
+					"value": 0
+				},
+				"z": {
+					"type": "f64",
+					"value": 200
+				}
+			},
+			"rotation": {
+				"type": "f64",
+				"value": 0
+			},
+			"scale": {
+				"x": {
+					"type": "f64",
+					"value": 1
+				},
+				"y": {
+					"type": "f64",
+					"value": 1
+				},
+				"z": {
+					"type": "f64",
+					"value": 1
+				}
+			}
+		},
+		"intensity_factor": {
+			"type": "f64",
+			"value": 1
+		},
+		"playback_speed": {
+			"type": "f64",
+			"value": 1
+		}
+	},
+	"user_parameter_definitions": {}
+}

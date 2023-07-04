@@ -59,20 +59,8 @@ const websocket_disconnect_button = notnull(document.querySelector(".isection.we
 /** @type {HTMLButtonElement} */
 const websocket_state_span = notnull(document.querySelector(".isection.websocket span.websocketstate"));
 
-/** @type {HTMLButtonElement} */
-const file_new_button = notnull(document.querySelector(".isection.file button.new"));
-/** @type {HTMLButtonElement} */
-const file_open_button = notnull(document.querySelector(".isection.file button.open"));
-/** @type {HTMLButtonElement} */
-const file_download_button = notnull(document.querySelector(".isection.file button.download"));
-/** @type {HTMLButtonElement} */
-const file_save_button = notnull(document.querySelector(".isection.file button.save"));
-/** @type {HTMLButtonElement} */
-const file_save_as_button = notnull(document.querySelector(".isection.file button.save_as"));
-/** @type {HTMLSpanElement} */
-const filename_span = notnull(document.querySelector(".isection.file span.filename"));
-/** @type {HTMLSpanElement} */
-const savedstate_span = notnull(document.querySelector("span.savedstate"));
+/** @type {HTMLDivElement} */
+const file_isection_div = notnull(document.querySelector("div.isection.file"));
 
 
 const _mainsplit = SplitGrid({
@@ -116,8 +104,7 @@ const focus_within_design_panes_or_nothing_focused = () => document.activeElemen
 document.addEventListener("keydown", ev => {
 	if (ev.key == "s" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
 		ev.preventDefault();
-		if (file_save_button.disabled) file_download_button.click();
-		else file_save_button.click();
+		file_titlebar_manager.trigger_save();
 	}
 
 	// restrict keybinds to nothing focused, or design panes focused
@@ -212,108 +199,156 @@ const FILE_TYPES = [
 ];
 
 
+export class FileTitlebarManager {
+	/**
+	 * @param {MAHPatternDesignFE} primary_design
+	 * @param {HTMLDivElement} file_isection_div
+	 */
+	constructor(primary_design, file_isection_div) {
+		/** @type {HTMLButtonElement} */
+		const file_new_button = notnull(file_isection_div.querySelector("button.new"));
+		/** @type {HTMLButtonElement} */
+		const file_open_button = notnull(file_isection_div.querySelector("button.open"));
+		/** @type {HTMLButtonElement} */
+		this.file_download_button = notnull(file_isection_div.querySelector("button.download"));
+		/** @type {HTMLButtonElement} */
+		this.file_save_button = notnull(file_isection_div.querySelector("button.save"));
+		/** @type {HTMLButtonElement} */
+		const file_save_as_button = notnull(file_isection_div.querySelector("button.save_as"));
+		/** @type {HTMLSpanElement} */
+		this.filename_span = notnull(file_isection_div.querySelector("span.filename"));
+		/** @type {HTMLSpanElement} */
+		const savedstate_span = notnull(file_isection_div.querySelector("span.savedstate"));
 
-if ("showSaveFilePicker" in window && "showOpenFilePicker" in window) {
-	const last_file_handle_map = new Map();
-
-	file_download_button.style.display = "none";
-	/** @type {(filehandle: FileSystemFileHandle) => Promise<void>} */
-	const save_to_filehandle = async (fileHandle) => {
-		const writable = await fileHandle.createWritable();
-		await writable.write(primary_design.export_file());
-		await writable.close();
-		filename_span.classList.remove("unsaved");
-	};
-	file_save_as_button.addEventListener("click", async () => {
-		try {
-			const file_handle = await window.showSaveFilePicker({
-				types: FILE_TYPES,
-				excludeAcceptAllOption: false,
-				suggestedName: primary_design.filename,
-			});
-			last_file_handle_map.set(file_handle.name, file_handle);
-			primary_design.update_filename(file_handle.name);
-			await save_to_filehandle(file_handle);
-		} catch (e) {
-			if (e.name == "AbortError") {
-				//do nothing
-			} else {
-				throw e;
-			}
-		}
-	});
-	file_save_button.addEventListener("click", async () => {
-		if (!last_file_handle_map.has(primary_design.filename)) {
-			file_save_as_button.click();
-			return;
-		}
-		await save_to_filehandle(last_file_handle_map.get(primary_design.filename));
-	});
-	file_open_button.addEventListener("click", async () => {
-		try {
-			const [file_handle] = await window.showOpenFilePicker({
-				types: FILE_TYPES,
-				multiple: false,
-			});
-			last_file_handle_map.set(file_handle.name, file_handle);
-			const file = await file_handle.getFile();
-			await primary_design.import_file(file);
-			filename_span.classList.remove("unsaved");
-		} catch (e) {
-			if (e.name == "AbortError") {
-				//do nothing
-			} else {
-				throw e;
-			}
-		}
-	});
-	file_new_button.addEventListener("click", async () => {
-		if (filename_span.classList.contains("unsaved")) {
-			const confirmation = confirm(`'${primary_design.filename}' is not saved. Are you sure you want to discard your changes?`);
-			if (!confirmation) return;
-		}
-		last_file_handle_map.clear();
-		/** @type {[string, MidAirHapticsAnimationFileFormat]} */
-		const [default_filename, default_filedata] = MAHPatternDesignFE.DEFAULT;
-		await primary_design.import_file(new File([JSON.stringify(default_filedata)], default_filename, { type: "application/json" }));
-		pattern_div.focus();
-	});
-
-} else { // fallback for browsers that don't support the File System Access API
-	file_save_button.disabled = true;
-	file_save_as_button.disabled = true;
-	file_save_as_button.title = file_save_button.title = "This browser does not support the File System Access API `showSaveFilePicker` and `showOpenFilePicker`.";
-	file_download_button.addEventListener("click", async () => {
-		const file = primary_design.export_file();
-		const url = URL.createObjectURL(file);
-		const a = document.createElement("a");
-		a.href = url;
-		a.download = file.name;
-		a.click();
-		URL.revokeObjectURL(url);
-		filename_span.classList.remove("unsaved");
-	});
-	file_open_button.addEventListener("click", async () => {
-		const input = document.createElement("input");
-		input.type = "file";
-		input.accept = ".adaptics,.json";
-		input.addEventListener("change", () => {
-			if (input.files == null) return;
-			const file = input.files[0];
-			if (file) primary_design.import_file(file);
+		primary_design.state_change_events.addEventListener("rerender", () => {
+			this.filename_span.textContent = primary_design.filename;
 		});
-		input.click();
-	});
+
+		primary_design.state_change_events.addEventListener("commit_update", ev => {
+			savedstate_span.textContent = ev.detail.committed ? "saved to localstorage" : "pending change";
+			this.filename_span.classList.add("unsaved");
+		});
+
+
+		const last_file_handle_map = new Map();
+		file_new_button.addEventListener("click", async () => {
+			this.confirm_discard_changes();
+			last_file_handle_map.clear();
+			/** @type {[string, MidAirHapticsAnimationFileFormat]} */
+			const [default_filename, default_filedata] = MAHPatternDesignFE.DEFAULT;
+			await primary_design.import_file(new File([JSON.stringify(default_filedata)], default_filename, { type: "application/json" }));
+			pattern_div.focus();
+		});
+
+		if ("showSaveFilePicker" in window && "showOpenFilePicker" in window) {
+			this.file_download_button.style.display = "none";
+			/** @type {(filehandle: FileSystemFileHandle) => Promise<void>} */
+			const save_to_filehandle = async (fileHandle) => {
+				const writable = await fileHandle.createWritable();
+				await writable.write(primary_design.export_file());
+				await writable.close();
+				this.set_saved_to_fs(true);
+			};
+			file_save_as_button.addEventListener("click", async () => {
+				try {
+					const file_handle = await window.showSaveFilePicker({
+						types: FILE_TYPES,
+						excludeAcceptAllOption: false,
+						suggestedName: primary_design.filename,
+					});
+					last_file_handle_map.set(file_handle.name, file_handle);
+					primary_design.update_filename(file_handle.name);
+					await save_to_filehandle(file_handle);
+				} catch (e) {
+					if (e.name == "AbortError") {
+						//do nothing
+					} else {
+						throw e;
+					}
+				}
+			});
+			this.file_save_button.addEventListener("click", async () => {
+				if (!last_file_handle_map.has(primary_design.filename)) {
+					file_save_as_button.click();
+					return;
+				}
+				await save_to_filehandle(last_file_handle_map.get(primary_design.filename));
+			});
+			file_open_button.addEventListener("click", async () => {
+				try {
+					const [file_handle] = await window.showOpenFilePicker({
+						types: FILE_TYPES,
+						multiple: false,
+					});
+					last_file_handle_map.set(file_handle.name, file_handle);
+					const file = await file_handle.getFile();
+					await primary_design.import_file(file);
+					this.set_saved_to_fs(true);
+				} catch (e) {
+					if (e.name == "AbortError") {
+						//do nothing
+					} else {
+						throw e;
+					}
+				}
+			});
+
+		} else { // fallback for browsers that don't support the File System Access API
+			this.file_save_button.disabled = true;
+			file_save_as_button.disabled = true;
+			file_save_as_button.title = this.file_save_button.title = "This browser does not support the File System Access API `showSaveFilePicker` and `showOpenFilePicker`.";
+			this.file_download_button.addEventListener("click", async () => {
+				const file = primary_design.export_file();
+				const url = URL.createObjectURL(file);
+				const a = document.createElement("a");
+				a.href = url;
+				a.download = file.name;
+				a.click();
+				URL.revokeObjectURL(url);
+				this.set_saved_to_fs(true);
+			});
+			file_open_button.addEventListener("click", async () => {
+				const input = document.createElement("input");
+				input.type = "file";
+				input.accept = ".adaptics,.json";
+				input.addEventListener("change", () => {
+					if (input.files == null) return;
+					const file = input.files[0];
+					if (file) primary_design.import_file(file);
+				});
+				input.click();
+			});
+		}
+	}
+
+
+	set_saved_to_fs(saved) {
+		if (saved) {
+			this.filename_span.classList.remove("unsaved");
+		} else {
+			this.filename_span.classList.add("unsaved");
+		}
+	}
+
+	is_saved() {
+		return !this.filename_span.classList.contains("unsaved");
+	}
+
+	confirm_discard_changes() {
+		if (!this.is_saved()) {
+			const confirmation = confirm(`'${primary_design.filename}' is not saved. Are you sure you want to discard your changes?`);
+			if (!confirmation) return false;
+		}
+		return true;
+	}
+
+	trigger_save() {
+		if (this.file_save_button.disabled) this.file_download_button.click();
+		else this.file_save_button.click();
+	}
 }
 
-primary_design.state_change_events.addEventListener("rerender", () => {
-	filename_span.textContent = primary_design.filename;
-});
-
-primary_design.state_change_events.addEventListener("commit_update", ev => {
-	savedstate_span.textContent = ev.detail.committed ? "saved to localstorage" : "pending change";
-	filename_span.classList.add("unsaved");
-});
+const file_titlebar_manager = new FileTitlebarManager(primary_design, file_isection_div);
 
 
 primary_design.commit_operation({ rerender: true });
@@ -328,8 +363,9 @@ const load_pattern = async (url) => {
 	const json = /** @type {MidAirHapticsAnimationFileFormat} */ (await f.json());
 	return json;
 };
-const design_library = new DesignLibrary(primary_design, designlibrary_div, new Map([
+const design_library = new DesignLibrary(primary_design, file_titlebar_manager, designlibrary_div, new Map([
 	["Examples/Heartbeat", load_pattern("./example-patterns/Heartbeat.adaptics")],
+	["Examples/Checkmark", load_pattern("./example-patterns/Checkmark.adaptics")],
 	["Examples/Button", load_pattern("./example-patterns/Button.adaptics")],
 
 ]));
@@ -342,4 +378,5 @@ Object.assign(window, {
 	unified_keyframe_editor,
 	parameter_editor,
 	design_library,
+	file_titlebar_manager,
 });

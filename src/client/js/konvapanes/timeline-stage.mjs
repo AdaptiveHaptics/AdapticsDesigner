@@ -34,7 +34,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 	/** guaranteed */
 	minimum_pixels_per_major_gridline = 140;
 
-	milliseconds_per_pixel = 5;
+	milliseconds_per_pixel = 2.5;
 	major_gridline_preset_index = 1;
 	get milliseconds_per_major_gridline() {
 		return 10 ** Math.floor(this.major_gridline_preset_index / KonvaTimelineStage.major_gridline_millisecond_presets.length) *

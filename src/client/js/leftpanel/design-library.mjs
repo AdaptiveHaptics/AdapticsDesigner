@@ -3,7 +3,7 @@
 import { MAHPatternDesignFE } from "../fe/patterndesign.mjs";
 import { KonvaPatternStage } from "../konvapanes/pattern-stage.mjs";
 import { KonvaTimelineStage } from "../konvapanes/timeline-stage.mjs";
-import { notnull } from "../util.mjs";
+import { map_get_or_default, notnull } from "../util.mjs";
 
 export class DesignLibrary {
 	/** @type {HTMLInputElement} */
@@ -74,15 +74,16 @@ export class DesignLibrary {
 
 	#_on_search_input() {
 		const search_text = this.#_search_input.value;
-		const filtered = new Map([...this.designs_map].filter(([design_path, _design]) => design_path.includes(search_text)));
-		this.render_designs(filtered);
+		const filtered = new Map([...this.designs_map].filter(([design_path, _design]) => design_path.toLowerCase().includes(search_text.toLowerCase())));
+		this.render_designs(filtered, search_text !== "");
 	}
 
 	/**
 	 *
 	 * @param {Map<string, Promise<MidAirHapticsAnimationFileFormat>>} designs
+	 * @param {boolean} open_folders
 	 */
-	render_designs(designs) {
+	render_designs(designs, open_folders = false) {
 		while (this.designtree_div.lastChild) this.designtree_div.removeChild(this.designtree_div.lastChild);
 		const designtree_children_div = document.createElement("div");
 		designtree_children_div.classList.add("children");
@@ -102,11 +103,10 @@ export class DesignLibrary {
 			/** @type {FolderDef} */
 			let folders_map_curr = { children_div: designtree_children_div, child_folders: designtree_folders_map };
 			for (const folder_name of folders) {
-				folders_map_curr = folders_map_curr.child_folders.get(folder_name) || {
-					children_div: this.#_create_folder(folder_name, folders_map_curr.children_div),
+				folders_map_curr = map_get_or_default(folders_map_curr.child_folders, folder_name, () => ({
+					children_div: this.#_create_folder(folder_name, folders_map_curr.children_div, open_folders),
 					child_folders: new Map()
-				};
-				folders_map_curr.child_folders.set(folder_name, folders_map_curr);
+				}));
 			}
 
 			const file_div = document.createElement("div");
@@ -142,8 +142,9 @@ export class DesignLibrary {
 	 *
 	 * @param {string} folder_name
 	 * @param {HTMLDivElement} curr_folder_children_div
+	 * @param {boolean} open
 	 */
-	#_create_folder(folder_name, curr_folder_children_div) {
+	#_create_folder(folder_name, curr_folder_children_div, open = false) {
 		const folder = document.createElement("details");
 		folder.classList.add("folder");
 		const summary = document.createElement("summary");
@@ -154,6 +155,8 @@ export class DesignLibrary {
 		folder.appendChild(children_div);
 
 		curr_folder_children_div.appendChild(folder);
+
+		if (open) folder.open = true;
 
 		return children_div;
 	}

@@ -323,8 +323,15 @@ const right_panel = new RightPanel(primary_design, rightpanel_div);
 const unified_keyframe_editor = right_panel.unified_keyframe_editor;
 const parameter_editor = new ParameterEditor(primary_design, notnull(document.querySelector("div.parametereditor")));
 
+const load_pattern = async (url) => {
+	const f = await fetch(url);
+	const json = /** @type {MidAirHapticsAnimationFileFormat} */ (await f.json());
+	return json;
+};
 const design_library = new DesignLibrary(primary_design, designlibrary_div, new Map([
-	["heartbeat", fetch("./example-patterns/heartbeat.adaptics").then(r => (/** @type {Promise<MidAirHapticsAnimationFileFormat>} */ (r.json()))) ]
+	["Examples/Heartbeat", load_pattern("./example-patterns/Heartbeat.adaptics")],
+	["Examples/Button", load_pattern("./example-patterns/Button.adaptics")],
+
 ]));
 
 Object.assign(window, {

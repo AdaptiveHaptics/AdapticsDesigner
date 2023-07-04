@@ -12,7 +12,7 @@
 					"params": {
 						"radius": {
 							"type": "f64",
-							"value": 10
+							"value": 1
 						},
 						"am_freq": {
 							"type": "f64",
@@ -21,7 +21,7 @@
 					}
 				},
 				"transition": {
-					"name": "linear",
+					"name": "step",
 					"params": {}
 				}
 			},
@@ -30,13 +30,13 @@
 					"name": "constant",
 					"params": {
 						"value": {
-							"type": "f64",
-							"value": 1
+							"type": "dynamic",
+							"value": "proximity"
 						}
 					}
 				},
 				"transition": {
-					"name": "linear",
+					"name": "step",
 					"params": {}
 				}
 			},
@@ -54,7 +54,7 @@
 			"cjumps": []
 		},
 		{
-			"time": 200,
+			"time": 250,
 			"type": "pause",
 			"brush": {
 				"brush": {
@@ -62,7 +62,7 @@
 					"params": {
 						"radius": {
 							"type": "f64",
-							"value": 15
+							"value": 1
 						},
 						"am_freq": {
 							"type": "f64",
@@ -86,170 +86,14 @@
 					}
 				},
 				"transition": {
-					"name": "linear",
-					"params": {}
-				}
-			},
-			"cjumps": []
-		},
-		{
-			"time": 400,
-			"type": "pause",
-			"brush": {
-				"brush": {
-					"name": "circle",
-					"params": {
-						"radius": {
-							"type": "f64",
-							"value": 5
-						},
-						"am_freq": {
-							"type": "f64",
-							"value": 0
-						}
-					}
-				},
-				"transition": {
-					"name": "linear",
-					"params": {}
-				}
-			},
-			"intensity": {
-				"intensity": {
-					"name": "constant",
-					"params": {
-						"value": {
-							"type": "f64",
-							"value": 1
-						}
-					}
-				},
-				"transition": {
-					"name": "linear",
-					"params": {}
-				}
-			},
-			"cjumps": []
-		},
-		{
-			"time": 600,
-			"type": "pause",
-			"brush": {
-				"brush": {
-					"name": "circle",
-					"params": {
-						"radius": {
-							"type": "f64",
-							"value": 25
-						},
-						"am_freq": {
-							"type": "f64",
-							"value": 0
-						}
-					}
-				},
-				"transition": {
-					"name": "linear",
-					"params": {}
-				}
-			},
-			"intensity": {
-				"intensity": {
-					"name": "constant",
-					"params": {
-						"value": {
-							"type": "f64",
-							"value": 1
-						}
-					}
-				},
-				"transition": {
-					"name": "linear",
-					"params": {}
-				}
-			},
-			"cjumps": []
-		},
-		{
-			"time": 800,
-			"type": "pause",
-			"brush": {
-				"brush": {
-					"name": "circle",
-					"params": {
-						"radius": {
-							"type": "f64",
-							"value": 8
-						},
-						"am_freq": {
-							"type": "f64",
-							"value": 0
-						}
-					}
-				},
-				"transition": {
-					"name": "linear",
-					"params": {}
-				}
-			},
-			"intensity": {
-				"intensity": {
-					"name": "constant",
-					"params": {
-						"value": {
-							"type": "f64",
-							"value": 1
-						}
-					}
-				},
-				"transition": {
-					"name": "linear",
-					"params": {}
-				}
-			},
-			"cjumps": []
-		},
-		{
-			"time": 1000,
-			"type": "pause",
-			"brush": {
-				"brush": {
-					"name": "circle",
-					"params": {
-						"radius": {
-							"type": "f64",
-							"value": 10
-						},
-						"am_freq": {
-							"type": "f64",
-							"value": 0
-						}
-					}
-				},
-				"transition": {
-					"name": "linear",
-					"params": {}
-				}
-			},
-			"intensity": {
-				"intensity": {
-					"name": "constant",
-					"params": {
-						"value": {
-							"type": "f64",
-							"value": 1
-						}
-					}
-				},
-				"transition": {
-					"name": "linear",
+					"name": "step",
 					"params": {}
 				}
 			},
 			"cjumps": [
 				{
 					"condition": {
-						"parameter": "end",
+						"parameter": "proximity",
 						"operator": {
 							"name": "lt",
 							"params": {}
@@ -261,7 +105,175 @@
 			]
 		},
 		{
-			"time": 1100,
+			"time": 400,
+			"type": "pause",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "dynamic",
+							"value": "contact"
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 1
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 650,
+			"type": "pause",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "dynamic",
+							"value": "contact"
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 1
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": [
+				{
+					"condition": {
+						"parameter": "contact",
+						"operator": {
+							"name": "lt",
+							"params": {}
+						},
+						"value": 20
+					},
+					"jump_to": 400
+				}
+			]
+		},
+		{
+			"time": 750,
+			"type": "pause",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "f64",
+							"value": 28
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 1
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 900,
+			"type": "pause",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "f64",
+							"value": 0
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 1
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 1150,
 			"type": "stop"
 		}
 	],
@@ -278,7 +290,7 @@
 				},
 				"z": {
 					"type": "f64",
-					"value": 200
+					"value": 100
 				}
 			},
 			"rotation": {
@@ -305,22 +317,22 @@
 			"value": 1
 		},
 		"playback_speed": {
-			"type": "dynamic",
-			"value": "speed"
+			"type": "f64",
+			"value": 1
 		}
 	},
 	"user_parameter_definitions": {
-		"end": {
+		"proximity": {
 			"default": 0,
-			"min": null,
-			"max": null,
+			"min": 0,
+			"max": 1,
 			"step": 0.05
 		},
-		"speed": {
-			"default": 1,
-			"min": 0,
-			"max": 3,
-			"step": 0.05
+		"contact": {
+			"default": 5,
+			"min": 5,
+			"max": 20,
+			"step": 1
 		}
 	}
 }

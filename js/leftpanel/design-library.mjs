@@ -3,7 +3,7 @@
 import { MAHPatternDesignFE } from "../fe/patterndesign.mjs";
 import { KonvaPatternStage } from "../konvapanes/pattern-stage.mjs";
 import { KonvaTimelineStage } from "../konvapanes/timeline-stage.mjs";
-import { map_get_or_default, notnull } from "../util.mjs";
+import { map_get_or_default, notnull, structured_clone } from "../util.mjs";
 
 export class DesignLibrary {
 	/** @type {HTMLInputElement} */
@@ -14,11 +14,13 @@ export class DesignLibrary {
 	/**
 	 *
 	 * @param {MAHPatternDesignFE} pattern_design
+	 * @param {import("../script.mjs").FileTitlebarManager} file_titlebar_manager
 	 * @param {HTMLDivElement} designlibrary_div
 	 * @param {Map<string, Promise<MidAirHapticsAnimationFileFormat>>} designs_map
 	 */
-	constructor(pattern_design, designlibrary_div, designs_map) {
+	constructor(pattern_design, file_titlebar_manager, designlibrary_div, designs_map) {
 		this.pattern_design = pattern_design;
+		this.file_titlebar_manager = file_titlebar_manager;
 		this.designlibrary_div = designlibrary_div;
 		/** @type {HTMLDivElement} */
 		this.designtree_div = notnull(designlibrary_div.querySelector("div.designtree"));
@@ -117,7 +119,7 @@ export class DesignLibrary {
 			folders_map_curr.children_div.appendChild(file_div);
 			file_div.addEventListener("mouseover", async () => {
 				try {
-					this._preview_pattern_design.import_file_from_filedata(await design, filename_with_ext);
+					this._preview_pattern_design.import_file_from_filedata(structured_clone(await design), filename_with_ext);
 					file_div.appendChild(this._preview_div);
 
 					this._preview_pattern_design.update_playstart(Date.now());
@@ -131,7 +133,10 @@ export class DesignLibrary {
 				this._preview_div.remove();
 			});
 			file_button.addEventListener("click", async () => {
-				this.pattern_design.import_file_from_filedata(await design, filename_with_ext);
+				if (this.file_titlebar_manager.confirm_discard_changes()) {
+					this.pattern_design.import_file_from_filedata(structured_clone(await design), filename_with_ext);
+					this.file_titlebar_manager.set_saved_to_fs(true);
+				}
 			});
 
 		}

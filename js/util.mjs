@@ -66,3 +66,20 @@ export function deep_equals(a, b) {
 export function num_to_rounded_string(num) {
 	return (Math.round(num*100000)/100000).toString();
 }
+
+/**
+ * @template K, T
+ * @param {Map<K, T>} map
+ * @param {K} key
+ * @param {() => T} default_fn
+ * @returns {T}
+ */
+export function map_get_or_default(map, key, default_fn) {
+	const v = map.get(key);
+	if (v !== undefined) return v;
+	else {
+		const v = default_fn();
+		map.set(key, v);
+		return v;
+	}
+}

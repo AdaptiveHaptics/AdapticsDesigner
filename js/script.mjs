@@ -2,6 +2,7 @@ import Split from "../thirdparty/split-grid.mjs";
 import { MAHPatternDesignFE } from "./fe/patterndesign.mjs";
 import { KonvaPatternStage } from "./konvapanes/pattern-stage.mjs";
 import { KonvaTimelineStage } from "./konvapanes/timeline-stage.mjs";
+import { DesignLibrary } from "./leftpanel/design-library.mjs";
 import { ParameterEditor } from "./parameter-editor.mjs";
 import { RightPanel } from "./rightpanel/right-panel.mjs";
 import { notnull } from "./util.mjs";
@@ -15,7 +16,7 @@ window.addEventListener("unhandledrejection", event => {
 	if (ignoreErrorsContaining.findIndex(istr => estr.includes(istr)) == -1) alert(estr);
 });
 window.addEventListener("error", event => {
-	// console.error(event);
+	console.error(event);
 	// @ts-ignore
 	const estr = `Unhandled Error: ${event}\n${event?event.name||"":""}\n${event?event.message||"":""}\n${event?event.stack||"":""}`;
 	// console.error(estr);
@@ -36,9 +37,18 @@ const rightpanel_div = notnull(mainsplitgrid_div.querySelector("div.right"));
 /** @type {HTMLDivElement} */
 const pattern_div = notnull(mainsplitgrid_div.querySelector("div.center"));
 /** @type {HTMLDivElement} */
+const patternstage_div = notnull(pattern_div.querySelector("div#patternstage"));
+/** @type {HTMLDivElement} */
 const timeline_div = notnull(document.querySelector("div.timeline"));
-/** @type {HTMLSpanElement} */
-const savedstate_span = notnull(document.querySelector("span.savedstate"));
+/** @type {HTMLDivElement} */
+const timelinestage_div = notnull(timeline_div.querySelector("div#timelinestage"));
+
+/** @type {HTMLDivElement} */
+const leftpanel_div = notnull(mainsplitgrid_div.querySelector("div.left"));
+/** @type {HTMLDivElement} */
+const designlibrary_div = notnull(leftpanel_div.querySelector("div.designlibrary"));
+
+
 
 /** @type {HTMLInputElement} */
 const websocketurl_input = notnull(document.querySelector(".isection.websocket input.websocketurl"));
@@ -61,6 +71,8 @@ const file_save_button = notnull(document.querySelector(".isection.file button.s
 const file_save_as_button = notnull(document.querySelector(".isection.file button.save_as"));
 /** @type {HTMLSpanElement} */
 const filename_span = notnull(document.querySelector(".isection.file span.filename"));
+/** @type {HTMLSpanElement} */
+const savedstate_span = notnull(document.querySelector("span.savedstate"));
 
 
 const _mainsplit = SplitGrid({
@@ -81,13 +93,19 @@ const _bottomsplit = SplitGrid({
 });
 
 
+const PRIMARY_DESIGN_LOCAL_STORAGE_KEY = "primary_design";
+
+
 /** @type {MAHPatternDesignFE} */
 let primary_design;
+const lssf = window.localStorage.getItem(PRIMARY_DESIGN_LOCAL_STORAGE_KEY);
+const save_func = serialized => window.localStorage.setItem(PRIMARY_DESIGN_LOCAL_STORAGE_KEY, serialized);
+const create_default = () => new MAHPatternDesignFE(...MAHPatternDesignFE.DEFAULT, save_func);
 try {
-	primary_design = MAHPatternDesignFE.load_from_localstorage() || new MAHPatternDesignFE(...MAHPatternDesignFE.DEFAULT);
+	primary_design = lssf ? MAHPatternDesignFE.deserialize(lssf, save_func) : create_default();
 } catch (e) {
-	alert("loading design from local storage failed.\nProbably due to the format changing, and migration not being implemented during initial development (version<1.0.0).\n\nloading default pattern...");
-	primary_design = new MAHPatternDesignFE(...MAHPatternDesignFE.DEFAULT);
+	alert("loading design from local storage failed.\nProbably due to the format changing.\n\nloading default pattern...");
+	primary_design = create_default();
 	console.error(e);
 }
 
@@ -193,10 +211,13 @@ const FILE_TYPES = [
 	},
 ];
 
-let last_file_handle = null;
+
 
 if ("showSaveFilePicker" in window && "showOpenFilePicker" in window) {
+	const last_file_handle_map = new Map();
+
 	file_download_button.style.display = "none";
+	/** @type {(filehandle: FileSystemFileHandle) => Promise<void>} */
 	const save_to_filehandle = async (fileHandle) => {
 		const writable = await fileHandle.createWritable();
 		await writable.write(primary_design.export_file());
@@ -205,13 +226,14 @@ if ("showSaveFilePicker" in window && "showOpenFilePicker" in window) {
 	};
 	file_save_as_button.addEventListener("click", async () => {
 		try {
-			last_file_handle = await window.showSaveFilePicker({
+			const file_handle = await window.showSaveFilePicker({
 				types: FILE_TYPES,
 				excludeAcceptAllOption: false,
 				suggestedName: primary_design.filename,
 			});
-			primary_design.update_filename(last_file_handle.name);
-			await save_to_filehandle(last_file_handle);
+			last_file_handle_map.set(file_handle.name, file_handle);
+			primary_design.update_filename(file_handle.name);
+			await save_to_filehandle(file_handle);
 		} catch (e) {
 			if (e.name == "AbortError") {
 				//do nothing
@@ -221,20 +243,20 @@ if ("showSaveFilePicker" in window && "showOpenFilePicker" in window) {
 		}
 	});
 	file_save_button.addEventListener("click", async () => {
-		if (last_file_handle == null) {
+		if (!last_file_handle_map.has(primary_design.filename)) {
 			file_save_as_button.click();
 			return;
 		}
-		await save_to_filehandle(last_file_handle);
+		await save_to_filehandle(last_file_handle_map.get(primary_design.filename));
 	});
 	file_open_button.addEventListener("click", async () => {
 		try {
-			const [fileHandle] = await window.showOpenFilePicker({
+			const [file_handle] = await window.showOpenFilePicker({
 				types: FILE_TYPES,
 				multiple: false,
 			});
-			last_file_handle = fileHandle;
-			const file = await fileHandle.getFile();
+			last_file_handle_map.set(file_handle.name, file_handle);
+			const file = await file_handle.getFile();
 			await primary_design.import_file(file);
 			filename_span.classList.remove("unsaved");
 		} catch (e) {
@@ -250,13 +272,14 @@ if ("showSaveFilePicker" in window && "showOpenFilePicker" in window) {
 			const confirmation = confirm(`'${primary_design.filename}' is not saved. Are you sure you want to discard your changes?`);
 			if (!confirmation) return;
 		}
-		last_file_handle = null;
+		last_file_handle_map.clear();
 		/** @type {[string, MidAirHapticsAnimationFileFormat]} */
 		const [default_filename, default_filedata] = MAHPatternDesignFE.DEFAULT;
 		await primary_design.import_file(new File([JSON.stringify(default_filedata)], default_filename, { type: "application/json" }));
 		pattern_div.focus();
 	});
-} else {
+
+} else { // fallback for browsers that don't support the File System Access API
 	file_save_button.disabled = true;
 	file_save_as_button.disabled = true;
 	file_save_as_button.title = file_save_button.title = "This browser does not support the File System Access API `showSaveFilePicker` and `showOpenFilePicker`.";
@@ -294,11 +317,22 @@ primary_design.state_change_events.addEventListener("commit_update", ev => {
 
 
 primary_design.commit_operation({ rerender: true });
-const konva_pattern_stage = new KonvaPatternStage(primary_design, "patternstage", pattern_div);
-const konva_timeline_stage = new KonvaTimelineStage(primary_design, "timelinestage", timeline_div);
+const konva_pattern_stage = new KonvaPatternStage(primary_design, patternstage_div, pattern_div);
+const konva_timeline_stage = new KonvaTimelineStage(primary_design, timelinestage_div, timeline_div);
 const right_panel = new RightPanel(primary_design, rightpanel_div);
 const unified_keyframe_editor = right_panel.unified_keyframe_editor;
 const parameter_editor = new ParameterEditor(primary_design, notnull(document.querySelector("div.parametereditor")));
+
+const load_pattern = async (url) => {
+	const f = await fetch(url);
+	const json = /** @type {MidAirHapticsAnimationFileFormat} */ (await f.json());
+	return json;
+};
+const design_library = new DesignLibrary(primary_design, designlibrary_div, new Map([
+	["Examples/Heartbeat", load_pattern("./example-patterns/Heartbeat.adaptics")],
+	["Examples/Button", load_pattern("./example-patterns/Button.adaptics")],
+
+]));
 
 Object.assign(window, {
 	primary_design,
@@ -307,4 +341,5 @@ Object.assign(window, {
 	right_panel,
 	unified_keyframe_editor,
 	parameter_editor,
+	design_library,
 });

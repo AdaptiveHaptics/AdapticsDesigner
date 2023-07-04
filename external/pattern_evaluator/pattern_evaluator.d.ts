@@ -55,7 +55,7 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly __wbg_patternevaluator_free: (a: number) => void;
-  readonly patternevaluator_new_json: (a: number, b: number) => number;
+  readonly patternevaluator_new_json: (a: number, b: number, c: number) => void;
   readonly patternevaluator_eval_brush_at_anim_local_time: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
   readonly patternevaluator_eval_brush_at_anim_local_time_for_max_t: (a: number, b: number, c: number, d: number, e: number, f: number) => void;
   readonly patternevaluator_default_next_eval_params: (a: number) => void;
@@ -63,9 +63,9 @@ export interface InitOutput {
   readonly patternevaluator_default_geo_transform_matrix: (a: number) => void;
   readonly patternevaluator_geo_transform_simple_apply: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => void;
   readonly patternevaluator_geo_transform_simple_inverse: (a: number, b: number, c: number, d: number, e: number, f: number, g: number, h: number, i: number) => void;
+  readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
-  readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
   readonly __wbindgen_free: (a: number, b: number, c: number) => void;
   readonly __wbindgen_exn_store: (a: number) => void;
 }

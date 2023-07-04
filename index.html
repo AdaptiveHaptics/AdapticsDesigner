@@ -54,8 +54,35 @@
 		</div>
 		<div class="mainsplitgrid">
 			<div class="left">
-				<div class="designs">
-
+				<div class="designlibrary">
+					<div class="searchbox">
+						<label>
+							<span class="material-symbols-outlined">search</span>
+							<input type="text" placeholder="Search Design Library">
+						</label>
+						<button class="material-symbols-outlined clear">close</button>
+					</div>
+					<div class="designtree">
+						<div class="children">
+							<details class="folder">
+								<summary>LOADING... Examples</summary>
+								<div class="children">
+									<button class="file">Battery</button>
+									<button class="file">Spin</button>
+									<details class="folder">
+										<summary>Buttons</summary>
+										<div class="children">
+											<button class="file">ButtonA</button>
+											<button class="file">ButtonB</button>
+										</div>
+									</details>
+									<button class="file">Slider</button>
+								</div>
+							</details>
+							<button class="file">LOADING... Test1</button>
+							<button class="file">LOADING... Test2</button>
+						</div>
+					</div>
 				</div>
 			</div>
 			<div class="gutter column leftcenter"></div>
@@ -76,7 +103,7 @@
 
 					</div>
 				</div>
-				<div id="patternstage" class="konvastage"></div>
+				<div id="patternstage" class="konvastage patternstage"></div>
 			</div>
 			<div class="gutter column centerright"></div>
 			<div class="right">
@@ -106,8 +133,8 @@
 						<p>
 							<h4>Clicking a control point/keyframe:</h4>
 							<ul>
-								<li><code>Alt</code> is deletion</li>
-								<li><code>Ctrl</code> toggles selection</li>
+								<li><code>Alt+Click</code> is deletion</li>
+								<li><code>Ctrl+Click</code> toggles selection</li>
 							</ul>
 						</p>
 						<p>
@@ -312,7 +339,7 @@
 
 						</div>
 					</div>
-					<div id="timelinestage" class="konvastage"></div>
+					<div id="timelinestage" class="konvastage timelinestage"></div>
 				</div>
 			</div>
 		</div>
@@ -328,8 +355,20 @@
 			<div class="labelinputgrid">
 				<label><span class="labeltext">Name</span> <input type="text" name="paramname" value=""></label>
 				<label><span class="labeltext">Default Value</span> <input type="number" name="default" value="0" step="any"></label>
-				<label><span class="labeltext">Minimum Value</span> <div class="optionalinput"><input type="checkbox" name="clampmin"> <input type="number" name="min" value="-1" disabled></div></label>
-				<label><span class="labeltext">Maximum Value</span> <div class="optionalinput"><input type="checkbox" name="clampmax"> <input type="number" name="max" value="1" disabled></div></label>
+				<div class="optionalinput">
+					<span class="labeltext">Minimum Value</span>
+					<div class="inputs">
+						<input type="checkbox" name="clampmin">
+						<input type="number" name="min" value="-1" step="any" disabled>
+					</div>
+				</div>
+				<div class="optionalinput">
+					<span class="labeltext">Maximum Value</span>
+					<div class="inputs">
+						<input type="checkbox" name="clampmax">
+						<input type="number" name="max" value="1" step="any" disabled>
+					</div>
+				</div>
 				<hr>
 				<label title="Non-constraining step size used in editor GUI"><span class="labeltext">Step Size (GUI only)</span> <input type="number" name="step" value="0.05" step="any"></label>
 			</div>

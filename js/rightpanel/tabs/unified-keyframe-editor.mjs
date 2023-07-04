@@ -303,7 +303,7 @@ export class UnifiedKeyframeEditor {
 			keyframes.forEach(kf => kf.coords.coords = new_coords);
 		} catch (e) { /* ignore !isFinite */ }
 		// @ts-ignore
-		keyframes.forEach(kf => kf.coords.transition.name = this.coords_transition_select.value);
+		if (this.coords_transition_select.value != "multipletypes") keyframes.forEach(kf => kf.coords.transition.name = this.coords_transition_select.value);
 
 		this.pattern_design.commit_operation({ updated_keyframes: keyframes });
 	}
@@ -347,7 +347,7 @@ export class UnifiedKeyframeEditor {
 			kf[kf_prop_name][kf_prop_name] = create_default_for_type(prop_type_select.value);
 		});
 
-		filtered_keyframes.forEach(kf => { if (kf[kf_prop_name]) kf[kf_prop_name].transition.name = prop_transition_select.value; });
+		if (prop_transition_select.value != "multipletypes") filtered_keyframes.forEach(kf => { if (kf[kf_prop_name]) kf[kf_prop_name].transition.name = prop_transition_select.value; });
 	}
 
 	// Usage:

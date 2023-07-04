@@ -3,18 +3,18 @@ const Konva = /** @type {import("konva").default} */ (window["Konva"]);
 export class KonvaResizeStage {
 	/**
 	 *
-	 * @param {string} direct_container_id
+	 * @param {HTMLDivElement} direct_container
 	 * @param {HTMLElement} resize_container
 	 */
-	constructor(direct_container_id, resize_container, { stageWidth = 500, stageHeight = 500 }) {
+	constructor(direct_container, resize_container, { stageWidth = 500, stageHeight = 500 }) {
 		this.stageWidth = stageWidth;
 		this.stageHeight = stageHeight;
 
-		this.direct_container_id = direct_container_id;
+		this.direct_container = direct_container;
 		this.resize_container = resize_container;
 
 		this.k_stage = new Konva.Stage({
-			container: direct_container_id,
+			container: direct_container,
 			width: this.stageWidth,
 			height: this.stageHeight,
 		});
@@ -44,11 +44,11 @@ export class KonvaResizeScrollStage extends KonvaResizeStage {
 
 	/**
 	 *
-	 * @param {string} direct_container_id
+	 * @param {HTMLDivElement} direct_container
 	 * @param {HTMLElement} resize_container
 	 */
-	constructor(direct_container_id, resize_container, { stageWidth = 1500, stageHeight = 500, fullWidth = 2500, fullHeight = 800, flipDefaultScrollDirection = false }) {
-		super(direct_container_id, resize_container, { stageWidth, stageHeight });
+	constructor(direct_container, resize_container, { stageWidth = 1500, stageHeight = 500, fullWidth = 2500, fullHeight = 800, flipDefaultScrollDirection = false }) {
+		super(direct_container, resize_container, { stageWidth, stageHeight });
 
 		this.fullWidth = fullWidth;
 		this.fullHeight = fullHeight;
@@ -134,15 +134,18 @@ export class KonvaResizeScrollStage extends KonvaResizeStage {
 	fix_scrollbar_coords() {
 		if (!this.vertical_scroll_bar && !this.horizontal_scroll_bar) return;
 
-		this.vertical_scroll_bar.x(this.k_stage.width() - this.scrollbar_padding - 10);
-		this.horizontal_scroll_bar.y(this.k_stage.height() - this.scrollbar_padding - 10);
+		const stage_width = this.k_stage.width() / this.k_stage.scaleX();
+		const stage_height = this.k_stage.height() / this.k_stage.scaleY();
 
-		const availableHeight = this.k_stage.height() - this.scrollbar_padding * 2 - this.vertical_scroll_bar.height();
-		const vy = (this.scrolling_layer.y() / (-this.fullHeight + this.k_stage.height())) * availableHeight + this.scrollbar_padding;
+		this.vertical_scroll_bar.x(stage_width - this.scrollbar_padding - 10);
+		this.horizontal_scroll_bar.y(stage_height - this.scrollbar_padding - 10);
+
+		const availableHeight = stage_height - this.scrollbar_padding * 2 - this.vertical_scroll_bar.height();
+		const vy = (this.scrolling_layer.y() / (-this.fullHeight + stage_height)) * availableHeight + this.scrollbar_padding;
 		this.vertical_scroll_bar.y(vy);
 
-		const availableWidth = this.k_stage.width() - this.scrollbar_padding * 2 - this.horizontal_scroll_bar.width();
-		const hx = (this.scrolling_layer.x() / (-this.fullWidth + this.k_stage.width())) * availableWidth + this.scrollbar_padding;
+		const availableWidth = stage_width - this.scrollbar_padding * 2 - this.horizontal_scroll_bar.width();
+		const hx = (this.scrolling_layer.x() / (-this.fullWidth + stage_width)) * availableWidth + this.scrollbar_padding;
 		this.horizontal_scroll_bar.x(hx);
 	}
 

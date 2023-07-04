@@ -93,6 +93,15 @@ class StateChangeEventTarget extends EventTarget {
 	}
 }
 
+/**
+ * @returns {PatternEvaluatorParameters}
+ */
+function default_eval_params() {
+	return { time: 0, user_parameters: new Map(), geometric_transform: PatternEvaluator.default_geo_transform_matrix() };
+}
+
+/** @typedef {((serialized: string) => void) | null} SaveSerializedDesignFEStateFN */
+
 export class MAHPatternDesignFE {
 	#_filename; get filename() { return this.#_filename; }
 	/** @type {string | null} */
@@ -102,9 +111,12 @@ export class MAHPatternDesignFE {
 	 *
 	 * @param {string} filename
 	 * @param {MidAirHapticsAnimationFileFormat} filedata
+	 * @param {SaveSerializedDesignFEStateFN} save_design_fe_state
 	 */
-	constructor(filename, filedata, undo_states = [], redo_states = [], undo_states_size = 50, redo_states_size = 50) {
+	constructor(filename, filedata, save_design_fe_state, undo_states = [], redo_states = [], undo_states_size = 50, redo_states_size = 50) {
 		this.#_filename = filename;
+
+		this.save_design_fe_state = save_design_fe_state == null ? () => {} : () => save_design_fe_state(this.serialize());
 
 		/** @type {MAHAnimationFileFormatFE} */
 		this.filedata = this.load_filedata_into_fe_format(filedata);
@@ -120,7 +132,7 @@ export class MAHPatternDesignFE {
 
 		//pattern eval
 		/** @type {PatternEvaluatorParameters}  */
-		this.evaluator_params = { time: 0, user_parameters: new Map(), geometric_transform: PatternEvaluator.default_geo_transform_matrix() };
+		this.evaluator_params = default_eval_params();
 		this.apply_user_param_definitions();
 		/** @type {NextEvalParams} */
 		this.evaluator_next_eval_params = PatternEvaluator.default_next_eval_params();
@@ -159,10 +171,10 @@ export class MAHPatternDesignFE {
 
 
 
-	/** @type {MidAirHapticsAnimationFileFormat[]} */
+	/** @type {{ filename: string, filedata: MidAirHapticsAnimationFileFormat }[]} */
 	undo_states = [];
 	undo_states_size = 50;
-	/** @type {MidAirHapticsAnimationFileFormat[]} */
+	/** @type {{ filename: string, filedata: MidAirHapticsAnimationFileFormat }[]} */
 	redo_states = [];
 	redo_states_size = 50;
 
@@ -176,6 +188,13 @@ export class MAHPatternDesignFE {
 		this._committed = v;
 	}
 
+	#_create_undo_redo_state() {
+		return {
+			filename: this.filename,
+			filedata: this.clone_filedata(),
+		};
+	}
+
 	/**
 	 * must be followed by commit_operation
 	 */
@@ -186,14 +205,10 @@ export class MAHPatternDesignFE {
 		}
 		this.committed = false;
 		this.redo_states.length = 0;
-		this.undo_states.push(this.clone_filedata());
+		this.undo_states.push(this.#_create_undo_redo_state());
 		if (this.undo_states.length > this.undo_states_size) this.undo_states.shift();
 
-		this.save_to_localstorage();
-
-		//# this is not atomic
-		// if (this.save_working_copy_to_localstorage_timer) clearTimeout(this.save_working_copy_to_localstorage_timer);
-		// setTimeout(() => this.save_to_localstorage(), 1800);
+		this.save_design_fe_state();
 	}
 	/**
 	 * must be preceded by save_state
@@ -212,7 +227,7 @@ export class MAHPatternDesignFE {
 			alert("commit_operation before save");
 			throw new Error("commit_operation before save");
 		}
-		this.save_to_localstorage();
+		this.save_design_fe_state();
 		this.committed = true;
 
 
@@ -255,28 +270,26 @@ export class MAHPatternDesignFE {
 	}
 
 	undo() {
-		const fd = this.undo_states.pop();
-		if (fd == null) return false;
-
-		this.redo_states.push(this.clone_filedata());
-		if (this.redo_states.length > this.redo_states_size) this.redo_states.shift();
-
-		this.deselect_all_items({ no_emit: true });
-		this.filedata = this.load_filedata_into_fe_format(fd); //could fail to due to incorrect data structure revision
-		this.committed = false;
-		this.commit_operation({ rerender: true });
-		return true;
+		return this.#_undo_redo(false);
 	}
 
 	redo() {
-		const fd = this.redo_states.pop();
-		if (fd == null) return false;
+		return this.#_undo_redo(true);
+	}
 
-		this.undo_states.push(this.clone_filedata());
-		if (this.undo_states.length > this.undo_states_size) this.undo_states.shift();
+	#_undo_redo(redo = false) {
+		const u_states_take = redo ? this.redo_states : this.undo_states;
+		const u_states_push = redo ? this.undo_states : this.redo_states;
+		const u_states_push_max_len = redo ? this.undo_states_size : this.redo_states_size;
+		const u_state = u_states_take.pop();
+		if (u_state == null) return false;
+
+		u_states_push.push(this.#_create_undo_redo_state());
+		if (u_states_push.length > u_states_push_max_len) u_states_push.shift();
 
 		this.deselect_all_items({ no_emit: true });
-		this.filedata = this.load_filedata_into_fe_format(fd); //could fail to due to incorrect data structure revision
+		this.filedata = this.load_filedata_into_fe_format(u_state.filedata); //could fail to due to incorrect data structure revision
+		this.#_filename = u_state.filename;
 		this.committed = false;
 		this.commit_operation({ rerender: true });
 		return true;
@@ -952,10 +965,23 @@ export class MAHPatternDesignFE {
 	 */
 	async import_file(file) {
 		const filedata_text = await file.text();
-		const filedataFE = this.load_filedata_into_fe_format(JSON.parse(filedata_text));
+		const filedata = JSON.parse(filedata_text);
+		this.import_file_from_filedata(filedata, file.name);
+	}
+	/**
+	 *
+	 * @param {MidAirHapticsAnimationFileFormat} filedata
+	 * @param {string} filename
+	 * @returns
+	 */
+	import_file_from_filedata(filedata, filename) {
+		const filedataFE = this.load_filedata_into_fe_format(filedata);
 		this.deselect_all_items({ no_emit: true });
+		this.#_playstart_timestamp = 0;
+		this.evaluator_params = default_eval_params();
+		this.evaluator_next_eval_params = PatternEvaluator.default_next_eval_params();
 		this.save_state();
-		this.#_filename = file.name;
+		this.#_filename = filename;
 		this.filedata = filedataFE;
 		this.commit_operation({ rerender: true });
 	}
@@ -970,25 +996,12 @@ export class MAHPatternDesignFE {
 	/**
 	 *
 	 * @param {string} json_str
+	 * @param {SaveSerializedDesignFEStateFN} save_func
 	 * @returns {MAHPatternDesignFE}
 	 */
-	static deserialize(json_str) {
-		const { filename, filedata, undo_states, redo_states, undo_states_size, redo_states_size } = JSON.parse(json_str);
-		return new MAHPatternDesignFE(filename, filedata, undo_states, redo_states, undo_states_size, redo_states_size);
-	}
-
-	static get LOCAL_STORAGE_KEY() { return "primary_design"; }
-
-	save_to_localstorage() {
-		window.localStorage.setItem(MAHPatternDesignFE.LOCAL_STORAGE_KEY, this.serialize());
-	}
-	static load_from_localstorage() {
-		const lssf = window.localStorage.getItem(MAHPatternDesignFE.LOCAL_STORAGE_KEY);
-		if (lssf) {
-			return this.deserialize(lssf);
-		} else {
-			return null;
-		}
+	static deserialize(json_str, save_func) {
+		const { filename, filedata, undo_states, redo_states, undo_states_size, redo_states_size } = /** @type {MAHPatternDesignFE} */(JSON.parse(json_str));
+		return new MAHPatternDesignFE(filename, filedata, save_func, undo_states, redo_states, undo_states_size, redo_states_size);
 	}
 }
 

@@ -35,14 +35,14 @@ export class KonvaPatternStage extends KonvaResizeStage {
 	/**
 	 *
 	 * @param {MAHPatternDesignFE} pattern_design
-	 * @param {string} direct_container_id
+	 * @param {HTMLDivElement} direct_container
 	 * @param {HTMLElement} resize_container
 	 */
-	constructor(pattern_design, direct_container_id, resize_container, {
+	constructor(pattern_design, direct_container, resize_container, {
 		pattern_square_size = KonvaPatternStage.pattern_square_size,
 		pattern_padding = KonvaPatternStage.pattern_padding,
 	} = {}) {
-		super(direct_container_id, resize_container, {
+		super(direct_container, resize_container, {
 			stageWidth: pattern_square_size + 2*pattern_padding,
 			stageHeight: pattern_square_size + 2*pattern_padding,
 		});
@@ -509,13 +509,11 @@ class KonvaPatternControlPoint {
 			strokeWidth: 2,
 			draggable: true,
 		});
-		this.k_cp_circle.on("click", ev => {
+		this.k_cp_circle.on("click", async ev => {
 			this.select_this(ev.evt.ctrlKey, false);
 
 			if (ev.evt.altKey) {
-				pattern_stage.pattern_design.save_state();
-				const deleted_keyframes = pattern_stage.pattern_design.delete_keyframes([...pattern_stage.pattern_design.selected_keyframes]);
-				pattern_stage.pattern_design.commit_operation({ deleted_keyframes });
+				await pattern_stage.pattern_design.delete_selected_items();
 				return;
 			}
 		});

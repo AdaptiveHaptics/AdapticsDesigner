@@ -82,6 +82,7 @@
 
 span.material-symbols-outlined {
     vertical-align: bottom;
+    align-self: center;
 }
 h1 > span.material-symbols-outlined {
     font-size: 1em;
@@ -192,19 +193,19 @@ div.labelinputgrid {
     gap: 0.5ex 1ex;
     align-items: center;
 }
-div.labelinputgrid > label, div.labelinputgrid > dynamic-f64-input {
+div.labelinputgrid > label, div.labelinputgrid > dynamic-f64-input, div.labelinputgrid > div.optionalinput {
     display: contents;
 }
-div.labelinputgrid > label > .labeltext {
+div.labelinputgrid > * > .labeltext {
     justify-self: end;
 }
-div.labelinputgrid > label > div.optionalinput {
+div.labelinputgrid > div.optionalinput > div.inputs {
     display: grid;
     grid-template-columns: auto 1fr;
     gap: 0.5ex;
     align-items: center;
 }
-label > .labeltext > span.material-symbols-outlined {
+.labeltext > span.material-symbols-outlined {
     margin-right: 0.5ex;
 }
 
@@ -236,6 +237,9 @@ option:active, input[type="checkbox"]:active, button:active {
 }
 select:disabled, option:disabled, input:disabled, button:disabled {
     background-color: var(--background-interactive-disabled);
+    color: var(--text-low-priority);
+}
+input::placeholder {
     color: var(--text-low-priority);
 }
 select:focus, option:focus, input:focus, button:focus {
@@ -277,7 +281,8 @@ button.textonly.delete {
 input[type="checkbox"] {
     appearance: none;
     width: 4ex;
-    height: 4ex;
+    min-height: 4ex;
+    height: 100%;
     cursor: pointer;
     position: relative;
     margin: 0px;
@@ -374,10 +379,15 @@ div.isection.file span.filename.unsaved::after {
     content: '*';
     color: var(--text-low-priority);
 }
+div.isection.file .filemenu {
+    position: relative;
+}
 div.isection.file .filemenu > div.menulist {
     visibility: hidden;
     opacity: 0;
     position: absolute;
+    z-index: 70;
+    border: solid 1ex var(--background-secondary);
 }
 div.isection.file .filemenu:focus-within > div.menulist {
     visibility: visible;
@@ -411,6 +421,80 @@ div.center {
     align-items: center;
 }
 
+div.designlibrary {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    height: 100%;
+    gap: 0.5ex;
+    background-color: var(--background-tertiary-alt);
+}
+div.designlibrary > div.searchbox {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    background-color: var(--background-interactive);
+    border: solid 2px var(--background-accent);
+    /* align-items: center; */
+}
+div.designlibrary > div.searchbox > label {
+    display: contents;
+}
+div.designlibrary > div.searchbox > button.close {
+    padding: 0.5ex;
+}
+div.designlibrary div.designtree {
+    font-size: 1.2em;
+    background-color: var(--background-tertiary-alt);
+}
+div.designlibrary div.designtree div.children {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-auto-rows: min-content;
+    gap: 0.5ex;
+}
+div.designlibrary div.designtree details.folder div.children {
+    margin-left: 0.5ex;
+}
+div.designlibrary div.designtree div.file {
+    position: relative;
+    display: grid;
+}
+div.designlibrary div.designtree div.file button {
+    padding: 0.6ex;
+    margin: 0 0.3ex;
+}
+div.designlibrary div.designtree div.file div.preview {
+    background-color: var(--background-titlebar);
+    z-index: 10;
+    position: absolute;
+    left: 100%;
+    top: 0;
+    border: solid 1.5ex var(--background-titlebar);
+}
+div.designlibrary div.designtree details.folder {
+    background-color: var(--background-tertiary-alt);
+    border: 1px solid var(--background-titlebar);
+    border-radius: 4px;
+}
+div.designlibrary div.designtree summary {
+    background-color: var(--background-secondary);
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 0.7ex;
+    padding: 0.7ex;
+}
+div.designlibrary div.designtree details.folder > summary::before {
+    content: "expand_more";
+    font-family: "Material Symbols Outlined";
+    margin-right: 0.7ex;
+}
+div.designlibrary div.designtree details.folder[open] > summary::before {
+    content: "expand_less";
+}
+div.designlibrary div.designtree details.folder[open] > summary {
+    border-bottom: 1px solid var(--background-titlebar);
+    margin-bottom: 0.5ex;
+}
 
 
 div.konvastagecontainer {
@@ -432,7 +516,7 @@ div.konvastage {
     position: absolute;
 }
 
-div#patternstage {
+div.patternstage {
     background-color: var(--pattern-background);
 }
 
@@ -440,7 +524,7 @@ div.timeline {
     background-color: var(--background-tertiary);
 }
 
-div#timelinestage {
+div.timelinestage {
     background-color: var(--background-tertiary-alt);
 }
 

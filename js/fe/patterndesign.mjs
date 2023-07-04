@@ -862,11 +862,27 @@ export class MAHPatternDesignFE {
 	}
 
 	async copy_selected_to_clipboard() {
+		const copied_keyframes = [...this.selected_keyframes];
+
+		/** @type {Set<string>} */
+		const copied_parameters = new Set(copied_keyframes.flatMap(keyframe =>
+			PARSED_JSON_SCHEMA.get_wanted_from_paths(keyframe, MAH_DYNAMIC_F64_PATHS, (mah_dyn_f64) => {
+				return mah_dyn_f64 && (
+					(mah_dyn_f64.type == "dynamic" && typeof mah_dyn_f64.value == "string")
+					//|| (mah_dyn_f64.type == "f64" && typeof mah_dyn_f64.value == "number")
+				);
+			}).map(df64 => df64.value)
+		));
+		const copied_param_defs = Object.fromEntries(
+			[...copied_parameters].map(param_name => [param_name, this.filedata.user_parameter_definitions[param_name]])
+		);
+
 		/** @type {MidAirHapticsClipboardFormat} */
 		const clipboard_data = {
 			$DATA_FORMAT: "MidAirHapticsClipboardFormat",
 			$REVISION: MAH_$REVISION,
-			keyframes: [...this.selected_keyframes]
+			keyframes: copied_keyframes,
+			user_parameter_definitions: copied_param_defs,
 		};
 		// const ci = new ClipboardItem({
 		// 	// "application/json": JSON.stringify(clipboard_data), //not allowed in chrome for security reasons
@@ -902,14 +918,14 @@ export class MAHPatternDesignFE {
 			// console.log(paste_time_offset);
 
 			const new_keyframes = clipboard_parsed.keyframes.map(kf => {
-				console.log(kf.time);
+				// console.log(kf.time);
 				kf.time += paste_time_offset;
 				if ("cjumps" in kf) {
 					for (const cjump of kf.cjumps) {
 						cjump.jump_to += paste_time_offset;
 					}
 				}
-				console.log(kf.time);
+				// console.log(kf.time);
 				if ("coords" in kf) {
 					kf.coords.coords.x += 5;
 					kf.coords.coords.y += 5;
@@ -917,7 +933,14 @@ export class MAHPatternDesignFE {
 				}
 				return this.insert_new_keyframe(kf);
 			});
-			this.commit_operation({ new_keyframes, deleted_keyframes });
+
+			//merge user_parameter_definitions
+			for (const [param_name, param_def] of Object.entries(clipboard_parsed.user_parameter_definitions)) {
+				if (param_name in this.filedata.user_parameter_definitions) continue;
+				this.filedata.user_parameter_definitions[param_name] = param_def;
+			}
+
+			this.commit_operation({ new_keyframes, deleted_keyframes, user_param_definitions: Object.keys(clipboard_parsed.user_parameter_definitions) });
 			this.select_items({ keyframes: new_keyframes });
 		} catch (e) {
 			alert("Could not find MidAirHapticsClipboardFormat data in clipboard");

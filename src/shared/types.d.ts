@@ -44,5 +44,8 @@ export interface MidAirHapticsClipboardFormat {
     $DATA_FORMAT: "MidAirHapticsClipboardFormat",
     $REVISION: REVISION_STRING;
 
-    keyframes: MAHKeyframe[]
+    keyframes: MAHKeyframe[],
+    user_parameter_definitions: {
+        [k: string]: MAHUserParameterDefinition;
+    },
 }

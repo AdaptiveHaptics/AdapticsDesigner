@@ -543,8 +543,11 @@ class KonvaPatternControlPoint {
 			this.k_cp_circle.rotation(0);
 			this.update_position(this.pattern_stage.raw_coords_to_pattern_coords({ raw_x: this.k_cp_circle.x(), raw_y: this.k_cp_circle.y() }));
 		});
-		this.k_cp_circle.on("dragend transformend", _ev => {
+		this.k_cp_circle.on("dragend", _ev => {
 			this.update_position(this.pattern_stage.raw_coords_to_pattern_coords({ raw_x: this.k_cp_circle.x(), raw_y: this.k_cp_circle.y(), snap: true }));
+		});
+		this.k_cp_circle.on("transformend", _ev => {
+			this.update_position(this.pattern_stage.raw_coords_to_pattern_coords({ raw_x: this.k_cp_circle.x(), raw_y: this.k_cp_circle.y(), snap: false }));
 		});
 
 		this.linked_group = new Konva.Group({

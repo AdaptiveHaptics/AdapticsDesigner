@@ -270,11 +270,11 @@ export class MAHPatternDesignFE {
 	}
 
 	undo() {
-		this.#_undo_redo(false);
+		return this.#_undo_redo(false);
 	}
 
 	redo() {
-		this.#_undo_redo(true);
+		return this.#_undo_redo(true);
 	}
 
 	#_undo_redo(redo = false) {

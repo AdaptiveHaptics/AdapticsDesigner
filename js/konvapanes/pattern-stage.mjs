@@ -53,6 +53,9 @@ export class KonvaPatternStage extends KonvaResizeStage {
 
 		this.k_control_points_layer = new Konva.Layer();
 		this.k_stage.add(this.k_control_points_layer);
+		this.k_playback_vis_layer = new Konva.Layer();
+		this.k_stage.add(this.k_playback_vis_layer);
+
 
 		resize_container.addEventListener("keydown", ev => {
 			if (ev.key == "a" && ev.ctrlKey && !ev.shiftKey && !ev.altKey) {
@@ -432,7 +435,7 @@ class KonvaPlaybackVis {
 			lineJoin: "round",
 		});
 
-		this.pattern_stage.k_control_points_layer.add(this.playback_vis);
+		this.pattern_stage.k_playback_vis_layer.add(this.playback_vis);
 
 		this.listener_abort = new AbortController();
 		this.pattern_stage.pattern_design.state_change_events.addEventListener("playback_update", _ev => {

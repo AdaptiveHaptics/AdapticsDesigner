@@ -63,6 +63,9 @@ export class ParameterEditor {
 			this._pattern_design.state_change_events.addEventListener("playstart_update", () => {
 				this.#_update_playback_controls();
 			});
+			this._pattern_design.state_change_events.addEventListener("rerender", () => {
+				this.#_update_playback_controls();
+			});
 
 			this.#_update_playback_controls();
 		}

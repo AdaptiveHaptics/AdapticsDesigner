@@ -290,7 +290,7 @@
 				},
 				"z": {
 					"type": "f64",
-					"value": 100
+					"value": 200
 				}
 			},
 			"rotation": {

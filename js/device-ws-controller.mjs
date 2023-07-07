@@ -62,6 +62,7 @@ export class DeviceWSController {
 		});
 	}
 
+
 	/**
 	 *
 	 * @param {MAHAnimationFileFormatFE} pattern
@@ -88,6 +89,15 @@ export class DeviceWSController {
 		const json_safe_p = { time: evaluator_params.time, user_parameters: Object.fromEntries(evaluator_params.user_parameters), geometric_transform: evaluator_params.geometric_transform };
 		this.send("update_parameters", { evaluator_params: json_safe_p });
 	}
+
+	/**
+	 *
+	 * @param {boolean} enabled
+	 */
+	update_tracking(enabled) {
+		this.send("update_tracking", { enabled });
+	}
+
 
 	/**
 	 *

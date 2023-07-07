@@ -93,7 +93,7 @@
 			"cjumps": []
 		},
 		{
-			"time": 300,
+			"time": 325,
 			"type": "standard",
 			"brush": {
 				"brush": {
@@ -143,7 +143,7 @@
 			"cjumps": []
 		},
 		{
-			"time": 500,
+			"time": 525,
 			"type": "pause",
 			"brush": {
 				"brush": {
@@ -182,7 +182,7 @@
 			"cjumps": []
 		},
 		{
-			"time": 625,
+			"time": 650,
 			"type": "standard",
 			"brush": {
 				"brush": {
@@ -232,7 +232,7 @@
 			"cjumps": []
 		},
 		{
-			"time": 750,
+			"time": 775,
 			"type": "standard",
 			"brush": {
 				"brush": {
@@ -282,7 +282,7 @@
 			"cjumps": []
 		},
 		{
-			"time": 825,
+			"time": 850,
 			"type": "stop"
 		}
 	],

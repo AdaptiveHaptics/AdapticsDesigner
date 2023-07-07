@@ -49,16 +49,6 @@ const leftpanel_div = notnull(mainsplitgrid_div.querySelector("div.left"));
 const designlibrary_div = notnull(leftpanel_div.querySelector("div.designlibrary"));
 
 
-
-/** @type {HTMLInputElement} */
-const websocketurl_input = notnull(document.querySelector(".isection.websocket input.websocketurl"));
-/** @type {HTMLButtonElement} */
-const websocket_connect_button = notnull(document.querySelector(".isection.websocket button.connect"));
-/** @type {HTMLButtonElement} */
-const websocket_disconnect_button = notnull(document.querySelector(".isection.websocket button.disconnect"));
-/** @type {HTMLButtonElement} */
-const websocket_state_span = notnull(document.querySelector(".isection.websocket span.websocketstate"));
-
 /** @type {HTMLDivElement} */
 const file_isection_div = notnull(document.querySelector("div.isection.file"));
 
@@ -159,31 +149,53 @@ document.addEventListener("paste", ev => {
 	}
 });
 
-websocket_connect_button.addEventListener("click", () => {
-	primary_design.connect_websocket(websocketurl_input.value);
 
-	websocket_connect_button.style.display = "none";
-	websocket_disconnect_button.style.display = "";
-	websocket_disconnect_button.focus();
-	websocketurl_input.disabled = true;
-	websocket_state_span.textContent = "connecting...";
-	const websocket = primary_design.websocket;
-	if (websocket == null) throw new Error("websocket == null");
-	websocket.state_change_events.addEventListener("connected", _ev => {
-		websocket_state_span.textContent = "connected";
-	});
-	websocket.state_change_events.addEventListener("disconnected", _ev => {
-		websocket_state_span.textContent =  websocket.destroyed ? "disconnected" : "reconnecting...";
-	});
-});
-websocket_disconnect_button.addEventListener("click", () => {
-	primary_design.disconnect_websocket();
+{
+	/** @type {HTMLInputElement} */
+	const websocketurl_input = notnull(document.querySelector(".isection.websocket input.websocketurl"));
+	/** @type {HTMLButtonElement} */
+	const websocket_connect_button = notnull(document.querySelector(".isection.websocket button.connect"));
+	/** @type {HTMLButtonElement} */
+	const websocket_disconnect_button = notnull(document.querySelector(".isection.websocket button.disconnect"));
+	/** @type {HTMLButtonElement} */
+	const websocket_state_span = notnull(document.querySelector(".isection.websocket span.websocketstate"));
+	/** @type {HTMLInputElement} */
+	const tracking_input = notnull(document.querySelector(".isection.websocket input.tracking"));
 
-	websocket_connect_button.style.display = "";
-	websocket_disconnect_button.style.display = "none";
-	websocket_connect_button.focus();
-	websocketurl_input.disabled = false;
-});
+	websocket_connect_button.addEventListener("click", () => {
+		primary_design.connect_websocket(websocketurl_input.value);
+
+		websocket_connect_button.style.display = "none";
+		websocket_disconnect_button.style.display = "";
+		websocket_disconnect_button.focus();
+		websocketurl_input.disabled = true;
+		websocket_state_span.textContent = "connecting...";
+		const websocket = primary_design.websocket;
+		if (websocket == null) throw new Error("websocket == null");
+		websocket.state_change_events.addEventListener("connected", _ev => {
+			websocket_state_span.textContent = "connected";
+		});
+		websocket.state_change_events.addEventListener("disconnected", _ev => {
+			websocket_state_span.textContent =  websocket.destroyed ? "disconnected" : "reconnecting...";
+		});
+	});
+	websocket_disconnect_button.addEventListener("click", () => {
+		primary_design.disconnect_websocket();
+
+		websocket_connect_button.style.display = "";
+		websocket_disconnect_button.style.display = "none";
+		websocket_connect_button.focus();
+		websocketurl_input.disabled = false;
+	});
+
+	tracking_input.checked = primary_design.tracking;
+	primary_design.state_change_events.addEventListener("rerender", _ => {
+		tracking_input.checked = primary_design.tracking;
+	});
+	tracking_input.addEventListener("change", () => {
+		primary_design.update_tracking(tracking_input.checked);
+	});
+}
 
 
 

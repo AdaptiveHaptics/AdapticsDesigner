@@ -107,6 +107,8 @@ export class MAHPatternDesignFE {
 	/** @type {string | null} */
 	#_last_used_user_param = null; get last_used_user_param() { return this.#_last_used_user_param; } set last_used_user_param(v) { this.#_last_used_user_param = v; }
 
+	#_tracking = false; get tracking() { return this.#_tracking; }
+
 	/**
 	 *
 	 * @param {string} filename
@@ -159,11 +161,7 @@ export class MAHPatternDesignFE {
 			}
 		});
 		this.state_change_events.addEventListener("rerender", _ => {
-			// this.websocket?.update_playstart(0); # make "atomic"
-			this.websocket?.update_playstart(this.#_playstart_timestamp);
-			this.websocket?.update_parameters(this.evaluator_params);
-			this.websocket?.update_pattern(this.filedata);
-			// this.websocket?.update_playstart(this.#_playstart_timestamp); # make "atomic"
+			if (this.websocket) this.#_full_update_websocket(this.websocket);
 		});
 		this.state_change_events.addEventListener("playback_update", _ => {
 			if (this.last_eval[0].stop) this.update_playstart(0);
@@ -832,6 +830,13 @@ export class MAHPatternDesignFE {
 	}
 
 
+	/**
+	 * @param {boolean} tracking
+	 */
+	update_tracking(tracking) {
+		this.#_tracking = tracking;
+		this.websocket?.update_tracking(tracking);
+	}
 
 	/**
 	 *
@@ -841,13 +846,7 @@ export class MAHPatternDesignFE {
 		if (this.websocket) this.websocket.destroy();
 		const websocket = new DeviceWSController(url);
 		websocket.state_change_events.addEventListener("connected", _ev => {
-			// we cant send next_eval_params (atm), so we pause and start playback again at correct timestamp. this seems to work better logically in some cases
-			const was_playing = this.is_playing();
-			this.update_playstart(0); // stop playback first, in case something is playing
-			this.update_pattern_time(this.last_eval[0]?.pattern_time ?? 0); // start at last pattern time
-			websocket.update_pattern(this.filedata);
-			websocket.update_parameters(this.evaluator_params);
-			if (was_playing) this.update_playstart(Date.now() - this.evaluator_params.time);
+			this.#_full_update_websocket(websocket);
 		});
 		websocket.state_change_events.addEventListener("disconnected", _ev => {
 			this.#_eval_pattern();
@@ -858,6 +857,20 @@ export class MAHPatternDesignFE {
 			this.state_change_events.dispatchEvent(sce);
 		});
 		this.websocket = websocket;
+	}
+	/**
+	 *
+	 * @param {DeviceWSController} websocket
+	 */
+	#_full_update_websocket(websocket) {
+		// we cant send next_eval_params (atm), so we pause and start playback again at correct timestamp. this seems to work better logically in some cases
+		const was_playing = this.is_playing();
+		this.update_playstart(0); // stop playback first, in case something is playing
+		this.update_pattern_time(this.last_eval[0]?.pattern_time ?? 0); // start at last pattern time
+		websocket.update_pattern(this.filedata);
+		websocket.update_parameters(this.evaluator_params);
+		websocket.update_tracking(this.#_tracking);
+		if (was_playing) this.update_playstart(Date.now() - this.evaluator_params.time);
 	}
 	disconnect_websocket() {
 		if (this.websocket) this.websocket.destroy();

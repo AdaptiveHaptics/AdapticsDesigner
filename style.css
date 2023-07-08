@@ -368,9 +368,12 @@ div.titlebar a {
     align-items: center;
     justify-content: center;
 }
-div.titlebar a:last-child {
-    /* justify-self: flex-end; */
+div.titlebar div.end {
+    /* display: contents; */
     margin-left: auto;
+    display: flex;
+    gap: 2ex;
+    align-items: center;
 }
 div.titlebar img {
     height: 3.5ex;

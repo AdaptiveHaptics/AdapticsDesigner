@@ -382,6 +382,19 @@ div.isection.file span.filename.unsaved::after {
     content: '*';
     color: var(--text-low-priority);
 }
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+div.isection.file span.savedstate span.pending {
+    animation: spin 1s infinite linear;
+}
+div.isection.file span.savedstate.committed span.pending {
+    display: none;
+}
+div.isection.file span.savedstate:not(.committed) span.committed {
+    display: none;
+}
 div.isection.file .filemenu {
     position: relative;
 }

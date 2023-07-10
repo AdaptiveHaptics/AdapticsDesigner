@@ -34,8 +34,11 @@
 				</div>
 
 				<!-- <span class="icon">💾</span> -->
-				<span class="filename">LOADING</span>
-				<span class="status savedstate">loading....</span>
+				<span class="filename">LOADING...</span>
+				<span class="status savedstate">
+					<span class="material-symbols-outlined pending" title="Pending change...">progress_activity</span>
+					<span class="material-symbols-outlined committed" title="Committed last operation">check</span>
+				</span>
 			</div>
 			<div class="verticalrule"></div>
 			<div class="isection websocket">
@@ -45,7 +48,7 @@
 				<button class="disconnect" style="display: none;">Disconnect</button>
 				<span class="status websocketstate">disconnected</span>
 				<a href="https://github.com/AdaptiveHaptics/AdapticsEngine/releases/latest/download/adaptics-engine-cli.exe" title="Download CLI Application for Device Playback"><span class="material-symbols-outlined">browser_updated</span></a>
-				<label style="display: contents;" title="Hand Tracking (Leap Motion Controller)">
+				<label style="display: contents;" title="Request Hand Tracking from the CLI app (requires Leap Motion Controller)">
 					Hand Tracking (LMC):
 					<input type="checkbox" class="tracking">
 				</label>

@@ -237,8 +237,8 @@ export class FileTitlebarManager {
 		});
 
 		primary_design.state_change_events.addEventListener("commit_update", ev => {
-			savedstate_span.textContent = ev.detail.committed ? "saved to localstorage" : "pending change";
-			this.filename_span.classList.add("unsaved");
+			savedstate_span.classList.toggle("committed", ev.detail.committed);
+			this.set_saved_to_fs(false);
 		});
 
 
@@ -337,8 +337,10 @@ export class FileTitlebarManager {
 	set_saved_to_fs(saved) {
 		if (saved) {
 			this.filename_span.classList.remove("unsaved");
+			this.filename_span.title = "Saved to filesystem.";
 		} else {
 			this.filename_span.classList.add("unsaved");
+			this.filename_span.title = "Changes not saved to filesystem.";
 		}
 	}
 

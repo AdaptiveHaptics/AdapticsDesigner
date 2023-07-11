@@ -164,7 +164,10 @@ export class MAHPatternDesignFE {
 			if (this.websocket) this.#_full_update_websocket(this.websocket);
 		});
 		this.state_change_events.addEventListener("playback_update", _ => {
-			if (this.last_eval[0].stop) this.update_playstart(0);
+			if (this.last_eval[0].stop && this.is_playing()) {
+				this.update_playstart(0);
+				this.update_pattern_time(this.last_eval[0].pattern_time); // force eval again if stopped playing (because playback (websocket) will just show dot @ stop point, but we want to see whole brush)
+			}
 		});
 		this.state_change_events.addEventListener("user_param_definitions_update", ev => {
 			this.apply_user_param_definitions();

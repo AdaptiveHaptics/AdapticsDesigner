@@ -35,6 +35,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 	minimum_pixels_per_major_gridline = 140;
 
 	milliseconds_per_pixel = 2.5;
+
 	major_gridline_preset_index = 1;
 	get milliseconds_per_major_gridline() {
 		return 10 ** Math.floor(this.major_gridline_preset_index / KonvaTimelineStage.major_gridline_millisecond_presets.length) *
@@ -71,7 +72,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 	constructor(pattern_design, direct_container, resize_container) {
 		super(direct_container, resize_container, {
 			stageWidth: 1500, stageHeight: 500,
-			fullWidth: 2500, fullHeight: 800,
+			fullWidth: 4000, fullHeight: 800,
 			// flipDefaultScrollDirection: true, //disabled because this sucks on trackpads. audacity also keeps regular scrolling directions
 		});
 
@@ -102,6 +103,8 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 			const dy = ev.evt.deltaY;
 			this.milliseconds_per_pixel = Math.max(100/500, this.milliseconds_per_pixel + dy / 500);
 
+			this.set_hscroll_perc(this.h_scroll_position_ms / this.h_scroll_max_ms);
+			this.fix_scrollbar_coords();
 			this.render_design();
 		});
 		resize_container.addEventListener("keydown", ev => {
@@ -380,6 +383,36 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 
 	}
 
+
+
+	h_scroll_max_ms = 20000; // this is maximum h_scroll_position_ms/h_scroll_offset_ms where you can have full zoom in
+	h_scroll_position_ms = 0; // this is the leftmost time in visible the timeline
+	h_scroll_offset_ms = 0; // this is the leftmost time at the 0 coordinate (ignoring padding) of the scrolling_layer
+	set_hscroll_perc(perc) {
+		perc = Math.max(0, Math.min(1, perc));
+		this.h_scroll_position_ms = perc * this.h_scroll_max_ms;
+
+		const last_h_scroll_offset_ms = this.h_scroll_offset_ms;
+		const hscroll_px_for_no_rerender = -(this.h_scroll_position_ms - last_h_scroll_offset_ms) / this.milliseconds_per_pixel;
+		if (this.sl_min_x() <= hscroll_px_for_no_rerender && hscroll_px_for_no_rerender <= this.sl_max_x()) {
+			// console.log("no rerender scroll");
+			this.scrolling_layer.x(hscroll_px_for_no_rerender);
+		} else {
+			// console.log("rerender scroll");
+			const mid_point = Math.max(0.5 * (this.sl_min_x() + this.sl_max_x()), -this.h_scroll_position_ms / this.milliseconds_per_pixel);
+			this.scrolling_layer.x(mid_point);
+			const remaining_ms = this.h_scroll_position_ms + (mid_point * this.milliseconds_per_pixel);
+			this.h_scroll_offset_ms = remaining_ms;
+			this.render_design();
+		}
+	}
+	get_hscroll_perc() {
+		return this.h_scroll_position_ms / this.h_scroll_max_ms;
+	}
+	hscroll_dx_to_dperc(dx) {
+		return this.milliseconds_per_pixel * dx / this.h_scroll_max_ms;
+	}
+
 	update_zoom() {
 		// console.log(this.major_gridline_preset_index, this.pixels_per_major_gridline());
 		while (this.pixels_per_major_gridline() > this.maximum_pixels_per_major_gridline) {
@@ -391,11 +424,16 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 		}
 	}
 
+
+	#_left_pad_px() {
+		return this.x_axis_left_padding_pixels - this.h_scroll_offset_ms / this.milliseconds_per_pixel;
+	}
+
 	milliseconds_to_x_coord(time) {
-		return this.x_axis_left_padding_pixels + time / this.milliseconds_per_pixel;
+		return this.#_left_pad_px() + time / this.milliseconds_per_pixel;
 	}
 	x_coord_to_milliseconds(x) {
-		return (x - this.x_axis_left_padding_pixels) * this.milliseconds_per_pixel;
+		return (x - this.#_left_pad_px()) * this.milliseconds_per_pixel;
 	}
 
 	snap_time(t) {

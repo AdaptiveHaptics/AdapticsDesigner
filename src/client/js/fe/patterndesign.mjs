@@ -171,7 +171,12 @@ export class MAHPatternDesignFE {
 		});
 		this.state_change_events.addEventListener("user_param_definitions_update", ev => {
 			this.apply_user_param_definitions();
-			this.#_last_used_user_param = ev.detail.user_param_definitions.find(p => this.filedata.user_parameter_definitions[p] !== undefined) ?? this.#_last_used_user_param;
+			const lastused_user_param = ev.detail.user_param_definitions.find(p => this.filedata.user_parameter_definitions[p] !== undefined); //find param that wasnt deleted
+			if (lastused_user_param) {
+				this.#_last_used_user_param = lastused_user_param;
+			} else if (this.#_last_used_user_param && this.filedata.user_parameter_definitions[this.#_last_used_user_param] === undefined) {
+				this.#_last_used_user_param = null;
+			}
 		});
 
 		this.last_eval = this.#_eval_pattern(); //set in constructor for typecheck
@@ -605,13 +610,6 @@ export class MAHPatternDesignFE {
 		this.filedata.user_parameter_definitions[param_name] = param_def;
 		this.commit_operation({ user_param_definitions: [param_name] });
 	}
-	/**
-	 *
-	 * @param {string} param_name
-	 */
-	delete_user_param(param_name) {
-		this.#_rename_or_delete_evaluator_user_param(param_name);
-	}
 
 	get_user_parameters_to_linked_map() {
 		/** @type {Map<string, UserParamLinked>} */
@@ -724,8 +722,8 @@ export class MAHPatternDesignFE {
 	 * @param {string} old_name
 	 * @returns {boolean}
 	 */
-	delete_evaluator_user_param(old_name) {
-		return this.#_rename_or_delete_evaluator_user_param(old_name);
+	delete_user_param(old_name) {
+		return this.#_rename_or_delete_user_param(old_name);
 	}
 	/**
 	 *
@@ -733,8 +731,8 @@ export class MAHPatternDesignFE {
 	 * @param {string} new_name
 	 * @returns {boolean}
 	 */
-	rename_evaluator_user_param(old_name, new_name) {
-		return this.#_rename_or_delete_evaluator_user_param(old_name, new_name);
+	rename_user_param(old_name, new_name) {
+		return this.#_rename_or_delete_user_param(old_name, new_name);
 	}
 
 	/**
@@ -744,7 +742,7 @@ export class MAHPatternDesignFE {
 	 * @param {string=} new_name
 	 * @returns {boolean}
 	 */
-	#_rename_or_delete_evaluator_user_param(old_name, new_name) {
+	#_rename_or_delete_user_param(old_name, new_name) {
 		const up_linked = this.get_user_parameters_to_linked_map().get(old_name);
 		const old_value = this.evaluator_params.user_parameters.get(old_name);
 

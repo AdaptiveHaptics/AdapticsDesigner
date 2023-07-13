@@ -153,7 +153,7 @@ export class ParameterEditor {
 			delete_unused_button.innerHTML = '<span class="material-symbols-outlined">delete_forever</span>';
 			delete_unused_button.addEventListener("click", _ev => {
 				for (const [param, _up_linked] of unused_params) {
-					this._pattern_design.delete_evaluator_user_param(param);
+					this._pattern_design.delete_user_param(param);
 				}
 			});
 			append_uparams(unused_params);
@@ -294,7 +294,7 @@ class UserParamControl extends HTMLElement {
 		const new_name = this.param_name;
 		if (
 			(new_name != "" || confirm(`Delete parameter '${this.#_val_input.name}'?`)) && // if delete, confirm
-			this.#_pattern_design.rename_evaluator_user_param(this.#_val_input.name, new_name)
+			this.#_pattern_design.rename_user_param(this.#_val_input.name, new_name)
 		) {
 			this.param_name = new_name;
 		} else {
@@ -363,7 +363,7 @@ class UserParamDialog {
 		this._userparamdialog_delete_button.addEventListener("click", _ => {
 			const { name } = this.get_values();
 			if (!confirm(`Delete parameter '${name}'?`)) return;
-			this.#_pattern_design.delete_evaluator_user_param(name);
+			this.#_pattern_design.delete_user_param(name);
 			this._userparamdialog_dialog.close("dismiss");
 		});
 		this._userparamdialog_close_button.addEventListener("click", _ => {

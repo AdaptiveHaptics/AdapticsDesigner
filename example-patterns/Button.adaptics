@@ -183,6 +183,17 @@
 			"cjumps": [
 				{
 					"condition": {
+						"parameter": "proximity",
+						"operator": {
+							"name": "lt",
+							"params": {}
+						},
+						"value": 1
+					},
+					"jump_to": 0
+				},
+				{
+					"condition": {
 						"parameter": "contact",
 						"operator": {
 							"name": "lt",

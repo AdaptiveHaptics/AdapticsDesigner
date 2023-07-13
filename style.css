@@ -209,6 +209,12 @@ div.labelinputgrid > div.optionalinput > div.inputs {
     margin-right: 0.5ex;
 }
 
+.material-symbols-outlined.infoicon {
+    font-size: 0.8em;
+    vertical-align: initial;
+    color: var(--text-low-priority);
+}
+
 span.unit {
     font-family: monospace;
     /* font-size: 1.1em; */

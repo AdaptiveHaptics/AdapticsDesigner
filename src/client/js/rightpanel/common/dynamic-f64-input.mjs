@@ -181,7 +181,8 @@ export class DynamicF64Input extends HTMLElement {
 
 	#_on_val_input_change() {
 		const df64v = this.#_parse_input_value();
-		// if (df64v === this.#_last_value) return; // prevent emitting event on no change (hacky fix for clicking on an autocompletion triggering #_on_val_input_change() and a change event (because of blur) )
+		const no_change = deep_equals(this.#_last_value, df64v);
+		if (no_change) return; // prevent emitting event on no change (fix for clicking on an autocompletion triggering #_on_val_input_change() and a change event on the htmlinputelement (because of blur) in some cases) see that comment below for more info.
 		if (df64v === null) {
 			this.#_reset_value();
 			return;
@@ -227,7 +228,7 @@ export class DynamicF64Input extends HTMLElement {
 				autocompletion_button.addEventListener("mousedown", ev => {
 					ev.preventDefault();
 					this.update_value(df64v);
-					// this.#_on_val_input_change(); //blur will trigger change event
+					this.#_on_val_input_change(); //blur *MAY* also trigger change event (not consistent, depends on browser and if input field was typed in or backspaced in, etc.)
 					this.#_blur_delayed();
 				});
 

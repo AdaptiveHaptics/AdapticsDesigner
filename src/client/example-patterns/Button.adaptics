@@ -113,11 +113,11 @@
 					"params": {
 						"radius": {
 							"type": "dynamic",
-							"value": "contact"
+							"value": "activation"
 						},
 						"am_freq": {
 							"type": "f64",
-							"value": 0
+							"value": 75
 						}
 					}
 				},
@@ -152,11 +152,11 @@
 					"params": {
 						"radius": {
 							"type": "dynamic",
-							"value": "contact"
+							"value": "activation"
 						},
 						"am_freq": {
 							"type": "f64",
-							"value": 0
+							"value": 75
 						}
 					}
 				},
@@ -194,19 +194,19 @@
 				},
 				{
 					"condition": {
-						"parameter": "contact",
+						"parameter": "activation",
 						"operator": {
 							"name": "lt",
 							"params": {}
 						},
-						"value": 20
+						"value": 30
 					},
 					"jump_to": 400
 				}
 			]
 		},
 		{
-			"time": 750,
+			"time": 775,
 			"type": "pause",
 			"brush": {
 				"brush": {
@@ -214,7 +214,7 @@
 					"params": {
 						"radius": {
 							"type": "f64",
-							"value": 28
+							"value": 65
 						},
 						"am_freq": {
 							"type": "f64",
@@ -245,7 +245,7 @@
 			"cjumps": []
 		},
 		{
-			"time": 900,
+			"time": 1050,
 			"type": "pause",
 			"brush": {
 				"brush": {
@@ -284,7 +284,7 @@
 			"cjumps": []
 		},
 		{
-			"time": 1150,
+			"time": 1250,
 			"type": "stop"
 		}
 	],
@@ -339,10 +339,10 @@
 			"max": 1,
 			"step": 0.05
 		},
-		"contact": {
-			"default": 7,
-			"min": 7,
-			"max": 20,
+		"activation": {
+			"default": 15,
+			"min": 15,
+			"max": 30,
 			"step": 1
 		}
 	}

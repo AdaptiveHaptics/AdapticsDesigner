@@ -127,6 +127,7 @@ export class DynamicF64Input extends HTMLElement {
 		}
 	}
 	/**
+	 * Update the value of the input element from the real model value
 	 *
 	 * @param {(MAHDynamicF64 | null)=} v
 	 */
@@ -135,8 +136,18 @@ export class DynamicF64Input extends HTMLElement {
 			if (!this.#_get) throw new Error("Cannot auto update value without getter");
 			v = this.#_get();
 		}
-		const no_change = deep_equals(this.#_last_value, v);
 		this.#_last_value = v;
+		this.#_update_value(v);
+	}
+	/**
+	 * Internal function to set the value of the input element.
+	 * Since it isnt necessarily the same as the model value, it does not update this.#_last_value.
+	 * Typically called on autocompletion, prior to #_on_val_input_change
+	 *
+	 * @param {MAHDynamicF64 | null} v
+	 */
+	#_update_value(v) {
+		const no_change = deep_equals(this.#_last_value, v);
 		if (v === null) {
 			this.#_val_input.value = "";
 		} else {
@@ -227,7 +238,7 @@ export class DynamicF64Input extends HTMLElement {
 
 				autocompletion_button.addEventListener("mousedown", ev => {
 					ev.preventDefault();
-					this.update_value(df64v);
+					this.#_update_value(df64v);
 					this.#_on_val_input_change(); //blur *MAY* also trigger change event (not consistent, depends on browser and if input field was typed in or backspaced in, etc.)
 					this.#_blur_delayed();
 				});

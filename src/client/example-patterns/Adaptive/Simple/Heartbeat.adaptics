@@ -249,7 +249,7 @@
 			"cjumps": [
 				{
 					"condition": {
-						"parameter": "end",
+						"parameter": "dead",
 						"operator": {
 							"name": "lt",
 							"params": {}
@@ -306,17 +306,17 @@
 		},
 		"playback_speed": {
 			"type": "dynamic",
-			"value": "speed"
+			"value": "heartrate"
 		}
 	},
 	"user_parameter_definitions": {
-		"end": {
+		"dead": {
 			"default": 0,
-			"min": null,
-			"max": null,
-			"step": 0.05
+			"min": 0,
+			"max": 1,
+			"step": 1
 		},
-		"speed": {
+		"heartrate": {
 			"default": 1,
 			"min": 0,
 			"max": 3,

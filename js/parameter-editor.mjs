@@ -474,13 +474,17 @@ class UserParamDialog {
 			this._userparamdialog_paramname_input.value = edit_param_name;
 			const { default: default_value, min, max, step } = this.#_pattern_design.filedata.user_parameter_definitions[edit_param_name];
 			this._userparamdialog_default_input.value = num_to_rounded_string(default_value);
-			if (min && min !== -Infinity) {
+			if (min != null && min !== -Infinity) {
 				this._userparamdialog_clampmin_input.checked = true;
 				this._userparamdialog_min_input.value = num_to_rounded_string(min);
+			} else {
+				this._userparamdialog_clampmin_input.checked = false;
 			}
-			if (max && max !== Infinity) {
+			if (max != null && max !== Infinity) {
 				this._userparamdialog_clampmax_input.checked = true;
 				this._userparamdialog_max_input.value = num_to_rounded_string(max);
+			} else {
+				this._userparamdialog_clampmax_input.checked = false;
 			}
 			this._userparamdialog_step_input.value = num_to_rounded_string(step);
 

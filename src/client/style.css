@@ -149,6 +149,9 @@ div.dialogtitlebar > button {
     background: var(--scrollbar-thumb-color);
     /* outline: 1px solid slategrey; */
 }
+.betterscroll::-webkit-scrollbar-corner {
+    background: var(--scrollbar-track-color);
+}
 
 dynamic-f64-input > label {
     display: contents;
@@ -466,6 +469,7 @@ div.designlibrary > div.searchbox > button.close {
 div.designlibrary div.designtree {
     font-size: 1.2em;
     background-color: var(--background-tertiary-alt);
+    overflow: auto;
 }
 div.designlibrary div.designtree div.children {
     display: grid;
@@ -487,9 +491,13 @@ div.designlibrary div.designtree div.file button {
 div.designlibrary div.designtree div.file div.preview {
     background-color: var(--background-titlebar);
     z-index: 10;
-    position: absolute;
-    left: 100%;
-    top: 0;
+    position: fixed;
+
+    /* causes horizontal scrollbars */
+    /* position: absolute; */
+    /* left: 100%; */
+    /* top: 0; */
+
     border: solid 1.5ex var(--background-titlebar);
 }
 div.designlibrary div.designtree details.folder {

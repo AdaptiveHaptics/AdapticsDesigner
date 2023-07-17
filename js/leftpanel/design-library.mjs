@@ -121,6 +121,7 @@ export class DesignLibrary {
 				try {
 					this._preview_pattern_design.import_file_from_filedata(structured_clone(await design), filename_with_ext);
 					file_div.appendChild(this._preview_div);
+					this._preview_div.style.left = (file_div.offsetLeft + file_div.offsetWidth) + "px";
 
 					this._preview_pattern_design.update_playstart(Date.now());
 				} catch (e) {

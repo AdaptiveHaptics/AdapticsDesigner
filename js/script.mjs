@@ -372,16 +372,25 @@ const right_panel = new RightPanel(primary_design, rightpanel_div);
 const unified_keyframe_editor = right_panel.unified_keyframe_editor;
 const parameter_editor = new ParameterEditor(primary_design, notnull(document.querySelector("div.parametereditor")));
 
-const load_pattern = async (url) => {
-	const f = await fetch(url);
-	const json = /** @type {MidAirHapticsAnimationFileFormat} */ (await f.json());
-	return json;
-};
-const design_library = new DesignLibrary(primary_design, file_titlebar_manager, designlibrary_div, new Map([
-	["Examples/Heartbeat", load_pattern("./example-patterns/Heartbeat.adaptics")],
-	["Examples/Checkmark", load_pattern("./example-patterns/Checkmark.adaptics")],
-	["Examples/Button", load_pattern("./example-patterns/Button.adaptics")],
 
+const load_pattern = async (url) => {
+	try {
+		const f = await fetch(url);
+		const json = /** @type {MidAirHapticsAnimationFileFormat} */ (await f.json());
+		return json;
+	} catch (e) {
+		alert(`Failed to load pattern '${url}': ${e}`);
+		throw e;
+	}
+};
+/** @type {(s: string) => [string, Promise<MidAirHapticsAnimationFileFormat>]} */
+const pattern_from_path = (path) => [`Examples/${path}`, load_pattern(`./example-patterns/${path}.adaptics`)];
+const design_library = new DesignLibrary(primary_design, file_titlebar_manager, designlibrary_div, new Map([
+	pattern_from_path("Adaptive/Simple/Heartbeat"),
+	pattern_from_path("Adaptive/Simple/Button"),
+	pattern_from_path("Adaptive/Unity/Button"),
+	pattern_from_path("Adaptive/Unity/SpaceshipHeartbeat"),
+	pattern_from_path("Non-Adaptive/Checkmark"),
 ]));
 
 Object.assign(window, {

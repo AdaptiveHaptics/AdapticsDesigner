@@ -141,6 +141,7 @@ export class MAHPatternDesignFE {
 		this.pattern_evaluator = new PatternEvaluator(this.filedata);
 		this.state_change_events.addEventListener("commit_update", ev => {
 			if (ev.detail.committed) {
+				this.pattern_evaluator?.free();
 				this.pattern_evaluator = new PatternEvaluator(this.filedata);
 				this.websocket?.update_pattern(this.filedata);
 				this.#_eval_pattern();
@@ -980,7 +981,9 @@ export class MAHPatternDesignFE {
 	 */
 	load_filedata_into_fe_format(filedata) {
 		if (filedata.$DATA_FORMAT != "MidAirHapticsAnimationFileFormat") throw new Error(`incorrect $DATA_FORMAT ${filedata.$DATA_FORMAT} expected ${"MidAirHapticsAnimationFileFormat"}`);
-		if (filedata.$REVISION != MAH_$REVISION) throw new Error(`incorrect revision ${filedata.$REVISION} expected ${MAH_$REVISION}`);
+		//if (filedata.$REVISION != MAH_$REVISION) throw new Error(`incorrect revision ${filedata.$REVISION} expected ${MAH_$REVISION}`);
+		new PatternEvaluator(filedata).free(); // verify valid filedata format (with serde)
+
 		const keyframesFE = filedata.keyframes.map(kf => create_correct_keyframefe_wrapper(kf, this));
 		const filedataFE = { ...filedata, keyframes: keyframesFE };
 		return filedataFE;

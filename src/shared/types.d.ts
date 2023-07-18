@@ -1,6 +1,5 @@
 import {
     MidAirHapticsAnimationFileFormat,
-    Projection,
     MAHKeyframe,
     MAHCoords,
     MAHBrush,
@@ -16,9 +15,7 @@ import {
 } from "../external/pattern_evaluator/rs-shared-types";
 export {
     MidAirHapticsAnimationFileFormat,
-    Projection,
     MAHKeyframe,
-    MAHCoords,
     MAHBrush,
     MAHTransition,
     MAHIntensity,

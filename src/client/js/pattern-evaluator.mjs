@@ -12,6 +12,7 @@
 /** @typedef {import("../external/pattern_evaluator/rs-shared-types").PatternTransformation} PatternTransformation */
 /** @typedef {import("../external/pattern_evaluator/rs-shared-types").GeometricTransformMatrix} GeometricTransformMatrix */
 /** @typedef {import("../external/pattern_evaluator/rs-shared-types").GeometricTransformsSimple} GeometricTransformsSimple */
+/** @typedef {import("../external/pattern_evaluator/rs-shared-types").ATFormula} ATFormula */
 /** @typedef {import("../external/pattern_evaluator/rs-shared-types").MAHCoordsConst} MAHCoordsConst */
 /** @typedef {import("./fe/patterndesign.mjs").MAHAnimationFileFormatFE} MAHAnimationFileFormatFE */
 
@@ -22,6 +23,14 @@ await init();
 
 export class PatternEvaluator {
 	#_internal;
+
+	/**
+	 * @param {MidAirHapticsAnimationFileFormat} mah_animation
+	 * @returns {MidAirHapticsAnimationFileFormat}
+	 */
+	static try_parse_into_latest_version(mah_animation) {
+		return JSON.parse(PatternEvaluatorWASM.try_parse_into_latest_version(JSON.stringify(mah_animation)));
+	}
 
 	/**
 	 *
@@ -126,6 +135,39 @@ export class PatternEvaluator {
 				user_parameters: Object.fromEntries(user_parameters),
 				user_parameter_definitions
 			}))
+		);
+	}
+
+
+	/**
+	 * @param {string} formula_str
+	 * @returns {ATFormula}
+	 * @throws {Error}
+	 */
+	static parse_formula(formula_str) {
+		return JSON.parse(PatternEvaluatorWASM.parse_formula(formula_str));
+	}
+
+	/**
+	 *
+	 * @param {ATFormula} formula
+	 * @returns {string}
+	 */
+	static formula_to_string(formula) {
+		return PatternEvaluatorWASM.formula_to_string(JSON.stringify(formula));
+	}
+
+	/**
+	 *
+	 * @param {import("../../external/pattern_evaluator/rs-shared-types.js").MAHDynamicF64} dynf64
+	 * @param {UserParameters} user_parameters
+	 * @param {MAHAnimationFileFormatFE["user_parameter_definitions"]} user_parameter_definitions
+	 */
+	static dynf64_to_f64(dynf64, user_parameters, user_parameter_definitions) {
+		return PatternEvaluatorWASM.dynf64_to_f64(
+			JSON.stringify(dynf64),
+			JSON.stringify(Object.fromEntries(user_parameters)),
+			JSON.stringify(user_parameter_definitions)
 		);
 	}
 }

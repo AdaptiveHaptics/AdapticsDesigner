@@ -264,7 +264,7 @@ export class UnifiedKeyframeEditor {
 				cjump_remove_button.addEventListener("click", () => {
 					this.on_cjump_remove(row_index);
 				});
-				cjump_parameter_df64_input.update_value(this.get_if_field_identical(cjumps_at_index, cjump => { return { type: "dynamic", value: cjump.condition.parameter}; }));
+				cjump_parameter_df64_input.update_value(this.get_if_field_identical(cjumps_at_index, cjump => { return { type: "param", value: cjump.condition.parameter}; }));
 				cjump_operator_select.value = this.get_if_field_identical(cjumps_at_index, cjump => cjump.condition.operator.name) || "multipletypes";
 				cjump_value_input.value = this.get_if_field_identical(cjumps_at_index, cjump => cjump.condition.value)?.toString() || "";
 				cjump_jump_to_input.value = this.get_if_field_identical(cjumps_at_index, cjump => cjump.jump_to)?.toString() || "";
@@ -333,7 +333,7 @@ export class UnifiedKeyframeEditor {
 				const val = input.get_value();
 				if (val != null) {
 					kf[kf_prop_name][kf_prop_name].params[input_name] = val;
-					if (val.type == "dynamic") {
+					if (val.type == "param") {
 						this.pattern_design.last_used_user_param = val.value;
 					}
 				}
@@ -477,7 +477,7 @@ export class UnifiedKeyframeEditor {
 				const cjump = kf.cjumps[i];
 				if (!cjump) return;
 				const cjump_param_df64_wrapped = cjump_parameter_df64_input.get_value();
-				if (cjump_param_df64_wrapped && cjump_param_df64_wrapped.type == "dynamic") {
+				if (cjump_param_df64_wrapped && cjump_param_df64_wrapped.type == "param") {
 					this.pattern_design.last_used_user_param = cjump.condition.parameter = cjump_param_df64_wrapped.value;
 				}
 				switch (cjump_operator_select.value) {

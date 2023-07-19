@@ -11,6 +11,7 @@ import {
     ConditionalJump,
     PatternTransformation,
     MAHUserParameterDefinition,
+    ATFormula,
     DataFormatRevision
 } from "../external/pattern_evaluator/rs-shared-types";
 export {
@@ -25,6 +26,7 @@ export {
     ConditionalJump,
     PatternTransformation,
     MAHUserParameterDefinition,
+    ATFormula,
 };
 import { SharedProperties } from "./util";
 

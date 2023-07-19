@@ -118,7 +118,7 @@ export class ParameterEditor {
 
 		const append_uparams = (uparams_map) => {
 			for (const [param, up_linked] of uparams_map) {
-				const pvalue = this._pattern_design.resolve_dynamic_f64({ type: "dynamic", value: param });
+				const pvalue = this._pattern_design.resolve_dynamic_f64({ type: "param", value: param });
 				const step_size = this._pattern_design.filedata.user_parameter_definitions[param]?.step ?? 0.05;
 				const up_el = userparam_els_by_name.get(param) ||  (
 					this._pattern_design.update_evaluator_user_params(param, pvalue),
@@ -306,7 +306,7 @@ class UserParamControl extends HTMLElement {
 		if (Number.isFinite(v)) {
 			this.#_pattern_design.update_evaluator_user_params(this.param_name, v);
 		} else {
-			this.param_value = this.#_pattern_design.resolve_dynamic_f64({ type: "dynamic", value: this.param_name });
+			this.param_value = this.#_pattern_design.resolve_dynamic_f64({ type: "param", value: this.param_name });
 		}
 	}
 

@@ -8,6 +8,14 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    services:
+      http-server:
+        image: nginx
+        options: --health-cmd "curl http://localhost:8000" --health-interval 10s --health-timeout 5s --health-retries 5
+        ports:
+          - 8000:80
+        volumes:
+          - ${{ github.workspace }}/src/client:/usr/share/nginx/html
     container:
       image: mcr.microsoft.com/playwright:v1.36.0-jammy
     steps:
@@ -19,12 +27,6 @@ jobs:
       run: npm ci
     # - name: Install Playwright Browsers # not needed with container image above
     #   run: npx playwright install --with-deps
-    - name: Setup Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: 3.9
-    - name: Start the server
-      run: python -m http.server --directory src/client/ &
     - name: Run Playwright tests
       run: npx playwright test
     - uses: actions/upload-artifact@v3

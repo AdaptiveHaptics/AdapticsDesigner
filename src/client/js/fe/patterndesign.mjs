@@ -27,7 +27,7 @@ const MAH_$REVISION = "0.1.0-alpha.2";
 
 /**
  * @typedef {{
- *   items: { keyframes: MAHKeyframeFE[], pattern_transform: boolean },
+ *   items: { keyframes: Set<MAHKeyframeFE>, pattern_transform: boolean },
  *   prop_parents: { cjumps: ConditionalJump[], dynf64: MAHDynamicF64[] },
  *   cjump_to_kf_map: Map<ConditionalJump, MAHKeyframeFE>,
  * 	 unused: boolean,
@@ -697,7 +697,7 @@ export class MAHPatternDesignFE {
 
 			/** @type {UserParamLinked} */
 			const new_up_linked = {
-				items: { keyframes: [], pattern_transform: false },
+				items: { keyframes: new Set(), pattern_transform: false },
 				prop_parents: { cjumps: [], dynf64: [] },
 				cjump_to_kf_map: new Map(),
 				unused: true,
@@ -714,7 +714,7 @@ export class MAHPatternDesignFE {
 					const param_name = cjump.condition.parameter;
 					if (param_name) {
 						const up_linked = get_up_linked_or_default(param_name);
-						up_linked.items.keyframes.push(keyframe);
+						up_linked.items.keyframes.add(keyframe);
 						up_linked.prop_parents.cjumps.push(cjump);
 						up_linked.cjump_to_kf_map.set(cjump, keyframe);
 					}
@@ -753,7 +753,7 @@ export class MAHPatternDesignFE {
 				const params = this.get_params_from_dynf64(mah_dyn_f64);
 				for (const param_name of params) {
 					const up_linked = get_up_linked_or_default(param_name);
-					up_linked.items.keyframes.push(keyframe);
+					up_linked.items.keyframes.add(keyframe);
 					up_linked.prop_parents.dynf64.push(mah_dyn_f64);
 				}
 			}

@@ -312,7 +312,7 @@ class UserParamControl extends HTMLElement {
 
 	select_linked() {
 		this.#_pattern_design.deselect_all_items();
-		this.#_pattern_design.select_items({ keyframes: this.up_linked.items.keyframes });
+		this.#_pattern_design.select_items({ keyframes: [...this.up_linked.items.keyframes] });
 	}
 }
 

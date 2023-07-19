@@ -13,7 +13,7 @@ jobs:
         image: nginx
         options: --health-cmd "curl http://localhost:80" --health-interval 10s --health-timeout 5s --health-retries 5
         ports:
-          - 8000:80
+          - 80:80
         volumes:
           - ${{ github.workspace }}/src/client:/usr/share/nginx/html
     container:
@@ -28,7 +28,9 @@ jobs:
     # - name: Install Playwright Browsers # not needed with container image above
     #   run: npx playwright install --with-deps
     - name: Run Playwright tests
-      run: npx playwright test
+      run: |
+        export TEST_URL="http://http-server:80"
+        npx playwright test
     - uses: actions/upload-artifact@v3
       if: always()
       with:

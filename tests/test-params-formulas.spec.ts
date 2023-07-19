@@ -2,7 +2,6 @@ import { test, expect, Page } from '@playwright/test';
 
 
 async function setup_radius_formula(page: Page) {
-    await page.goto('http://localhost:8000/');
     await page.locator('canvas').nth(3).click({
       position: {
         x: 112,
@@ -23,6 +22,7 @@ async function check_radius(page: Page) {
 test('check if formulas show in user param pane', async ({ page }) => {
   // page.setDefaultTimeout(1000); # just keeping default for now
 
+  await page.goto('/');
   await setup_radius_formula(page);
   await check_radius(page);
 
@@ -37,7 +37,7 @@ test('check if formulas show in user param pane', async ({ page }) => {
 
 
   // check again after reload
-  await page.goto('http://localhost:8000/');
+  await page.goto('/');
   await page.locator('canvas').nth(3).click({
     position: {
       x: 204,
@@ -54,7 +54,7 @@ test('check if formulas show in user param pane', async ({ page }) => {
 test('check parameter in formula rename', async ({ page }) => {
   // page.setDefaultTimeout(1000); # just keeping default for now
 
-  // Recording...
+  await page.goto('/');
   await setup_radius_formula(page);
   await check_radius(page);
   await page.getByText('infraredIntensity').click();

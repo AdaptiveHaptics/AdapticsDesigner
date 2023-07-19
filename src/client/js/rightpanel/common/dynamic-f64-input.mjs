@@ -142,8 +142,8 @@ export class DynamicF64Input extends HTMLElement {
 			if (!this.#_get) throw new Error("Cannot auto update value without getter");
 			v = this.#_get();
 		}
-		this.#_last_value = v;
 		this.#_update_value(v);
+		this.#_last_value = window.structuredClone(v);
 	}
 	/**
 	 * Internal function to set the value of the input element.
@@ -213,13 +213,15 @@ export class DynamicF64Input extends HTMLElement {
 		if (no_change) return; // prevent emitting event on no change (fix for clicking on an autocompletion triggering #_on_val_input_change() and a change event on the htmlinputelement (because of blur) in some cases) see that comment below for more info.
 		if (df64v === null) {
 			this.#_reset_value();
-			return;
+			return; // no change
 		}
+
 		this.dispatchEvent(new Event("change", { bubbles: true }));
 		if (this.#_set) {
 			this.#_pattern_design.save_state();
 			this.#_pattern_design.commit_operation(this.#_set(df64v));
 		}
+		//this.#_update_autocomplete();
 	}
 
 	#_update_autocomplete() {

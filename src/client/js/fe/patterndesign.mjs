@@ -5,7 +5,7 @@
 /** @typedef {import("../../../shared/types").ConditionalJump} ConditionalJump */
 /** @typedef {import("../../../shared/types").ATFormula} ATFormula */
 /** @typedef {import("../../../shared/types").MAHUserParameterDefinition} MAHUserParameterDefinition */
-/** @typedef {import("../../../external/pattern_evaluator/rs-shared-types").MAHDynamicF64} MAHDynamicF64 */
+/** @typedef {import("../../external/pattern_evaluator/rs-shared-types").MAHDynamicF64} MAHDynamicF64 */
 /** @typedef {import("./keyframes/index.mjs").MAHKeyframeFE} MAHKeyframeFE */
 /** @typedef {import("../pattern-evaluator.mjs").PatternEvaluatorParameters} PatternEvaluatorParameters */
 /** @typedef {import("../pattern-evaluator.mjs").NextEvalParams} NextEvalParams */

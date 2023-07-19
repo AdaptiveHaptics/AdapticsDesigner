@@ -1,7 +1,7 @@
 /** @typedef {import("../../fe/patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
 /** @typedef {import("../../fe/patterndesign.mjs").MAHKeyframeFE} MAHKeyframeFE */
-/** @typedef {import("../../../../external/pattern_evaluator/rs-shared-types").MAHDynamicF64} MAHDynamicF64 */
-/** @typedef {import("../../../../external/pattern_evaluator/rs-shared-types").ATFormula} ATFormula */
+/** @typedef {import("../../../external/pattern_evaluator/rs-shared-types").MAHDynamicF64} MAHDynamicF64 */
+/** @typedef {import("../../../external/pattern_evaluator/rs-shared-types").ATFormula} ATFormula */
 
 import { PatternEvaluator } from "../../pattern-evaluator.mjs";
 import { assert_unreachable, deep_equals, num_to_rounded_string } from "../../util.mjs";

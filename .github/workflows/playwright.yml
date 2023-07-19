@@ -8,6 +8,8 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.36.0-jammy
     steps:
     - uses: actions/checkout@v3
     - uses: actions/setup-node@v3
@@ -15,8 +17,14 @@ jobs:
         node-version: 18
     - name: Install dependencies
       run: npm ci
-    - name: Install Playwright Browsers
-      run: npx playwright install --with-deps
+    # - name: Install Playwright Browsers # not needed with container image above
+    #   run: npx playwright install --with-deps
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      # with:
+      #   python-version: 3.9
+    - name: Start the server
+      run: cd src/client/ && python -m http.server & sleep 5
     - name: Run Playwright tests
       run: npx playwright test
     - uses: actions/upload-artifact@v3

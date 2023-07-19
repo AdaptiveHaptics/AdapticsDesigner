@@ -13,7 +13,7 @@ import {
     MAHUserParameterDefinition,
     ATFormula,
     DataFormatRevision
-} from "../external/pattern_evaluator/rs-shared-types";
+} from "../client/external/pattern_evaluator/rs-shared-types";
 export {
     MidAirHapticsAnimationFileFormat,
     MAHKeyframe,

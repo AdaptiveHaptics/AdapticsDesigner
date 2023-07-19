@@ -159,7 +159,7 @@ export class PatternEvaluator {
 
 	/**
 	 *
-	 * @param {import("../../external/pattern_evaluator/rs-shared-types.js").MAHDynamicF64} dynf64
+	 * @param {import("../external/pattern_evaluator/rs-shared-types.js").MAHDynamicF64} dynf64
 	 * @param {UserParameters} user_parameters
 	 * @param {MAHAnimationFileFormatFE["user_parameter_definitions"]} user_parameter_definitions
 	 */

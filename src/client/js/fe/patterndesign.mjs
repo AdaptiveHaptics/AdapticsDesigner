@@ -623,9 +623,9 @@ export class MAHPatternDesignFE {
 		const verify_mah_dynamic_f64 = (mah_dyn_f64) => {
 			if (!mah_dyn_f64) return false;
 			switch (mah_dyn_f64.type) {
-				case "param": return typeof mah_dyn_f64.type == "string";
-				case "f64": return typeof mah_dyn_f64.type == "number";
-				case "formula": return typeof mah_dyn_f64.type == "object";
+				case "param": return typeof mah_dyn_f64.value == "string";
+				case "f64": return typeof mah_dyn_f64.value == "number";
+				case "formula": return typeof mah_dyn_f64.value == "object";
 				default: try { assert_unreachable(mah_dyn_f64); } catch (e) { return false; }
 			}
 		};

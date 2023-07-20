@@ -12,7 +12,7 @@
 export type TupleOf_MidAirHapticsAnimationFileFormatAnd_PatternEvaluatorParametersAnd_BrushAtAnimLocalTimeAnd_ArrayOf_BrushAtAnimLocalTime =
   [MidAirHapticsAnimationFileFormat, PatternEvaluatorParameters, BrushAtAnimLocalTime, BrushAtAnimLocalTime[]];
 export type MidAirHapticsAnimationFileFormatDataFormatName = "MidAirHapticsAnimationFileFormat";
-export type DataFormatRevision = "0.0.10-alpha.1";
+export type DataFormatRevision = "0.1.0-alpha.2";
 export type MAHKeyframe =
   | {
       brush?: BrushWithTransition | null;
@@ -67,12 +67,57 @@ export type MAHBrush =
     };
 export type MAHDynamicF64 =
   | {
-      type: "dynamic";
+      type: "param";
       value: string;
     }
   | {
       type: "f64";
       value: number;
+    }
+  | {
+      type: "formula";
+      value: ATFormula;
+    };
+export type ATFormula =
+  | {
+      type: "constant";
+      value: number;
+    }
+  | {
+      type: "parameter";
+      value: string;
+    }
+  | {
+      type: "add";
+      /**
+       * @minItems 2
+       * @maxItems 2
+       */
+      value: [ATFormula, ATFormula];
+    }
+  | {
+      type: "subtract";
+      /**
+       * @minItems 2
+       * @maxItems 2
+       */
+      value: [ATFormula, ATFormula];
+    }
+  | {
+      type: "multiply";
+      /**
+       * @minItems 2
+       * @maxItems 2
+       */
+      value: [ATFormula, ATFormula];
+    }
+  | {
+      type: "divide";
+      /**
+       * @minItems 2
+       * @maxItems 2
+       */
+      value: [ATFormula, ATFormula];
     };
 export type MAHTransition =
   | {

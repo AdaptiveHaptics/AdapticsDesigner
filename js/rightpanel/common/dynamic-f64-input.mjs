@@ -1,7 +1,9 @@
 /** @typedef {import("../../fe/patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
 /** @typedef {import("../../fe/patterndesign.mjs").MAHKeyframeFE} MAHKeyframeFE */
-/** @typedef {import("../../../../external/pattern_evaluator/rs-shared-types").MAHDynamicF64} MAHDynamicF64 */
+/** @typedef {import("../../../external/pattern_evaluator/rs-shared-types").MAHDynamicF64} MAHDynamicF64 */
+/** @typedef {import("../../../external/pattern_evaluator/rs-shared-types").ATFormula} ATFormula */
 
+import { PatternEvaluator } from "../../pattern-evaluator.mjs";
 import { assert_unreachable, deep_equals, num_to_rounded_string } from "../../util.mjs";
 
 export class DynamicF64Input extends HTMLElement {
@@ -73,16 +75,31 @@ export class DynamicF64Input extends HTMLElement {
 			if (ev.key === "Escape") {
 				this.#_reset_value();
 				this.#_blur_delayed();
+				return;
 			}
+
+			if (ev.key === "Enter") {
+				// select autoaction autocompletion if there is one
+				/** @type {HTMLButtonElement | null} */
+				const autoaction = this.#_autocomplete_div.querySelector(".autoaction");
+				if (autoaction) {
+					ev.preventDefault();
+					autoaction.click();
+				}
+				return;
+			}
+
 			if (value && value.type === "f64") {
 				if (ev.key === "ArrowUp") {
 					this.#_val_input.value = num_to_rounded_string(value.value + this.#_step);
 					this.#_on_val_input_change(); // constrain, set
 					ev.preventDefault();
+					return;
 				} else if (ev.key === "ArrowDown") {
 					this.#_val_input.value = num_to_rounded_string(value.value - this.#_step);
 					this.#_on_val_input_change(); // constrain, set
 					ev.preventDefault();
+					return;
 				}
 			}
 		});
@@ -117,13 +134,17 @@ export class DynamicF64Input extends HTMLElement {
 	/**
 	 *
 	 * @param {MAHDynamicF64} v
-	 * @returns
+	 * @returns {string}
 	 */
 	static stringify_df64(v) {
-		if (v.type === "f64") {
-			return num_to_rounded_string(v.value);
-		} else {
-			return v.value;
+		switch (v.type) {
+			case "f64":
+				return num_to_rounded_string(v.value);
+			case "formula":
+				return PatternEvaluator.formula_to_string(v.value);
+			case "param":
+				return v.value;
+			default: assert_unreachable(v);
 		}
 	}
 	/**
@@ -136,8 +157,8 @@ export class DynamicF64Input extends HTMLElement {
 			if (!this.#_get) throw new Error("Cannot auto update value without getter");
 			v = this.#_get();
 		}
-		this.#_last_value = v;
 		this.#_update_value(v);
+		this.#_last_value = window.structuredClone(v);
 	}
 	/**
 	 * Internal function to set the value of the input element.
@@ -183,10 +204,21 @@ export class DynamicF64Input extends HTMLElement {
 		}
 		const v_num = Number(this.#_val_input.value);
 		const v_pf = parseFloat(this.#_val_input.value);
+
+		/** @type {ATFormula | null} */
+		let v_parse_formula = null;
+		try {
+			v_parse_formula = PatternEvaluator.parse_formula(this.#_val_input.value);
+		} catch (e) {
+			// ignore
+		}
+
 		if (Number.isFinite(v_num) && v_num === v_pf && !this.#_paramonly) {
 			return { type: "f64", value: this.#_constrain_f64(v_num) };
+		} else if (/[+\-*/()]/g.test(this.#_val_input.value) && v_parse_formula != null) {
+			return { type: "formula", value: v_parse_formula };
 		} else {
-			return { type: "dynamic", value: this.#_val_input.value };
+			return { type: "param", value: this.#_val_input.value };
 		}
 	}
 
@@ -196,13 +228,15 @@ export class DynamicF64Input extends HTMLElement {
 		if (no_change) return; // prevent emitting event on no change (fix for clicking on an autocompletion triggering #_on_val_input_change() and a change event on the htmlinputelement (because of blur) in some cases) see that comment below for more info.
 		if (df64v === null) {
 			this.#_reset_value();
-			return;
+			return; // no change
 		}
+
 		this.dispatchEvent(new Event("change", { bubbles: true }));
 		if (this.#_set) {
 			this.#_pattern_design.save_state();
 			this.#_pattern_design.commit_operation(this.#_set(df64v));
 		}
+		//this.#_update_autocomplete();
 	}
 
 	#_update_autocomplete() {
@@ -218,7 +252,8 @@ export class DynamicF64Input extends HTMLElement {
 			if (!type) {
 				switch (df64v.type) {
 					case "f64": type = "constant"; break;
-					case "dynamic": type = "parameter"; break;
+					case "param": type = "parameter"; break;
+					case "formula": type = "formula"; break;
 					default: assert_unreachable(df64v);
 				}
 			}
@@ -236,7 +271,7 @@ export class DynamicF64Input extends HTMLElement {
 				type_span.textContent = type;
 				autocompletion_button.appendChild(type_span);
 
-				autocompletion_button.addEventListener("mousedown", ev => {
+				autocompletion_button.addEventListener("click", ev => {
 					ev.preventDefault();
 					this.#_update_value(df64v);
 					this.#_on_val_input_change(); //blur *MAY* also trigger change event (not consistent, depends on browser and if input field was typed in or backspaced in, etc.)
@@ -259,11 +294,23 @@ export class DynamicF64Input extends HTMLElement {
 				autoaction = false;
 			}
 
-			if (user_params.includes(this.#_val_input.value)) {
-				insert_autocompletion({ type: "dynamic", value: this.#_val_input.value }, { autoaction });
+			if (df64v.type === "formula") {
+				insert_autocompletion(df64v, { autoaction });
 				autoaction = false;
-			} else if (this.#_val_input.value !== "" && df64v.type !== "f64") { //dont show creation for empty string or param names that can be parsed as f64. Creation of these is technically still allowed (by the json format, and elsewhere in gui, but we will not allow it here to reduce confusion)
-				insert_autocompletion({ type: "dynamic", value: this.#_val_input.value }, { type: "create new parameter", autoaction });
+			}
+
+			//todo: show formula creation autocompletion
+			if (user_params.includes(this.#_val_input.value)) {
+				insert_autocompletion({ type: "param", value: this.#_val_input.value }, { autoaction });
+				autoaction = false;
+			} else if (!( // dont show parameter creation for
+				this.#_val_input.value === "" || // empty string
+				df64v.type !== "f64" || // param names that can be parsed as f64
+				this.#_val_input.value.includes("`") // param names that include the formula param name delimiter
+				//
+				// Creation of these is technically still allowed (by the json format, and elsewhere in gui, but we will not allow it here to reduce confusion)
+			)) {
+				insert_autocompletion({ type: "param", value: this.#_val_input.value }, { type: "create new parameter", autoaction });
 				autoaction = false;
 			}
 		}
@@ -272,7 +319,7 @@ export class DynamicF64Input extends HTMLElement {
 			p.toLocaleLowerCase().includes(this.#_val_input.value.toLocaleLowerCase()) &&
 			p !== this.#_val_input.value
 		).forEach(p => {
-			insert_autocompletion({ type: "dynamic", value: p });
+			insert_autocompletion({ type: "param", value: p });
 		});
 
 	}

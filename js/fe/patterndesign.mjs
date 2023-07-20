@@ -3,8 +3,9 @@
 /** @typedef {import("../../../shared/types").MidAirHapticsClipboardFormat} MidAirHapticsClipboardFormat */
 /** @typedef {import("../../../shared/types").PatternTransformation} PatternTransformation */
 /** @typedef {import("../../../shared/types").ConditionalJump} ConditionalJump */
+/** @typedef {import("../../../shared/types").ATFormula} ATFormula */
 /** @typedef {import("../../../shared/types").MAHUserParameterDefinition} MAHUserParameterDefinition */
-/** @typedef {import("../../../external/pattern_evaluator/rs-shared-types").MAHDynamicF64} MAHDynamicF64 */
+/** @typedef {import("../../external/pattern_evaluator/rs-shared-types").MAHDynamicF64} MAHDynamicF64 */
 /** @typedef {import("./keyframes/index.mjs").MAHKeyframeFE} MAHKeyframeFE */
 /** @typedef {import("../pattern-evaluator.mjs").PatternEvaluatorParameters} PatternEvaluatorParameters */
 /** @typedef {import("../pattern-evaluator.mjs").NextEvalParams} NextEvalParams */
@@ -22,11 +23,11 @@
  */
 
 /** @type {import("../../../shared/types").REVISION_STRING} */
-const MAH_$REVISION = "0.0.10-alpha.1";
+const MAH_$REVISION = "0.1.0-alpha.2";
 
 /**
  * @typedef {{
- *   items: { keyframes: MAHKeyframeFE[], pattern_transform: boolean },
+ *   items: { keyframes: Set<MAHKeyframeFE>, pattern_transform: boolean },
  *   prop_parents: { cjumps: ConditionalJump[], dynf64: MAHDynamicF64[] },
  *   cjump_to_kf_map: Map<ConditionalJump, MAHKeyframeFE>,
  * 	 unused: boolean,
@@ -141,6 +142,7 @@ export class MAHPatternDesignFE {
 		this.pattern_evaluator = new PatternEvaluator(this.filedata);
 		this.state_change_events.addEventListener("commit_update", ev => {
 			if (ev.detail.committed) {
+				this.pattern_evaluator?.free();
 				this.pattern_evaluator = new PatternEvaluator(this.filedata);
 				this.websocket?.update_pattern(this.filedata);
 				this.#_eval_pattern();
@@ -611,6 +613,81 @@ export class MAHPatternDesignFE {
 		this.commit_operation({ user_param_definitions: [param_name] });
 	}
 
+
+	/**
+	 * @param {MAHKeyframe} keyframe
+	 * @return {Set<MAHDynamicF64>}
+	 */
+	get_dynf64_from_keyframe(keyframe) {
+		/** @type {(mah_dyn_f64: MAHDynamicF64 | null) => boolean} */
+		const verify_mah_dynamic_f64 = (mah_dyn_f64) => {
+			if (!mah_dyn_f64) return false;
+			switch (mah_dyn_f64.type) {
+				case "param": return typeof mah_dyn_f64.value == "string";
+				case "f64": return typeof mah_dyn_f64.value == "number";
+				case "formula": return typeof mah_dyn_f64.value == "object";
+				default: try { assert_unreachable(mah_dyn_f64); } catch (e) { return false; }
+			}
+		};
+		return PARSED_JSON_SCHEMA.get_wanted_from_paths(keyframe, MAH_DYNAMIC_F64_PATHS, verify_mah_dynamic_f64);
+	}
+
+	/**
+	 *
+	 * @param {ATFormula} at_formula
+	 * @returns
+	 */
+	#_get_params_from_at_formula(at_formula) {
+		/** @type {Set<string>} */
+		const param_name_set = new Set();
+		/** @type {Set<ATFormula>} */
+		const parameter_atf_set = new Set();
+		this.#_get_params_from_at_formula_internal(at_formula, param_name_set, parameter_atf_set);
+		return { param_name_set, parameter_atf_set };
+	}
+	/**
+	 *
+	 * @param {ATFormula} at_formula
+	 * @param {Set<string>} param_name_set
+	 * @param {Set<ATFormula>} parameter_atf_set
+	 */
+	#_get_params_from_at_formula_internal(at_formula, param_name_set, parameter_atf_set) {
+		switch (at_formula.type) {
+			case "constant": break;
+			case "parameter": {
+				param_name_set.add(at_formula.value);
+				parameter_atf_set.add(at_formula);
+				break;
+			}
+			case "add": case "subtract": case "multiply": case "divide": {
+				this.#_get_params_from_at_formula_internal(at_formula.value[0], param_name_set, parameter_atf_set);
+				this.#_get_params_from_at_formula_internal(at_formula.value[1], param_name_set, parameter_atf_set);
+				break;
+			}
+			default: assert_unreachable(at_formula);
+		}
+	}
+	/**
+	 *
+	 * @param {MAHDynamicF64} mah_dyn_f64
+	 * @returns {string[]}
+	 */
+	get_params_from_dynf64(mah_dyn_f64) {
+		switch (mah_dyn_f64.type) {
+			case "param": {
+				const param_name = mah_dyn_f64.value;
+				return [param_name];
+			}
+			case "f64": return [];
+			case "formula": {
+				const at_formula = mah_dyn_f64.value;
+				const { param_name_set } = this.#_get_params_from_at_formula(at_formula);
+				return [...param_name_set];
+			}
+			default: assert_unreachable(mah_dyn_f64);
+		}
+	}
+
 	get_user_parameters_to_linked_map() {
 		/** @type {Map<string, UserParamLinked>} */
 		const uparam_to_linked_map = new Map();
@@ -620,7 +697,7 @@ export class MAHPatternDesignFE {
 
 			/** @type {UserParamLinked} */
 			const new_up_linked = {
-				items: { keyframes: [], pattern_transform: false },
+				items: { keyframes: new Set(), pattern_transform: false },
 				prop_parents: { cjumps: [], dynf64: [] },
 				cjump_to_kf_map: new Map(),
 				unused: true,
@@ -637,7 +714,7 @@ export class MAHPatternDesignFE {
 					const param_name = cjump.condition.parameter;
 					if (param_name) {
 						const up_linked = get_up_linked_or_default(param_name);
-						up_linked.items.keyframes.push(keyframe);
+						up_linked.items.keyframes.add(keyframe);
 						up_linked.prop_parents.cjumps.push(cjump);
 						up_linked.cjump_to_kf_map.set(cjump, keyframe);
 					}
@@ -661,8 +738,8 @@ export class MAHPatternDesignFE {
 		];
 
 		for (const mah_dyn_f64 of PATTERN_TRANSFORM_DYN_F64_LIST) {
-			if (mah_dyn_f64.type == "dynamic") {
-				const param_name = mah_dyn_f64.value;
+			const params = this.get_params_from_dynf64(mah_dyn_f64);
+			for (const param_name of params) {
 				const up_linked = get_up_linked_or_default(param_name);
 				up_linked.items.pattern_transform = true;
 				up_linked.prop_parents.dynf64.push(mah_dyn_f64);
@@ -671,17 +748,12 @@ export class MAHPatternDesignFE {
 
 
 		for (const keyframe of this.filedata.keyframes) {
-			const mah_dyn_f64s = PARSED_JSON_SCHEMA.get_wanted_from_paths(keyframe, MAH_DYNAMIC_F64_PATHS, (mah_dyn_f64) => {
-				return mah_dyn_f64 && (
-					(mah_dyn_f64.type == "dynamic" && typeof mah_dyn_f64.value == "string") ||
-					(mah_dyn_f64.type == "f64" && typeof mah_dyn_f64.value == "number")
-				);
-			});
+			const mah_dyn_f64s = this.get_dynf64_from_keyframe(keyframe);
 			for (const mah_dyn_f64 of mah_dyn_f64s) {
-				if (mah_dyn_f64.type == "dynamic") {
-					const param_name = mah_dyn_f64.value;
+				const params = this.get_params_from_dynf64(mah_dyn_f64);
+				for (const param_name of params) {
 					const up_linked = get_up_linked_or_default(param_name);
-					up_linked.items.keyframes.push(keyframe);
+					up_linked.items.keyframes.add(keyframe);
 					up_linked.prop_parents.dynf64.push(mah_dyn_f64);
 				}
 			}
@@ -769,7 +841,19 @@ export class MAHPatternDesignFE {
 					cj.condition.parameter = new_name;
 				}
 				for (const dynf64 of up_linked.prop_parents.dynf64) {
-					dynf64.value = new_name;
+					switch (dynf64.type) {
+						case "f64": throw new Error("unreachable");
+						case "param": dynf64.value = new_name; break;
+						case "formula": {
+							const { parameter_atf_set } = this.#_get_params_from_at_formula(dynf64.value);
+							for (const atf of parameter_atf_set) {
+								if (atf.type == "parameter") atf.value = new_name;
+								else throw new Error("unreachable");
+							}
+							break;
+						}
+						default: assert_unreachable(dynf64);
+					}
 				}
 			} else { //delete at usage
 				for (const cj of up_linked.prop_parents.cjumps) {
@@ -779,8 +863,28 @@ export class MAHPatternDesignFE {
 					} else throw new Error("bad cjump->kf map");
 				}
 				for (const dynf64 of up_linked.prop_parents.dynf64) {
-					dynf64.type = "f64";
-					dynf64.value = old_value || 0;
+					switch (dynf64.type) {
+						case "f64": throw new Error("unreachable");
+						case "param": {
+							const dynf64_cast = /** @type {MAHDynamicF64} */ (dynf64);
+							dynf64_cast.type = "f64";
+							dynf64_cast.value = old_value || 0;
+							break;
+						}
+						case "formula": {
+							const { parameter_atf_set } = this.#_get_params_from_at_formula(dynf64.value);
+							for (const atf of parameter_atf_set) {
+								if (atf.type == "parameter") {
+									const atf_cast = /** @type {ATFormula} */ (atf);
+									atf_cast.type = "constant";
+									atf_cast.value = old_value || 0;
+								}
+								else throw new Error("unreachable");
+							}
+							break;
+						}
+						default: assert_unreachable(dynf64);
+					}
 				}
 			}
 		}
@@ -815,9 +919,8 @@ export class MAHPatternDesignFE {
 	 * @returns {number}
 	 */
 	resolve_dynamic_f64(dynf64) {
-		if (dynf64.type == "f64") return dynf64.value;
-		else if (dynf64.type == "dynamic") return this.evaluator_params.user_parameters.get(dynf64.value) ?? this.filedata.user_parameter_definitions[dynf64.value].default ?? 0;
-		else assert_unreachable(dynf64);
+		//if (dynf64.type == "f64") return dynf64.value; // fast path for static values # enable this if slow
+		return PatternEvaluator.dynf64_to_f64(dynf64, this.evaluator_params.user_parameters, this.filedata.user_parameter_definitions);
 	}
 
 
@@ -892,12 +995,7 @@ export class MAHPatternDesignFE {
 
 		/** @type {Set<string>} */
 		const copied_parameters = new Set(copied_keyframes.flatMap(keyframe =>
-			PARSED_JSON_SCHEMA.get_wanted_from_paths(keyframe, MAH_DYNAMIC_F64_PATHS, (mah_dyn_f64) => {
-				return mah_dyn_f64 && (
-					(mah_dyn_f64.type == "dynamic" && typeof mah_dyn_f64.value == "string")
-					//|| (mah_dyn_f64.type == "f64" && typeof mah_dyn_f64.value == "number")
-				);
-			}).map(df64 => df64.value)
+			[...this.get_dynf64_from_keyframe(keyframe)].map(df64 => this.get_params_from_dynf64(df64)).flat()
 		));
 		const copied_param_defs = Object.fromEntries(
 			[...copied_parameters].map(param_name => [param_name, this.filedata.user_parameter_definitions[param_name]])
@@ -976,11 +1074,14 @@ export class MAHPatternDesignFE {
 
 
 	/**
-	 * @param {MidAirHapticsAnimationFileFormat} filedata
+	 * @param {MidAirHapticsAnimationFileFormat} filedata_raw
 	 */
-	load_filedata_into_fe_format(filedata) {
-		if (filedata.$DATA_FORMAT != "MidAirHapticsAnimationFileFormat") throw new Error(`incorrect $DATA_FORMAT ${filedata.$DATA_FORMAT} expected ${"MidAirHapticsAnimationFileFormat"}`);
-		if (filedata.$REVISION != MAH_$REVISION) throw new Error(`incorrect revision ${filedata.$REVISION} expected ${MAH_$REVISION}`);
+	load_filedata_into_fe_format(filedata_raw) {
+		if (filedata_raw.$DATA_FORMAT != "MidAirHapticsAnimationFileFormat") throw new Error(`incorrect $DATA_FORMAT ${filedata_raw.$DATA_FORMAT} expected ${"MidAirHapticsAnimationFileFormat"}`);
+
+		//if (filedata.$REVISION != MAH_$REVISION) throw new Error(`incorrect revision ${filedata.$REVISION} expected ${MAH_$REVISION}`);
+		const filedata = PatternEvaluator.try_parse_into_latest_version(filedata_raw); // verify valid or convertible version of filedata, return converted
+
 		const keyframesFE = filedata.keyframes.map(kf => create_correct_keyframefe_wrapper(kf, this));
 		const filedataFE = { ...filedata, keyframes: keyframesFE };
 		return filedataFE;

@@ -22,6 +22,159 @@
   "maxItems": 4,
   "minItems": 4,
   "definitions": {
+    "ATFormula": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "value"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "constant"
+              ]
+            },
+            "value": {
+              "type": "number",
+              "format": "double"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "value"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "parameter"
+              ]
+            },
+            "value": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "value"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "add"
+              ]
+            },
+            "value": {
+              "type": "array",
+              "items": [
+                {
+                  "$ref": "#/definitions/ATFormula"
+                },
+                {
+                  "$ref": "#/definitions/ATFormula"
+                }
+              ],
+              "maxItems": 2,
+              "minItems": 2
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "value"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "subtract"
+              ]
+            },
+            "value": {
+              "type": "array",
+              "items": [
+                {
+                  "$ref": "#/definitions/ATFormula"
+                },
+                {
+                  "$ref": "#/definitions/ATFormula"
+                }
+              ],
+              "maxItems": 2,
+              "minItems": 2
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "value"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "multiply"
+              ]
+            },
+            "value": {
+              "type": "array",
+              "items": [
+                {
+                  "$ref": "#/definitions/ATFormula"
+                },
+                {
+                  "$ref": "#/definitions/ATFormula"
+                }
+              ],
+              "maxItems": 2,
+              "minItems": 2
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "value"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "divide"
+              ]
+            },
+            "value": {
+              "type": "array",
+              "items": [
+                {
+                  "$ref": "#/definitions/ATFormula"
+                },
+                {
+                  "$ref": "#/definitions/ATFormula"
+                }
+              ],
+              "maxItems": 2,
+              "minItems": 2
+            }
+          }
+        }
+      ]
+    },
     "BrushAtAnimLocalTime": {
       "type": "object",
       "required": [
@@ -95,7 +248,7 @@
     "DataFormatRevision": {
       "type": "string",
       "enum": [
-        "0.0.10-alpha.1"
+        "0.1.0-alpha.2"
       ]
     },
     "GeometricTransformMatrix": {
@@ -402,7 +555,7 @@
             "type": {
               "type": "string",
               "enum": [
-                "dynamic"
+                "param"
               ]
             },
             "value": {
@@ -427,6 +580,25 @@
             "value": {
               "type": "number",
               "format": "double"
+            }
+          }
+        },
+        {
+          "description": "Formula",
+          "type": "object",
+          "required": [
+            "type",
+            "value"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "formula"
+              ]
+            },
+            "value": {
+              "$ref": "#/definitions/ATFormula"
             }
           }
         }

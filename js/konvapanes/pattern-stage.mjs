@@ -373,13 +373,12 @@ export class KonvaPatternStage extends KonvaResizeStage {
 	 * @param {{ x: number, y: number, apply_geo_transform: boolean }} coords
 	 */
 	pattern_coords_to_layer_coords({ x, y, apply_geo_transform }) {
-		const geo_applied = PatternEvaluator.geo_transform_simple_apply(
+		const pre_sandp = apply_geo_transform ? PatternEvaluator.geo_transform_simple_apply(
 			this.pattern_design.filedata.pattern_transform.geometric_transforms,
 			{ x, y, z: 0 },
 			this.pattern_design.evaluator_params.user_parameters,
 			this.pattern_design.filedata.user_parameter_definitions
-		);
-		const pre_sandp = apply_geo_transform ? { x: geo_applied.x, y: geo_applied.y, } : { x, y, };
+		) : { x, y, };
 		const scaled_and_padded = {
 			x: ((pre_sandp.x - BoundsCheck.raw.coords.x.min)/(BoundsCheck.raw.coords.x.max-BoundsCheck.raw.coords.x.min)*this.pattern_square_size) + this.pattern_padding,
 			y: (this.pattern_square_size - (pre_sandp.y - BoundsCheck.raw.coords.y.min)/(BoundsCheck.raw.coords.y.max-BoundsCheck.raw.coords.y.min)*this.pattern_square_size) + this.pattern_padding,

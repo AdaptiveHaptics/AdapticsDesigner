@@ -1,0 +1,16 @@
+{
+  "name": "adaptics-pattern-evaluator",
+  "description": "Low-level evaluation for Adaptics patterns",
+  "version": "0.5.1",
+  "license": "MPL-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AdaptiveHaptics/AdapticsEngine"
+  },
+  "module": "pattern_evaluator.js",
+  "homepage": "https://github.com/AdaptiveHaptics",
+  "types": "pattern_evaluator.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}

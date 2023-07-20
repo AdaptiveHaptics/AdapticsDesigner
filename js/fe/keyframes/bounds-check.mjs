@@ -9,7 +9,7 @@ export class BoundsCheck {
 
 	/**
 	 *
-	 * @param {import("../../../../shared/types").MAHCoords} coords
+	 * @param {import("../../../external/pattern_evaluator/rs-shared-types").MAHCoordsConst} coords
 	 */
 	static coords(coords) {
 		const new_coords = {

@@ -616,7 +616,7 @@ export class MAHPatternDesignFE {
 
 	/**
 	 * @param {MAHKeyframe} keyframe
-	 * @return {MAHDynamicF64[]}
+	 * @return {Set<MAHDynamicF64>}
 	 */
 	get_dynf64_from_keyframe(keyframe) {
 		/** @type {(mah_dyn_f64: MAHDynamicF64 | null) => boolean} */
@@ -995,7 +995,7 @@ export class MAHPatternDesignFE {
 
 		/** @type {Set<string>} */
 		const copied_parameters = new Set(copied_keyframes.flatMap(keyframe =>
-			this.get_dynf64_from_keyframe(keyframe).map(df64 => this.get_params_from_dynf64(df64)).flat()
+			[...this.get_dynf64_from_keyframe(keyframe)].map(df64 => this.get_params_from_dynf64(df64)).flat()
 		));
 		const copied_param_defs = Object.fromEntries(
 			[...copied_parameters].map(param_name => [param_name, this.filedata.user_parameter_definitions[param_name]])

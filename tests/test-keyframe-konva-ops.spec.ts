@@ -1,4 +1,5 @@
-import { test, expect, Page, Locator } from '@playwright/test';
+import { expect, Page, Locator } from '@playwright/test';
+import { test_check_no_errors, reset_konva_dblclick } from './util';
 
 async function click_and_drag_on_canvas(
 	page: Page, el: Locator,
@@ -22,12 +23,9 @@ async function click_and_drag_on_canvas(
 	}
 }
 
-async function reset_konva_dblclick(page: Page) {
-	//await page.waitForTimeout(500); // wait for konva timer to expire
-	await page.evaluate(() => { window["Konva"]._mouseInDblClickWindow = window["Konva"]._pointerInDblClickWindow = window["Konva"]._touchInDblClickWindow = false; });
-}
-
-test('test keyframe operations in pattern pane', async ({ page }) => {
+test_check_no_errors('test keyframe operations in pattern pane', async ({ page }) => {
+	page.setDefaultNavigationTimeout(8000);
+  	page.setDefaultTimeout(1500);
 	await page.goto('/');
 
 	{ //test pattern pane creation

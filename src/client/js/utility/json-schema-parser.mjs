@@ -93,10 +93,10 @@ export class ParseJSONSchema {
 	 * @param {any} object_of_type
 	 * @param {(XAJSPath|undefined)[]} wanted_paths_for_type
 	 * @param {(obj: any) => boolean} verify_wanted
-	 * @return {any[]}
+	 * @return {Set<any>}
 	 */
 	get_wanted_from_paths(object_of_type, wanted_paths_for_type, verify_wanted) {
-		return  wanted_paths_for_type.flatMap(path => this.#_get_wanted_from_path(object_of_type, path, verify_wanted));
+		return new Set(wanted_paths_for_type.flatMap(path => this.#_get_wanted_from_path(object_of_type, path, verify_wanted)));
 	}
 
 	/**

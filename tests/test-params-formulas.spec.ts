@@ -20,7 +20,8 @@ async function check_radius(page: Page) {
 };
 
 test('check if formulas show in user param pane', async ({ page }) => {
-  // page.setDefaultTimeout(1000); # just keeping default for now
+  page.setDefaultNavigationTimeout(8000);
+  page.setDefaultTimeout(1500);
 
   await page.goto('/');
   await setup_radius_formula(page);
@@ -52,7 +53,8 @@ test('check if formulas show in user param pane', async ({ page }) => {
 });
 
 test('check parameter in formula rename', async ({ page }) => {
-  // page.setDefaultTimeout(1000); # just keeping default for now
+  page.setDefaultNavigationTimeout(8000);
+  page.setDefaultTimeout(1500);
 
   await page.goto('/');
   await setup_radius_formula(page);

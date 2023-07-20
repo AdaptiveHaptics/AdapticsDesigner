@@ -1,17 +1,19 @@
 {
   "dependencies": {
+    "adaptics-pattern-evaluator": "^0.5.0",
     "konva": "8.3.14",
     "sortablejs": "1.15.0",
-    "split-grid": "1.0.11",
-    "adaptics-pattern-evaluator": "^0.5.0"
+    "split-grid": "1.0.11"
   },
   "devDependencies": {
     "@playwright/test": "^1.36.1",
     "@types/json-schema": "^7.0.12",
     "@types/wicg-file-system-access": "^2020.9.6",
-    "eslint": "^8.30.0"
+    "eslint": "^8.30.0",
+    "http-server": "^14.1.1"
   },
   "scripts": {
-    "check-types": "tsc --noEmit -p jsconfig.json"
+    "check-types": "tsc --noEmit -p jsconfig.json",
+    "start": "http-server src/client -p8000 -c-1"
   }
 }

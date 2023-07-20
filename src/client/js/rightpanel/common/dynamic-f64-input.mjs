@@ -75,16 +75,31 @@ export class DynamicF64Input extends HTMLElement {
 			if (ev.key === "Escape") {
 				this.#_reset_value();
 				this.#_blur_delayed();
+				return;
 			}
+
+			if (ev.key === "Enter") {
+				// select autoaction autocompletion if there is one
+				/** @type {HTMLButtonElement | null} */
+				const autoaction = this.#_autocomplete_div.querySelector(".autoaction");
+				if (autoaction) {
+					ev.preventDefault();
+					autoaction.click();
+				}
+				return;
+			}
+
 			if (value && value.type === "f64") {
 				if (ev.key === "ArrowUp") {
 					this.#_val_input.value = num_to_rounded_string(value.value + this.#_step);
 					this.#_on_val_input_change(); // constrain, set
 					ev.preventDefault();
+					return;
 				} else if (ev.key === "ArrowDown") {
 					this.#_val_input.value = num_to_rounded_string(value.value - this.#_step);
 					this.#_on_val_input_change(); // constrain, set
 					ev.preventDefault();
+					return;
 				}
 			}
 		});
@@ -256,7 +271,7 @@ export class DynamicF64Input extends HTMLElement {
 				type_span.textContent = type;
 				autocompletion_button.appendChild(type_span);
 
-				autocompletion_button.addEventListener("mousedown", ev => {
+				autocompletion_button.addEventListener("click", ev => {
 					ev.preventDefault();
 					this.#_update_value(df64v);
 					this.#_on_val_input_change(); //blur *MAY* also trigger change event (not consistent, depends on browser and if input field was typed in or backspaced in, etc.)
@@ -288,7 +303,13 @@ export class DynamicF64Input extends HTMLElement {
 			if (user_params.includes(this.#_val_input.value)) {
 				insert_autocompletion({ type: "param", value: this.#_val_input.value }, { autoaction });
 				autoaction = false;
-			} else if (this.#_val_input.value !== "" && df64v.type !== "f64") { //dont show creation for empty string or param names that can be parsed as f64. Creation of these is technically still allowed (by the json format, and elsewhere in gui, but we will not allow it here to reduce confusion)
+			} else if (!( // dont show parameter creation for
+				this.#_val_input.value === "" || // empty string
+				df64v.type !== "f64" || // param names that can be parsed as f64
+				this.#_val_input.value.includes("`") // param names that include the formula param name delimiter
+				//
+				// Creation of these is technically still allowed (by the json format, and elsewhere in gui, but we will not allow it here to reduce confusion)
+			)) {
 				insert_autocompletion({ type: "param", value: this.#_val_input.value }, { type: "create new parameter", autoaction });
 				autoaction = false;
 			}

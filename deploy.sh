@@ -2,6 +2,8 @@ set -ex
 
 tsc --project ./jsconfig.json
 
+npx playwright test --reporter list
+
 license-checker license-checker --production --customPath licenseText --json > ./ThirdPartyNotices.json
 node <<EOF
 const fs = require("fs");

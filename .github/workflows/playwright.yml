@@ -20,7 +20,7 @@ jobs:
     # - name: Install Playwright Browsers # not needed with container image above
     #   run: npx playwright install --with-deps
     - name: Run Playwright tests
-      run: npx playwright test
+      run: HOME=/root npx playwright test # HOME=/root because firefox: `Running Nightly as root in a regular user's session is not supported`
     - uses: actions/upload-artifact@v3
       if: always()
       with:

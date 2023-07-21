@@ -111,11 +111,34 @@ test_check_no_errors('delete param with multiple keyframes', async ({ page }) =>
   // await page.getByRole('button', { name: 'delete_forever' }).click();
   // await page.getByRole('button', { name: 'delete_forever' }).click();
   const dialog_p = new Promise(res => page.once('dialog', dialog => {
-    console.log(dialog.message());
     expect(dialog.message()).toBe("Delete parameter 'radiusnew'?");
     res(dialog.accept());
   }));
   await page.getByRole('button', { name: 'delete_forever' }).click();
   await dialog_p;
   // check error_messages == [] in test_check_no_errors
+});
+
+test_check_no_errors('check autocomplete buttons work', async ({ page }) => {
+  page.setDefaultNavigationTimeout(8000);
+  page.setDefaultTimeout(1500);
+
+  await page.goto('/');
+  await page.locator('canvas').nth(3).click({
+    position: {
+      x: 112,
+      y: 202
+    }
+  });
+  await page.locator('.timeline').press('Control+a');
+
+  await page.getByText('alt_routeConditional Jump').click();
+  await page.getByRole('button', { name: '+ Add Conditional Jump' }).click();
+  await page.getByText('brushBrush').click();
+  await page.getByLabel('am_freq hz').click();
+  await page.getByLabel('am_freq hz').fill('turbulence');
+  await page.locator('dynamic-f64-input').filter({ hasText: 'fooparameter' }).getByRole('textbox').click();
+  await page.locator('dynamic-f64-input').filter({ hasText: 'fooparameter' }).getByRole('textbox').fill('tu');
+  await page.getByRole('button', { name: 'turbulence parameter' }).click();
+  await expect(await page.locator('div.cjump dynamic-f64-input input').nth(0)).toHaveValue('turbulence');
 });

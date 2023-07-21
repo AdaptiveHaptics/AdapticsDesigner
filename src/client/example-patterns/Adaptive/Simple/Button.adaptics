@@ -1,6 +1,6 @@
 {
 	"$DATA_FORMAT": "MidAirHapticsAnimationFileFormat",
-	"$REVISION": "0.0.10-alpha.1",
+	"$REVISION": "0.1.0-alpha.2",
 	"name": "untitled",
 	"keyframes": [
 		{
@@ -30,7 +30,7 @@
 					"name": "constant",
 					"params": {
 						"value": {
-							"type": "dynamic",
+							"type": "param",
 							"value": "proximity"
 						}
 					}
@@ -94,11 +94,11 @@
 				{
 					"condition": {
 						"parameter": "proximity",
+						"value": 1,
 						"operator": {
 							"name": "lt",
 							"params": {}
-						},
-						"value": 1
+						}
 					},
 					"jump_to": 0
 				}
@@ -112,8 +112,29 @@
 					"name": "circle",
 					"params": {
 						"radius": {
-							"type": "dynamic",
-							"value": "activation"
+							"type": "formula",
+							"value": {
+								"type": "add",
+								"value": [
+									{
+										"type": "multiply",
+										"value": [
+											{
+												"type": "parameter",
+												"value": "activation"
+											},
+											{
+												"type": "constant",
+												"value": 15
+											}
+										]
+									},
+									{
+										"type": "constant",
+										"value": 15
+									}
+								]
+							}
 						},
 						"am_freq": {
 							"type": "f64",
@@ -151,8 +172,29 @@
 					"name": "circle",
 					"params": {
 						"radius": {
-							"type": "dynamic",
-							"value": "activation"
+							"type": "formula",
+							"value": {
+								"type": "add",
+								"value": [
+									{
+										"type": "multiply",
+										"value": [
+											{
+												"type": "parameter",
+												"value": "activation"
+											},
+											{
+												"type": "constant",
+												"value": 15
+											}
+										]
+									},
+									{
+										"type": "constant",
+										"value": 15
+									}
+								]
+							}
 						},
 						"am_freq": {
 							"type": "f64",
@@ -184,22 +226,22 @@
 				{
 					"condition": {
 						"parameter": "proximity",
+						"value": 1,
 						"operator": {
 							"name": "lt",
 							"params": {}
-						},
-						"value": 1
+						}
 					},
 					"jump_to": 0
 				},
 				{
 					"condition": {
 						"parameter": "activation",
+						"value": 1,
 						"operator": {
 							"name": "lt",
 							"params": {}
-						},
-						"value": 30
+						}
 					},
 					"jump_to": 400
 				}
@@ -333,17 +375,17 @@
 		}
 	},
 	"user_parameter_definitions": {
-		"proximity": {
+		"activation": {
 			"default": 0,
 			"min": 0,
 			"max": 1,
 			"step": 0.05
 		},
-		"activation": {
-			"default": 15,
-			"min": 15,
-			"max": 30,
-			"step": 1
+		"proximity": {
+			"default": 0,
+			"min": 0,
+			"max": 1,
+			"step": 0.05
 		}
 	}
 }

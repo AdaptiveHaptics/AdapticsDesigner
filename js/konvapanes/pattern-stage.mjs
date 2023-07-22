@@ -187,6 +187,9 @@ export class KonvaPatternStage extends KonvaResizeStage {
 		pattern_design.state_change_events.addEventListener("pattern_transform_update", ev => {
 			if (ev.detail.geo_transform) this.update_pattern_geo_transform();
 		});
+		pattern_design.state_change_events.addEventListener("parameters_update", ev => {
+			if (!ev.detail.time) this.update_pattern_geo_transform();
+		});
 
 
 		this.render_design();

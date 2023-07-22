@@ -20,7 +20,9 @@ export class DynamicF64Input extends HTMLElement {
 	#_min;
 	#_max;
 	/** @type {MAHDynamicF64 | null} */
-	#_last_value = null;
+	#_last_update_value = null;
+	/** @type {MAHDynamicF64 | null} */
+	#_last_input_change_value = null;
 	#_paramonly;
 
 	/**
@@ -157,8 +159,9 @@ export class DynamicF64Input extends HTMLElement {
 			if (!this.#_get) throw new Error("Cannot auto update value without getter");
 			v = this.#_get();
 		}
-		this.#_update_value(v);
-		this.#_last_value = window.structuredClone(v);
+		this.#_update_input_value(v);
+		this.#_last_update_value = window.structuredClone(v);
+		this.#_last_input_change_value = window.structuredClone(v);
 	}
 	/**
 	 * Internal function to set the value of the input element.
@@ -167,8 +170,8 @@ export class DynamicF64Input extends HTMLElement {
 	 *
 	 * @param {MAHDynamicF64 | null} v
 	 */
-	#_update_value(v) {
-		const no_change = deep_equals(this.#_last_value, v);
+	#_update_input_value(v) {
+		const no_change = deep_equals(this.#_last_update_value, v) && deep_equals(this.#_last_input_change_value, v); // update either way, as it is no cost
 		if (v === null) {
 			this.#_val_input.value = "";
 		} else {
@@ -181,7 +184,7 @@ export class DynamicF64Input extends HTMLElement {
 	}
 
 	#_reset_value() {
-		this.update_value(this.#_last_value);
+		this.update_value(this.#_last_update_value);
 	}
 
 	/**
@@ -224,12 +227,14 @@ export class DynamicF64Input extends HTMLElement {
 
 	#_on_val_input_change() {
 		const df64v = this.#_parse_input_value();
-		const no_change = deep_equals(this.#_last_value, df64v);
+		const no_change = deep_equals(this.#_last_update_value, df64v) || deep_equals(this.#_last_input_change_value, df64v); // dont send if no change, or al0ready sent change
 		if (no_change) return; // prevent emitting event on no change (fix for clicking on an autocompletion triggering #_on_val_input_change() and a change event on the htmlinputelement (because of blur) in some cases) see that comment below for more info.
 		if (df64v === null) {
 			this.#_reset_value();
 			return; // no change
 		}
+
+		this.#_last_input_change_value = window.structuredClone(df64v);
 
 		this.dispatchEvent(new Event("change", { bubbles: true }));
 		if (this.#_set) {
@@ -271,12 +276,14 @@ export class DynamicF64Input extends HTMLElement {
 				type_span.textContent = type;
 				autocompletion_button.appendChild(type_span);
 
-				autocompletion_button.addEventListener("click", ev => {
+				const onclick = ev => {
 					ev.preventDefault();
-					this.#_update_value(df64v);
-					this.#_on_val_input_change(); //blur *MAY* also trigger change event (not consistent, depends on browser and if input field was typed in or backspaced in, etc.)
+					this.#_update_input_value(df64v);
+					this.#_on_val_input_change(); //blur *MAY* also trigger change event (and _on_val_input_change) (not consistent, depends on browser and if input field was typed in or backspaced in, etc.)
 					this.#_blur_delayed();
-				});
+				};
+				autocompletion_button.addEventListener("mousedown", onclick);
+				autocompletion_button.addEventListener("click", onclick);
 
 				this.#_autocomplete_div.appendChild(autocompletion_button);
 			}
@@ -305,7 +312,7 @@ export class DynamicF64Input extends HTMLElement {
 				autoaction = false;
 			} else if (!( // dont show parameter creation for
 				this.#_val_input.value === "" || // empty string
-				df64v.type !== "f64" || // param names that can be parsed as f64
+				df64v.type === "f64" || // param names that can be parsed as f64
 				this.#_val_input.value.includes("`") // param names that include the formula param name delimiter
 				//
 				// Creation of these is technically still allowed (by the json format, and elsewhere in gui, but we will not allow it here to reduce confusion)

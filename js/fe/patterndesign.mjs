@@ -157,7 +157,11 @@ export class MAHPatternDesignFE {
 			}
 		});
 		this.state_change_events.addEventListener("playstart_update", _ => {
-			this.websocket?.update_playstart(this.#_playstart_timestamp);
+			if (this.websocket) {
+				this.update_pattern_time(this.last_eval[0].pattern_time);
+				this.websocket.update_parameters(this.evaluator_params);
+				this.websocket.update_playstart(this.#_playstart_timestamp);
+			}
 			if (this.is_playing()) {
 				this.#_tick_playback();
 			}

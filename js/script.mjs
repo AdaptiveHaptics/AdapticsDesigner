@@ -388,6 +388,7 @@ const pattern_from_path = (path) => [`Examples/${path}`, load_pattern(`./example
 const design_library = new DesignLibrary(primary_design, file_titlebar_manager, designlibrary_div, new Map([
 	pattern_from_path("Adaptive/Simple/Heartbeat"),
 	pattern_from_path("Adaptive/Simple/Button"),
+	pattern_from_path("Adaptive/Simple/Wind"),
 	pattern_from_path("Adaptive/Unity/Button"),
 	pattern_from_path("Adaptive/Unity/SpaceshipHeartbeat"),
 	pattern_from_path("Non-Adaptive/Checkmark"),

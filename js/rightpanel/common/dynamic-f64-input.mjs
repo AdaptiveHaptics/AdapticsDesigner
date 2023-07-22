@@ -171,7 +171,7 @@ export class DynamicF64Input extends HTMLElement {
 	 * @param {MAHDynamicF64 | null} v
 	 */
 	#_update_input_value(v) {
-		const no_change = deep_equals(this.#_last_update_value, v) && deep_equals(this.#_last_input_change_value, v); // update either way, as it is no cost
+		const no_change = deep_equals(this.#_last_update_value, v) && deep_equals(this.#_last_input_change_value, v); // update either way
 		if (v === null) {
 			this.#_val_input.value = "";
 		} else {
@@ -185,6 +185,7 @@ export class DynamicF64Input extends HTMLElement {
 
 	#_reset_value() {
 		this.update_value(this.#_last_update_value);
+		this.#_update_autocomplete(); // force update autocomplete (may cause extra computation). I think this whole class needs to be reworked with a better state model
 	}
 
 	/**

@@ -154,8 +154,55 @@ test_check_no_errors('test keyframe operations in pattern pane', async ({ page }
 		const keyframes = JSON.parse(await page.evaluate(() => JSON.stringify(window["primary_design"].filedata.keyframes)));
 		expect(keyframes).toEqual(keyframes_expected);
 	}
+});
+
+test_check_no_errors('test parameters update pattern pane geo transform', async ({ page }) => {
+	page.setDefaultNavigationTimeout(8000);
+  	page.setDefaultTimeout(1500);
+	await page.goto('/');
 
 
+ await page.locator('canvas').nth(3).dblclick({
+    position: {
+      x: 448,
+      y: 34
+    }
+  });
+  await reset_konva_dblclick(page);
 
+  await page.getByText('my_location').click();
+  await page.getByLabel('x mm', { exact: true }).click();
+  await page.getByLabel('x mm', { exact: true }).fill('80');
+  await page.getByLabel('y mm', { exact: true }).click();
+  await page.getByLabel('y mm', { exact: true }).fill('0');
+  await page.getByLabel('y mm', { exact: true }).press('Enter');
+  await page.locator('canvas').nth(3).click({
+    position: {
+      x: 51,
+      y: 36
+    }
+  });
+  await page.getByLabel('x mm', { exact: true }).click();
+  await page.getByLabel('x mm', { exact: true }).fill('-80');
+  await page.getByLabel('x mm', { exact: true }).press('Enter');
+
+  await page.getByRole('button', { name: 'lens_blur Post Processing' }).click();
+
+  await page.locator("form.pattern").getByLabel('Rotation deg').click();
+  await page.locator("form.pattern").getByLabel('Rotation deg').fill('rotation');
+  await page.locator("form.pattern").getByLabel('Rotation deg').press('Enter');
+
+  await page.locator('input[name="rotation"]').click();
+  await page.locator('input[name="rotation"]').fill('90');
+  await page.locator('input[name="rotation"]').press('Enter');
+
+  await page.locator('canvas').nth(1).click({
+    position: {
+      x: 217,
+      y: 62
+    }
+  });
+
+  expect(await page.evaluate(() => [...window["primary_design"].selected_keyframes].map(kf => kf.time))).toEqual([1000]);
 
 });

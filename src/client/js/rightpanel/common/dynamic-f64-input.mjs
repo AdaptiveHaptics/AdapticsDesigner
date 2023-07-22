@@ -312,7 +312,7 @@ export class DynamicF64Input extends HTMLElement {
 				autoaction = false;
 			} else if (!( // dont show parameter creation for
 				this.#_val_input.value === "" || // empty string
-				df64v.type !== "f64" || // param names that can be parsed as f64
+				df64v.type === "f64" || // param names that can be parsed as f64
 				this.#_val_input.value.includes("`") // param names that include the formula param name delimiter
 				//
 				// Creation of these is technically still allowed (by the json format, and elsewhere in gui, but we will not allow it here to reduce confusion)

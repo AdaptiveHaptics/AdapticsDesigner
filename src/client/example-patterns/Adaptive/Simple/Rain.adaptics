@@ -1,0 +1,1602 @@
+{
+	"$DATA_FORMAT": "MidAirHapticsAnimationFileFormat",
+	"$REVISION": "0.1.0-alpha.2",
+	"name": "untitled",
+	"keyframes": [
+		{
+			"time": 0,
+			"type": "standard",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "f64",
+							"value": 2
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 1
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"coords": {
+				"coords": {
+					"x": 10,
+					"y": -20,
+					"z": 0
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 150,
+			"type": "pause",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "formula",
+							"value": {
+								"type": "multiply",
+								"value": [
+									{
+										"type": "parameter",
+										"value": "droplet_size"
+									},
+									{
+										"type": "constant",
+										"value": 25
+									}
+								]
+							}
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 550,
+			"type": "standard",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "f64",
+							"value": 2
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 1
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"coords": {
+				"coords": {
+					"x": -35,
+					"y": 10,
+					"z": 0
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 700,
+			"type": "pause",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "formula",
+							"value": {
+								"type": "multiply",
+								"value": [
+									{
+										"type": "parameter",
+										"value": "droplet_size"
+									},
+									{
+										"type": "constant",
+										"value": 25
+									}
+								]
+							}
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 1450,
+			"type": "standard",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "f64",
+							"value": 2
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 1
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"coords": {
+				"coords": {
+					"x": 0,
+					"y": 35,
+					"z": 0
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 1600,
+			"type": "pause",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "formula",
+							"value": {
+								"type": "multiply",
+								"value": [
+									{
+										"type": "parameter",
+										"value": "droplet_size"
+									},
+									{
+										"type": "constant",
+										"value": 25
+									}
+								]
+							}
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 2400,
+			"type": "standard",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "f64",
+							"value": 2
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 1
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"coords": {
+				"coords": {
+					"x": 10,
+					"y": -45,
+					"z": 0
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 2600,
+			"type": "pause",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "formula",
+							"value": {
+								"type": "multiply",
+								"value": [
+									{
+										"type": "parameter",
+										"value": "droplet_size"
+									},
+									{
+										"type": "constant",
+										"value": 25
+									}
+								]
+							}
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 3200,
+			"type": "standard",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "f64",
+							"value": 2
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 1
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"coords": {
+				"coords": {
+					"x": -10,
+					"y": 0,
+					"z": 0
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 3300,
+			"type": "pause",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "formula",
+							"value": {
+								"type": "multiply",
+								"value": [
+									{
+										"type": "parameter",
+										"value": "droplet_size"
+									},
+									{
+										"type": "constant",
+										"value": 25
+									}
+								]
+							}
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 3600,
+			"type": "standard",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "f64",
+							"value": 2
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 1
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"coords": {
+				"coords": {
+					"x": 10,
+					"y": 50,
+					"z": 0
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 3800,
+			"type": "pause",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "formula",
+							"value": {
+								"type": "multiply",
+								"value": [
+									{
+										"type": "parameter",
+										"value": "droplet_size"
+									},
+									{
+										"type": "constant",
+										"value": 25
+									}
+								]
+							}
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 4600,
+			"type": "standard",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "f64",
+							"value": 2
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 1
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"coords": {
+				"coords": {
+					"x": 25,
+					"y": 25,
+					"z": 0
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 4800,
+			"type": "pause",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "formula",
+							"value": {
+								"type": "multiply",
+								"value": [
+									{
+										"type": "parameter",
+										"value": "droplet_size"
+									},
+									{
+										"type": "constant",
+										"value": 25
+									}
+								]
+							}
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 5600,
+			"type": "standard",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "f64",
+							"value": 2
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 1
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"coords": {
+				"coords": {
+					"x": 30,
+					"y": -30,
+					"z": 0
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 5800,
+			"type": "pause",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "formula",
+							"value": {
+								"type": "multiply",
+								"value": [
+									{
+										"type": "parameter",
+										"value": "droplet_size"
+									},
+									{
+										"type": "constant",
+										"value": 25
+									}
+								]
+							}
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 6200,
+			"type": "standard",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "f64",
+							"value": 2
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 1
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"coords": {
+				"coords": {
+					"x": 0,
+					"y": 15,
+					"z": 0
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 6300,
+			"type": "pause",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "formula",
+							"value": {
+								"type": "multiply",
+								"value": [
+									{
+										"type": "parameter",
+										"value": "droplet_size"
+									},
+									{
+										"type": "constant",
+										"value": 25
+									}
+								]
+							}
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 7100,
+			"type": "standard",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "f64",
+							"value": 2
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 1
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"coords": {
+				"coords": {
+					"x": 35,
+					"y": 60,
+					"z": 0
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 7200,
+			"type": "pause",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "formula",
+							"value": {
+								"type": "multiply",
+								"value": [
+									{
+										"type": "parameter",
+										"value": "droplet_size"
+									},
+									{
+										"type": "constant",
+										"value": 25
+									}
+								]
+							}
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 8100,
+			"type": "standard",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "f64",
+							"value": 2
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 1
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"coords": {
+				"coords": {
+					"x": -25,
+					"y": -40,
+					"z": 0
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 8300,
+			"type": "pause",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "formula",
+							"value": {
+								"type": "multiply",
+								"value": [
+									{
+										"type": "parameter",
+										"value": "droplet_size"
+									},
+									{
+										"type": "constant",
+										"value": 25
+									}
+								]
+							}
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 9000,
+			"type": "standard",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "f64",
+							"value": 2
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 1
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"coords": {
+				"coords": {
+					"x": -20,
+					"y": 55,
+					"z": 0
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 9100,
+			"type": "pause",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "formula",
+							"value": {
+								"type": "multiply",
+								"value": [
+									{
+										"type": "parameter",
+										"value": "droplet_size"
+									},
+									{
+										"type": "constant",
+										"value": 25
+									}
+								]
+							}
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 9800,
+			"type": "standard",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "f64",
+							"value": 2
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 1
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"coords": {
+				"coords": {
+					"x": 45,
+					"y": -15,
+					"z": 0
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 9900,
+			"type": "pause",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "formula",
+							"value": {
+								"type": "multiply",
+								"value": [
+									{
+										"type": "parameter",
+										"value": "droplet_size"
+									},
+									{
+										"type": "constant",
+										"value": 25
+									}
+								]
+							}
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 10400,
+			"type": "standard",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "f64",
+							"value": 2
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 1
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"coords": {
+				"coords": {
+					"x": 35,
+					"y": 10,
+					"z": 0
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 10600,
+			"type": "pause",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "formula",
+							"value": {
+								"type": "multiply",
+								"value": [
+									{
+										"type": "parameter",
+										"value": "droplet_size"
+									},
+									{
+										"type": "constant",
+										"value": 25
+									}
+								]
+							}
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 11400,
+			"type": "standard",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "f64",
+							"value": 2
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 1
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"coords": {
+				"coords": {
+					"x": -30,
+					"y": -15,
+					"z": 0
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 11500,
+			"type": "pause",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "formula",
+							"value": {
+								"type": "multiply",
+								"value": [
+									{
+										"type": "parameter",
+										"value": "droplet_size"
+									},
+									{
+										"type": "constant",
+										"value": 25
+									}
+								]
+							}
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": [
+				{
+					"condition": {
+						"parameter": "stop",
+						"value": 1,
+						"operator": {
+							"name": "lt",
+							"params": {}
+						}
+					},
+					"jump_to": 0
+				}
+			]
+		},
+		{
+			"time": 11800,
+			"type": "stop"
+		}
+	],
+	"pattern_transform": {
+		"geometric_transforms": {
+			"translate": {
+				"x": {
+					"type": "f64",
+					"value": 0
+				},
+				"y": {
+					"type": "f64",
+					"value": 0
+				},
+				"z": {
+					"type": "f64",
+					"value": 200
+				}
+			},
+			"rotation": {
+				"type": "f64",
+				"value": 0
+			},
+			"scale": {
+				"x": {
+					"type": "f64",
+					"value": 1
+				},
+				"y": {
+					"type": "f64",
+					"value": 1
+				},
+				"z": {
+					"type": "f64",
+					"value": 1
+				}
+			}
+		},
+		"intensity_factor": {
+			"type": "f64",
+			"value": 1
+		},
+		"playback_speed": {
+			"type": "param",
+			"value": "rainfall_speed"
+		}
+	},
+	"user_parameter_definitions": {
+		"stop": {
+			"default": 0,
+			"min": 0,
+			"max": 1,
+			"step": 1
+		},
+		"droplet_size": {
+			"default": 1,
+			"min": 0.5,
+			"max": 2.5,
+			"step": 0.05
+		},
+		"rainfall_speed": {
+			"default": 1,
+			"min": 0.5,
+			"max": 2.5,
+			"step": 0.1
+		}
+	}
+}

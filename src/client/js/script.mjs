@@ -389,10 +389,12 @@ const design_library = new DesignLibrary(primary_design, file_titlebar_manager, 
 	pattern_from_path("Adaptive/Simple/Heartbeat"),
 	pattern_from_path("Adaptive/Simple/Button"),
 	pattern_from_path("Adaptive/Simple/Wind"),
+	pattern_from_path("Adaptive/Simple/Rain"),
 	pattern_from_path("Adaptive/Unity/Button"),
 	pattern_from_path("Adaptive/Unity/SpaceshipHeartbeat"),
 	pattern_from_path("Non-Adaptive/Checkmark"),
 	pattern_from_path("Non-Adaptive/StaticShock"),
+	pattern_from_path("Non-Adaptive/Rain"),
 ]));
 
 Object.assign(window, {

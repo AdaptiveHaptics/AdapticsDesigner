@@ -2,14 +2,18 @@ set -ex
 
 tsc --project ./jsconfig.json
 
-npx playwright test --reporter list
+# if argument "skiptests" is passed, skip tests
+if [ "$1" != "skiptests" ]; then
+  npx playwright test --reporter list # --reporter dot
+fi
 
-license-checker license-checker --production --customPath licenseText --json > ./ThirdPartyNotices.json
+license-checker --production --customPath licenseText --json > ./ThirdPartyNotices.json # --excludePackages only works with @version added to name, filter is in JS below
 node <<EOF
 const fs = require("fs");
 const data = JSON.parse(fs.readFileSync("./ThirdPartyNotices.json", "utf8"));
 
 const thirdPartyNotices = Object.entries(data).map(([packageName, packageInfo]) => {
+  if (packageName.includes("adaptics-pattern-evaluator")) return "";
 	return \`Package: \${packageName}
 License: \${packageInfo.licenses}
 License Text:

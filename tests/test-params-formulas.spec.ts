@@ -100,8 +100,8 @@ test_check_no_errors('delete param with multiple keyframes', async ({ page }) =>
   await reset_konva_dblclick(page);
   await page.locator('.timeline').press('Control+a');
   await page.getByText('brushBrush').click();
-  await page.getByLabel('radius mm10constant10create new parameter').click();
-  await page.getByLabel('radius mm10constant10create new parameter').fill('radius');
+  await page.getByLabel('radius mm').click();
+  await page.getByLabel('radius mm').fill('radius');
   await page.getByLabel('radius mm').press('Enter');
   await page.locator('user-param-control').getByRole('textbox').click();
   await page.locator('user-param-control').getByRole('textbox').fill('radiusnew');
@@ -141,4 +141,31 @@ test_check_no_errors('check autocomplete buttons work', async ({ page }) => {
   await page.locator('dynamic-f64-input').filter({ hasText: 'fooparameter' }).getByRole('textbox').fill('tu');
   await page.getByRole('button', { name: 'turbulence parameter' }).click();
   await expect(await page.locator('div.cjump dynamic-f64-input input').nth(0)).toHaveValue('turbulence');
+});
+
+test_check_no_errors('check correct autocomplete buttons shown', async ({ page }) => {
+  page.setDefaultNavigationTimeout(8000);
+  page.setDefaultTimeout(1500);
+
+  await page.goto('/');
+  await page.locator('canvas').nth(3).click({
+    position: {
+      x: 112,
+      y: 202
+    }
+  });
+  await page.locator('.timeline').press('Control+a');
+
+  await page.getByText('brushBrush').click();
+  await page.getByLabel('radius mm').click();
+  await page.getByLabel('radius mm').fill('turbulence');
+  await page.getByLabel('radius mm').press('Enter');
+  await page.getByLabel('am_freq hz').click();
+  await page.getByLabel('radius mm').fill('tu');
+  await expect(page.getByRole('button', { name: 'tu create new parameter' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'tu create new parameter' })).toHaveClass("df64autocompletion autoaction");
+  await expect(page.getByRole('button', { name: 'turbulence parameter' })).toBeVisible();
+  await page.getByLabel('radius mm').fill('2');
+  await expect(page.getByRole('button', { name: '2 constant' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '2 constant' })).toHaveClass("df64autocompletion autoaction");
 });

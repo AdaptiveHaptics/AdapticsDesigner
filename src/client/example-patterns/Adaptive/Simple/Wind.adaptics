@@ -1,0 +1,389 @@
+{
+	"$DATA_FORMAT": "MidAirHapticsAnimationFileFormat",
+	"$REVISION": "0.1.0-alpha.2",
+	"name": "untitled",
+	"keyframes": [
+		{
+			"time": 0,
+			"type": "standard",
+			"brush": {
+				"brush": {
+					"name": "line",
+					"params": {
+						"length": {
+							"type": "f64",
+							"value": 60
+						},
+						"thickness": {
+							"type": "f64",
+							"value": 1
+						},
+						"rotation": {
+							"type": "formula",
+							"value": {
+								"type": "add",
+								"value": [
+									{
+										"type": "parameter",
+										"value": "direction"
+									},
+									{
+										"type": "constant",
+										"value": 90
+									}
+								]
+							}
+						},
+						"am_freq": {
+							"type": "formula",
+							"value": {
+								"type": "multiply",
+								"value": [
+									{
+										"type": "parameter",
+										"value": "turbulence"
+									},
+									{
+										"type": "constant",
+										"value": 20
+									}
+								]
+							}
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"coords": {
+				"coords": {
+					"x": -100,
+					"y": 0,
+					"z": 0
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 125,
+			"type": "pause",
+			"brush": {
+				"brush": {
+					"name": "line",
+					"params": {
+						"length": {
+							"type": "f64",
+							"value": 60
+						},
+						"thickness": {
+							"type": "f64",
+							"value": 1
+						},
+						"rotation": {
+							"type": "formula",
+							"value": {
+								"type": "add",
+								"value": [
+									{
+										"type": "parameter",
+										"value": "direction"
+									},
+									{
+										"type": "constant",
+										"value": 90
+									}
+								]
+							}
+						},
+						"am_freq": {
+							"type": "formula",
+							"value": {
+								"type": "multiply",
+								"value": [
+									{
+										"type": "parameter",
+										"value": "turbulence"
+									},
+									{
+										"type": "constant",
+										"value": 20
+									}
+								]
+							}
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 1
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 875,
+			"type": "standard",
+			"brush": {
+				"brush": {
+					"name": "line",
+					"params": {
+						"length": {
+							"type": "f64",
+							"value": 50
+						},
+						"thickness": {
+							"type": "f64",
+							"value": 1
+						},
+						"rotation": {
+							"type": "formula",
+							"value": {
+								"type": "add",
+								"value": [
+									{
+										"type": "parameter",
+										"value": "direction"
+									},
+									{
+										"type": "constant",
+										"value": 90
+									}
+								]
+							}
+						},
+						"am_freq": {
+							"type": "formula",
+							"value": {
+								"type": "multiply",
+								"value": [
+									{
+										"type": "parameter",
+										"value": "turbulence"
+									},
+									{
+										"type": "constant",
+										"value": 20
+									}
+								]
+							}
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 1
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"coords": {
+				"coords": {
+					"x": 100,
+					"y": 0,
+					"z": 0
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 1000,
+			"type": "pause",
+			"brush": {
+				"brush": {
+					"name": "line",
+					"params": {
+						"length": {
+							"type": "f64",
+							"value": 50
+						},
+						"thickness": {
+							"type": "f64",
+							"value": 1
+						},
+						"rotation": {
+							"type": "formula",
+							"value": {
+								"type": "add",
+								"value": [
+									{
+										"type": "parameter",
+										"value": "direction"
+									},
+									{
+										"type": "constant",
+										"value": 90
+									}
+								]
+							}
+						},
+						"am_freq": {
+							"type": "formula",
+							"value": {
+								"type": "multiply",
+								"value": [
+									{
+										"type": "parameter",
+										"value": "turbulence"
+									},
+									{
+										"type": "constant",
+										"value": 20
+									}
+								]
+							}
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "linear",
+					"params": {}
+				}
+			},
+			"cjumps": [
+				{
+					"condition": {
+						"parameter": "speed",
+						"value": 0,
+						"operator": {
+							"name": "gt_eq",
+							"params": {}
+						}
+					},
+					"jump_to": 0
+				}
+			]
+		}
+	],
+	"pattern_transform": {
+		"geometric_transforms": {
+			"translate": {
+				"x": {
+					"type": "f64",
+					"value": 0
+				},
+				"y": {
+					"type": "f64",
+					"value": 0
+				},
+				"z": {
+					"type": "f64",
+					"value": 200
+				}
+			},
+			"rotation": {
+				"type": "param",
+				"value": "direction"
+			},
+			"scale": {
+				"x": {
+					"type": "f64",
+					"value": 1
+				},
+				"y": {
+					"type": "f64",
+					"value": 1
+				},
+				"z": {
+					"type": "f64",
+					"value": 1
+				}
+			}
+		},
+		"intensity_factor": {
+			"type": "f64",
+			"value": 1
+		},
+		"playback_speed": {
+			"type": "param",
+			"value": "speed"
+		}
+	},
+	"user_parameter_definitions": {
+		"turbulence": {
+			"default": 0,
+			"min": 0,
+			"max": 1,
+			"step": 1
+		},
+		"speed": {
+			"default": 1,
+			"min": 0,
+			"max": null,
+			"step": 0.2
+		},
+		"direction": {
+			"default": 0,
+			"min": -360,
+			"max": 360,
+			"step": 15
+		}
+	}
+}

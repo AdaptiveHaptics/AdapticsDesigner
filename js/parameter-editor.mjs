@@ -46,7 +46,14 @@ export class ParameterEditor {
 			this._timecontrol_reset = notnull(this._timecontrol_div.querySelector("button.reset"));
 
 			this._timecontrol_play.addEventListener("click", _ev => {
-				this._pattern_design.update_playstart(Date.now() - this._pattern_design.evaluator_params.time);
+				const start_time = this._pattern_design.evaluator_params.time;
+				const last_keyframe = pattern_design.get_last_keyframe();
+				if (last_keyframe && last_keyframe.time <= start_time && last_keyframe.type == "stop") { // start from beginning if last keyframe is stop and start_time is after stop
+					this._pattern_design.update_pattern_time(0);
+					this._pattern_design.update_playstart(Date.now());
+				} else {
+					this._pattern_design.update_playstart(Date.now() - start_time);
+				}
 			});
 			this._timecontrol_pause.addEventListener("click", _ev => {
 				this._pattern_design.update_playstart(0);

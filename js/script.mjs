@@ -392,6 +392,7 @@ const design_library = new DesignLibrary(primary_design, file_titlebar_manager, 
 	pattern_from_path("Adaptive/Unity/Button"),
 	pattern_from_path("Adaptive/Unity/SpaceshipHeartbeat"),
 	pattern_from_path("Non-Adaptive/Checkmark"),
+	pattern_from_path("Non-Adaptive/StaticShock"),
 ]));
 
 Object.assign(window, {

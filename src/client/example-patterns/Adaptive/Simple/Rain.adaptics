@@ -1468,7 +1468,58 @@
 			"cjumps": []
 		},
 		{
-			"time": 11500,
+			"time": 11562.5,
+			"type": "pause",
+			"brush": {
+				"brush": {
+					"name": "circle",
+					"params": {
+						"radius": {
+							"type": "formula",
+							"value": {
+								"type": "multiply",
+								"value": [
+									{
+										"type": "parameter",
+										"value": "droplet_size"
+									},
+									{
+										"type": "constant",
+										"value": 25
+									}
+								]
+							}
+						},
+						"am_freq": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"intensity": {
+				"intensity": {
+					"name": "constant",
+					"params": {
+						"value": {
+							"type": "f64",
+							"value": 0
+						}
+					}
+				},
+				"transition": {
+					"name": "step",
+					"params": {}
+				}
+			},
+			"cjumps": []
+		},
+		{
+			"time": 12125,
 			"type": "pause",
 			"brush": {
 				"brush": {
@@ -1531,7 +1582,7 @@
 			]
 		},
 		{
-			"time": 11800,
+			"time": 12250,
 			"type": "stop"
 		}
 	],
@@ -1580,11 +1631,11 @@
 		}
 	},
 	"user_parameter_definitions": {
-		"stop": {
-			"default": 0,
-			"min": 0,
-			"max": 1,
-			"step": 1
+		"rainfall_speed": {
+			"default": 1,
+			"min": 0.5,
+			"max": 2.5,
+			"step": 0.1
 		},
 		"droplet_size": {
 			"default": 1,
@@ -1592,11 +1643,11 @@
 			"max": 2.5,
 			"step": 0.05
 		},
-		"rainfall_speed": {
-			"default": 1,
-			"min": 0.5,
-			"max": 2.5,
-			"step": 0.1
+		"stop": {
+			"default": 0,
+			"min": 0,
+			"max": 1,
+			"step": 1
 		}
 	}
 }

@@ -63,10 +63,12 @@
 
     --keyframe-flag-fill: var(--control-point-stroke);
     --keyframe-flag-fill-selected: var(--control-point-stroke-selected);
+    --keyframe-flag-text: var(--text-dark);
     --keyframe-flag-shadow: rgba(0,0,0,0.5);
 
     --cjump-flag-fill: hsl(261, 35%, 55%);
     --cjump-flag-fill-selected: hsl(204 35% 55% / 1);
+    --cjump-flag-text: hsl(0, 0%, 100%);
     --cjump-arrow-fill: var(--cjump-flag-fill);
 
     --timeline-select-rect-fill: var(--control-point-select-rect-fill);
@@ -78,6 +80,40 @@
 
     --scrollbar-track-color: var(--background-titlebar);
     --scrollbar-thumb-color: var(--background-interactive);
+}
+/* for light mode */
+@media (prefers-color-scheme: light) {
+    :root {
+        --saturation-factor: 1;
+        --bg-hue: 350; /* Adjusted for pink */
+        --bg-sat: 13%;
+        --background-interactive: hsl(var(--bg-hue), var(--bg-sat), 90%);
+        --background-interactive-hover: hsl(var(--bg-hue), calc(2 * var(--bg-sat)), 90%);
+        --background-interactive-active: hsl(var(--bg-hue), calc(2 * var(--bg-sat)), 80%);
+        --background-interactive-disabled: hsl(var(--bg-hue), var(--bg-sat), 78%);
+        --background-secondary: hsl(var(--bg-hue), var(--bg-sat), 80%);
+        --background-tertiary: hsl(var(--bg-hue), var(--bg-sat), 70%);
+        --background-tertiary-alt: hsl(var(--bg-hue), var(--bg-sat), 69%);
+        --background-titlebar: hsl(var(--bg-hue), var(--bg-sat), 64%);
+        --background-accent: hsl(var(--bg-hue), var(--bg-sat), 100%);
+        --background-gutter: hsl(var(--bg-hue), var(--bg-sat), 90%);
+
+        --text-normal: rgb(10, 10, 10);
+        --text-low-priority: rgb(45, 45, 48);
+        --text-dark: hsl(240, 20%, 80%);
+
+        --selected-konva-stage: hsl(204, 40%, 25%);
+
+        --control-point-select-rect-fill: #8cc9f230;
+        --control-point-stroke: #0a0a0a; /* Adjusted for light background */
+
+        --pattern-playback-vis-high: #f4b8d9;
+        --pattern-playback-vis-low: #f7e1e9;
+
+        --timeline-major-gridline-stroke: hsl(var(--bg-hue), var(--bg-sat), 88%);
+        --timeline-major-gridline-text: hsl(var(--bg-hue), var(--bg-sat), 98%);
+        --timeline-minor-gridline-stroke: hsl(var(--bg-hue), var(--bg-sat), 84%);
+    }
 }
 
 span.material-symbols-outlined {

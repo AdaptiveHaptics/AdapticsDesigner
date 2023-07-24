@@ -757,7 +757,7 @@ export class KonvaCJumpFlag {
 			text: "",
 			fontSize: 12,
 			padding: 5,
-			fill: "white",
+			fill: getComputedStyle(document.body).getPropertyValue("--cjump-flag-text"),
 		}));
 
 		this.flag.on("click", async ev => {

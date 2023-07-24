@@ -288,6 +288,10 @@ export class MAHPatternDesignFE {
 		}
 	}
 
+	force_rerender() {
+		this.state_change_events.dispatchEvent(new StateChangeEvent("rerender", { detail: {} }));
+	}
+
 	undo() {
 		return this.#_undo_redo(false);
 	}

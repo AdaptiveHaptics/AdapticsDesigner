@@ -397,6 +397,12 @@ const design_library = new DesignLibrary(primary_design, file_titlebar_manager, 
 	pattern_from_path("Non-Adaptive/Rain"),
 ]));
 
+
+const darkModePreference = window.matchMedia("(prefers-color-scheme: dark)");
+darkModePreference.addEventListener("change", _ev => {
+	primary_design.force_rerender();
+});
+
 Object.assign(window, {
 	primary_design,
 	konva_pattern_stage,

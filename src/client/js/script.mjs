@@ -394,6 +394,7 @@ const example_pattern_from_path = (path, forcenamepath) => load_pattern_into_tup
 const user_study_shown_patterns = [
 	example_pattern_from_path("Adaptive/Simple/Button", "Examples/Adaptive/Button"),
 	example_pattern_from_path("Adaptive/Simple/Wind", "Examples/Adaptive/Wind"),
+	example_pattern_from_path("Adaptive/Simple/StaticShock", "Examples/Adaptive/StaticShock"),
 
 	example_pattern_from_path("Non-Adaptive/Checkmark"),
 	example_pattern_from_path("Non-Adaptive/StaticShock"),
@@ -406,6 +407,7 @@ const all_patterns = [
 	example_pattern_from_path("Adaptive/Simple/Wind"),
 	example_pattern_from_path("Adaptive/Simple/Heartbeat"),
 	example_pattern_from_path("Adaptive/Simple/Rain"),
+	example_pattern_from_path("Adaptive/Simple/StaticShock"),
 
 	example_pattern_from_path("Adaptive/Unity/Button"),
 	example_pattern_from_path("Adaptive/Unity/Rain"),

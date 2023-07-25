@@ -1,6 +1,6 @@
 {
 	"$DATA_FORMAT": "MidAirHapticsAnimationFileFormat",
-	"$REVISION": "0.1.0-alpha.2",
+	"$REVISION": "0.1.0-alpha.3",
 	"name": "untitled",
 	"keyframes": [
 		{
@@ -15,8 +15,32 @@
 							"value": 0
 						},
 						"am_freq": {
-							"type": "f64",
-							"value": 50
+							"type": "formula",
+							"value": {
+								"type": "add",
+								"value": [
+									{
+										"type": "constant",
+										"value": 50
+									},
+									{
+										"type": "multiply",
+										"value": [
+											{
+												"type": "negate",
+												"value": {
+													"type": "constant",
+													"value": 15
+												}
+											},
+											{
+												"type": "parameter",
+												"value": "voltage_normalized"
+											}
+										]
+									}
+								]
+							}
 						}
 					}
 				},
@@ -65,8 +89,32 @@
 							"value": 20
 						},
 						"am_freq": {
-							"type": "f64",
-							"value": 50
+							"type": "formula",
+							"value": {
+								"type": "add",
+								"value": [
+									{
+										"type": "constant",
+										"value": 50
+									},
+									{
+										"type": "multiply",
+										"value": [
+											{
+												"type": "negate",
+												"value": {
+													"type": "constant",
+													"value": 15
+												}
+											},
+											{
+												"type": "parameter",
+												"value": "voltage_normalized"
+											}
+										]
+									}
+								]
+							}
 						}
 					}
 				},
@@ -104,8 +152,32 @@
 							"value": 10
 						},
 						"am_freq": {
-							"type": "f64",
-							"value": 50
+							"type": "formula",
+							"value": {
+								"type": "add",
+								"value": [
+									{
+										"type": "constant",
+										"value": 50
+									},
+									{
+										"type": "multiply",
+										"value": [
+											{
+												"type": "negate",
+												"value": {
+													"type": "constant",
+													"value": 15
+												}
+											},
+											{
+												"type": "parameter",
+												"value": "voltage_normalized"
+											}
+										]
+									}
+								]
+							}
 						}
 					}
 				},
@@ -154,8 +226,32 @@
 							"value": 10
 						},
 						"am_freq": {
-							"type": "f64",
-							"value": 50
+							"type": "formula",
+							"value": {
+								"type": "add",
+								"value": [
+									{
+										"type": "constant",
+										"value": 50
+									},
+									{
+										"type": "multiply",
+										"value": [
+											{
+												"type": "negate",
+												"value": {
+													"type": "constant",
+													"value": 15
+												}
+											},
+											{
+												"type": "parameter",
+												"value": "voltage_normalized"
+											}
+										]
+									}
+								]
+							}
 						}
 					}
 				},
@@ -204,8 +300,32 @@
 							"value": 10
 						},
 						"am_freq": {
-							"type": "f64",
-							"value": 50
+							"type": "formula",
+							"value": {
+								"type": "add",
+								"value": [
+									{
+										"type": "constant",
+										"value": 50
+									},
+									{
+										"type": "multiply",
+										"value": [
+											{
+												"type": "negate",
+												"value": {
+													"type": "constant",
+													"value": 15
+												}
+											},
+											{
+												"type": "parameter",
+												"value": "voltage_normalized"
+											}
+										]
+									}
+								]
+							}
 						}
 					}
 				},
@@ -254,8 +374,32 @@
 							"value": 10
 						},
 						"am_freq": {
-							"type": "f64",
-							"value": 50
+							"type": "formula",
+							"value": {
+								"type": "add",
+								"value": [
+									{
+										"type": "constant",
+										"value": 50
+									},
+									{
+										"type": "multiply",
+										"value": [
+											{
+												"type": "negate",
+												"value": {
+													"type": "constant",
+													"value": 15
+												}
+											},
+											{
+												"type": "parameter",
+												"value": "voltage_normalized"
+											}
+										]
+									}
+								]
+							}
 						}
 					}
 				},
@@ -304,8 +448,32 @@
 							"value": 10
 						},
 						"am_freq": {
-							"type": "f64",
-							"value": 50
+							"type": "formula",
+							"value": {
+								"type": "add",
+								"value": [
+									{
+										"type": "constant",
+										"value": 50
+									},
+									{
+										"type": "multiply",
+										"value": [
+											{
+												"type": "negate",
+												"value": {
+													"type": "constant",
+													"value": 15
+												}
+											},
+											{
+												"type": "parameter",
+												"value": "voltage_normalized"
+											}
+										]
+									}
+								]
+							}
 						}
 					}
 				},
@@ -378,8 +546,17 @@
 								"value": 1
 							},
 							{
-								"type": "parameter",
-								"value": "voltage_normalized"
+								"type": "multiply",
+								"value": [
+									{
+										"type": "parameter",
+										"value": "voltage_normalized"
+									},
+									{
+										"type": "constant",
+										"value": 0.5
+									}
+								]
 							}
 						]
 					}
@@ -401,33 +578,27 @@
 		"playback_speed": {
 			"type": "formula",
 			"value": {
-				"type": "subtract",
+				"type": "add",
 				"value": [
 					{
-						"type": "add",
-						"value": [
-							{
-								"type": "constant",
-								"value": 2
-							},
-							{
-								"type": "multiply",
-								"value": [
-									{
-										"type": "constant",
-										"value": 0.2
-									},
-									{
-										"type": "parameter",
-										"value": "voltage_normalized"
-									}
-								]
-							}
-						]
+						"type": "constant",
+						"value": 2
 					},
 					{
-						"type": "constant",
-						"value": 0.1
+						"type": "multiply",
+						"value": [
+							{
+								"type": "negate",
+								"value": {
+									"type": "constant",
+									"value": 0.2
+								}
+							},
+							{
+								"type": "parameter",
+								"value": "voltage_normalized"
+							}
+						]
 					}
 				]
 			}

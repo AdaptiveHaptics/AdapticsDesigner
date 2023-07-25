@@ -172,6 +172,24 @@
               "minItems": 2
             }
           }
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "value"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": [
+                "negate"
+              ]
+            },
+            "value": {
+              "$ref": "#/definitions/ATFormula"
+            }
+          }
         }
       ]
     },
@@ -248,7 +266,7 @@
     "DataFormatRevision": {
       "type": "string",
       "enum": [
-        "0.1.0-alpha.2"
+        "0.1.0-alpha.3"
       ]
     },
     "GeometricTransformMatrix": {

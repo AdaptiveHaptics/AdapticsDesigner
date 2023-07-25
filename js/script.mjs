@@ -389,26 +389,38 @@ const load_pattern = async (url) => {
 };
 /** @type {(namepath: string, urlpath: string) => [string, Promise<MidAirHapticsAnimationFileFormat>]} */
 const load_pattern_into_tuple = (namepath, urlpath) => [namepath, load_pattern(urlpath)];
-/** @type {(s: string) => [string, Promise<MidAirHapticsAnimationFileFormat>]} */
-const example_pattern_from_path = (path) => load_pattern_into_tuple(`Examples/${path}`, `./example-patterns/${path}.adaptics`);
-const always_shown_patterns = [
-	example_pattern_from_path("Adaptive/Simple/Button"),
-	example_pattern_from_path("Adaptive/Simple/Wind"),
-	example_pattern_from_path("Adaptive/Unity/Button"),
+/** @type {(path: string, forcenamepath?: string) => [string, Promise<MidAirHapticsAnimationFileFormat>]} */
+const example_pattern_from_path = (path, forcenamepath) => load_pattern_into_tuple(forcenamepath ?? `Examples/${path}`, `./example-patterns/${path}.adaptics`);
+const user_study_shown_patterns = [
+	example_pattern_from_path("Adaptive/Simple/Button", "Examples/Adaptive/Button"),
+	example_pattern_from_path("Adaptive/Simple/Wind", "Examples/Adaptive/Wind"),
+	example_pattern_from_path("Adaptive/Simple/StaticShock", "Examples/Adaptive/StaticShock"),
+
 	example_pattern_from_path("Non-Adaptive/Checkmark"),
 	example_pattern_from_path("Non-Adaptive/StaticShock"),
 
-	load_pattern_into_tuple("Pilot Study/HeartbeatBase", "./example-patterns/user-study/HeartbeatBase.adaptics"),
-	load_pattern_into_tuple("Pilot Study/RainBase", "./example-patterns/user-study/RainBase.adaptics"),
+	example_pattern_from_path("user-study/HeartbeatBase", "Pilot Study/HeartbeatBase"),
+	example_pattern_from_path("user-study/RainBase", "Pilot Study/RainBase"),
 ];
-const user_study_hidden_patterns = [
+const all_patterns = [
+	example_pattern_from_path("Adaptive/Simple/Button"),
+	example_pattern_from_path("Adaptive/Simple/Wind"),
 	example_pattern_from_path("Adaptive/Simple/Heartbeat"),
 	example_pattern_from_path("Adaptive/Simple/Rain"),
+	example_pattern_from_path("Adaptive/Simple/StaticShock"),
+
+	example_pattern_from_path("Adaptive/Unity/Button"),
 	example_pattern_from_path("Adaptive/Unity/Rain"),
 	example_pattern_from_path("Adaptive/Unity/SpaceshipHeartbeat"),
+
 	example_pattern_from_path("Non-Adaptive/Rain"),
+	example_pattern_from_path("Non-Adaptive/Checkmark"),
+	example_pattern_from_path("Non-Adaptive/StaticShock"),
+
+	example_pattern_from_path("user-study/HeartbeatBase", "Pilot Study/HeartbeatBase"),
+	example_pattern_from_path("user-study/RainBase", "Pilot Study/RainBase"),
 ];
-const patterns = user_study_mode ? [...always_shown_patterns] : [...always_shown_patterns, ...user_study_hidden_patterns];
+const patterns = user_study_mode ? user_study_shown_patterns : all_patterns;
 const design_library = new DesignLibrary(primary_design, file_titlebar_manager, designlibrary_div, new Map(patterns));
 
 

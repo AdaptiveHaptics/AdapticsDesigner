@@ -23,7 +23,7 @@
  */
 
 /** @type {import("../../../shared/types").REVISION_STRING} */
-const MAH_$REVISION = "0.1.0-alpha.2";
+const MAH_$REVISION = "0.1.0-alpha.3";
 
 /**
  * @typedef {{
@@ -670,6 +670,10 @@ export class MAHPatternDesignFE {
 			case "add": case "subtract": case "multiply": case "divide": {
 				this.#_get_params_from_at_formula_internal(at_formula.value[0], param_name_set, parameter_atf_set);
 				this.#_get_params_from_at_formula_internal(at_formula.value[1], param_name_set, parameter_atf_set);
+				break;
+			}
+			case "negate": {
+				this.#_get_params_from_at_formula_internal(at_formula.value, param_name_set, parameter_atf_set);
 				break;
 			}
 			default: assert_unreachable(at_formula);

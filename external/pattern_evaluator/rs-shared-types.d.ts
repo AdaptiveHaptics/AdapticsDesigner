@@ -12,7 +12,7 @@
 export type TupleOf_MidAirHapticsAnimationFileFormatAnd_PatternEvaluatorParametersAnd_BrushAtAnimLocalTimeAnd_ArrayOf_BrushAtAnimLocalTime =
   [MidAirHapticsAnimationFileFormat, PatternEvaluatorParameters, BrushAtAnimLocalTime, BrushAtAnimLocalTime[]];
 export type MidAirHapticsAnimationFileFormatDataFormatName = "MidAirHapticsAnimationFileFormat";
-export type DataFormatRevision = "0.1.0-alpha.2";
+export type DataFormatRevision = "0.1.0-alpha.3";
 export type MAHKeyframe =
   | {
       brush?: BrushWithTransition | null;
@@ -118,6 +118,10 @@ export type ATFormula =
        * @maxItems 2
        */
       value: [ATFormula, ATFormula];
+    }
+  | {
+      type: "negate";
+      value: ATFormula;
     };
 export type MAHTransition =
   | {

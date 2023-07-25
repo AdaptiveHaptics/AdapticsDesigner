@@ -373,6 +373,9 @@ const unified_keyframe_editor = right_panel.unified_keyframe_editor;
 const parameter_editor = new ParameterEditor(primary_design, notnull(document.querySelector("div.parametereditor")));
 
 
+const user_study_mode = new URLSearchParams(window.location.search).get("user_study") != null;
+console.log("user_study_mode: ", user_study_mode);
+
 const load_pattern = async (url) => {
 	try {
 		const f = await fetch(url);
@@ -385,18 +388,22 @@ const load_pattern = async (url) => {
 };
 /** @type {(s: string) => [string, Promise<MidAirHapticsAnimationFileFormat>]} */
 const pattern_from_path = (path) => [`Examples/${path}`, load_pattern(`./example-patterns/${path}.adaptics`)];
-const design_library = new DesignLibrary(primary_design, file_titlebar_manager, designlibrary_div, new Map([
-	pattern_from_path("Adaptive/Simple/Heartbeat"),
+const user_study_shown_patterns = [
 	pattern_from_path("Adaptive/Simple/Button"),
 	pattern_from_path("Adaptive/Simple/Wind"),
-	pattern_from_path("Adaptive/Simple/Rain"),
-	pattern_from_path("Adaptive/Unity/Rain"),
 	pattern_from_path("Adaptive/Unity/Button"),
-	pattern_from_path("Adaptive/Unity/SpaceshipHeartbeat"),
 	pattern_from_path("Non-Adaptive/Checkmark"),
 	pattern_from_path("Non-Adaptive/StaticShock"),
+];
+const user_study_hidden_patterns = [
+	pattern_from_path("Adaptive/Simple/Heartbeat"),
+	pattern_from_path("Adaptive/Simple/Rain"),
+	pattern_from_path("Adaptive/Unity/Rain"),
+	pattern_from_path("Adaptive/Unity/SpaceshipHeartbeat"),
 	pattern_from_path("Non-Adaptive/Rain"),
-]));
+];
+const patterns = user_study_mode ? user_study_shown_patterns : [...user_study_shown_patterns, ...user_study_hidden_patterns];
+const design_library = new DesignLibrary(primary_design, file_titlebar_manager, designlibrary_div, new Map(patterns));
 
 
 const darkModePreference = window.matchMedia("(prefers-color-scheme: dark)");
@@ -413,4 +420,5 @@ Object.assign(window, {
 	parameter_editor,
 	design_library,
 	file_titlebar_manager,
+	user_study_mode,
 });

@@ -378,14 +378,13 @@ const user_study_mode = ["user_study", "userstudy", "user-study", "pilot_study",
 console.log("user_study_mode: ", user_study_mode);
 
 const load_pattern = async (url) => {
-	try {
-		const f = await fetch(url);
-		const json = /** @type {MidAirHapticsAnimationFileFormat} */ (await f.json());
-		return json;
-	} catch (e) {
-		alert(`Failed to load pattern '${url}': ${e}`);
-		throw e;
+	const f = await fetch(url);
+	if (f.status == 404) {
+		alert(`Failed to load pattern '${url}': 404`);
+		throw new Error(`Failed to load pattern '${url}': 404`);
 	}
+	const json = /** @type {MidAirHapticsAnimationFileFormat} */ (await f.json());
+	return json;
 };
 /** @type {(namepath: string, urlpath: string) => [string, Promise<MidAirHapticsAnimationFileFormat>]} */
 const load_pattern_into_tuple = (namepath, urlpath) => [namepath, load_pattern(urlpath)];

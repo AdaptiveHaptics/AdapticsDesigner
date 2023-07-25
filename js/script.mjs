@@ -373,6 +373,10 @@ const unified_keyframe_editor = right_panel.unified_keyframe_editor;
 const parameter_editor = new ParameterEditor(primary_design, notnull(document.querySelector("div.parametereditor")));
 
 
+const search_up = new URLSearchParams(window.location.search);
+const user_study_mode = ["user_study", "userstudy", "user-study", "pilot_study", "pilotstudy", "pilot-study"].some(s => search_up.has(s));
+console.log("user_study_mode: ", user_study_mode);
+
 const load_pattern = async (url) => {
 	try {
 		const f = await fetch(url);
@@ -383,19 +387,29 @@ const load_pattern = async (url) => {
 		throw e;
 	}
 };
+/** @type {(namepath: string, urlpath: string) => [string, Promise<MidAirHapticsAnimationFileFormat>]} */
+const load_pattern_into_tuple = (namepath, urlpath) => [namepath, load_pattern(urlpath)];
 /** @type {(s: string) => [string, Promise<MidAirHapticsAnimationFileFormat>]} */
-const pattern_from_path = (path) => [`Examples/${path}`, load_pattern(`./example-patterns/${path}.adaptics`)];
-const design_library = new DesignLibrary(primary_design, file_titlebar_manager, designlibrary_div, new Map([
-	pattern_from_path("Adaptive/Simple/Heartbeat"),
-	pattern_from_path("Adaptive/Simple/Button"),
-	pattern_from_path("Adaptive/Simple/Wind"),
-	pattern_from_path("Adaptive/Simple/Rain"),
-	pattern_from_path("Adaptive/Unity/Button"),
-	pattern_from_path("Adaptive/Unity/SpaceshipHeartbeat"),
-	pattern_from_path("Non-Adaptive/Checkmark"),
-	pattern_from_path("Non-Adaptive/StaticShock"),
-	pattern_from_path("Non-Adaptive/Rain"),
-]));
+const example_pattern_from_path = (path) => load_pattern_into_tuple(`Examples/${path}`, `./example-patterns/${path}.adaptics`);
+const always_shown_patterns = [
+	example_pattern_from_path("Adaptive/Simple/Button"),
+	example_pattern_from_path("Adaptive/Simple/Wind"),
+	example_pattern_from_path("Adaptive/Unity/Button"),
+	example_pattern_from_path("Non-Adaptive/Checkmark"),
+	example_pattern_from_path("Non-Adaptive/StaticShock"),
+
+	load_pattern_into_tuple("Pilot Study/HeartbeatBase", "./example-patterns/user-study/HeartbeatBase.adaptics"),
+	load_pattern_into_tuple("Pilot Study/RainBase", "./example-patterns/user-study/RainBase.adaptics"),
+];
+const user_study_hidden_patterns = [
+	example_pattern_from_path("Adaptive/Simple/Heartbeat"),
+	example_pattern_from_path("Adaptive/Simple/Rain"),
+	example_pattern_from_path("Adaptive/Unity/Rain"),
+	example_pattern_from_path("Adaptive/Unity/SpaceshipHeartbeat"),
+	example_pattern_from_path("Non-Adaptive/Rain"),
+];
+const patterns = user_study_mode ? [...always_shown_patterns] : [...always_shown_patterns, ...user_study_hidden_patterns];
+const design_library = new DesignLibrary(primary_design, file_titlebar_manager, designlibrary_div, new Map(patterns));
 
 
 const darkModePreference = window.matchMedia("(prefers-color-scheme: dark)");
@@ -412,4 +426,5 @@ Object.assign(window, {
 	parameter_editor,
 	design_library,
 	file_titlebar_manager,
+	user_study_mode,
 });

@@ -1,0 +1,64 @@
+{
+	"$DATA_FORMAT": "MidAirHapticsAnimationFileFormat",
+	"$REVISION": "0.1.0-alpha.2",
+	"name": "untitled",
+	"keyframes": [],
+	"pattern_transform": {
+		"geometric_transforms": {
+			"translate": {
+				"x": {
+					"type": "f64",
+					"value": 0
+				},
+				"y": {
+					"type": "f64",
+					"value": 0
+				},
+				"z": {
+					"type": "f64",
+					"value": 200
+				}
+			},
+			"rotation": {
+				"type": "f64",
+				"value": 0
+			},
+			"scale": {
+				"x": {
+					"type": "f64",
+					"value": 1
+				},
+				"y": {
+					"type": "f64",
+					"value": 1
+				},
+				"z": {
+					"type": "f64",
+					"value": 1
+				}
+			}
+		},
+		"intensity_factor": {
+			"type": "f64",
+			"value": 1
+		},
+		"playback_speed": {
+			"type": "f64",
+			"value": 1
+		}
+	},
+	"user_parameter_definitions": {
+		"health": {
+			"default": 1,
+			"min": 0,
+			"max": 1,
+			"step": 0.05
+		},
+		"taking_damage": {
+			"default": 0,
+			"min": 0,
+			"max": 1,
+			"step": 1
+		}
+	}
+}

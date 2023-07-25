@@ -168,4 +168,32 @@ test_check_no_errors('check correct autocomplete buttons shown', async ({ page }
   await page.getByLabel('radius mm').fill('2');
   await expect(page.getByRole('button', { name: '2 constant' })).toBeVisible();
   await expect(page.getByRole('button', { name: '2 constant' })).toHaveClass("df64autocompletion autoaction");
+  await page.getByLabel('radius mm').fill('badidea-varname');
+  await expect(page.getByRole('button', { name: '`badidea` - `varname` formula' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '`badidea` - `varname` formula' })).toHaveClass("df64autocompletion autoaction");
+  await expect(page.getByRole('button', { name: 'badidea-varname create new parameter' })).toHaveCount(0);
 });
+
+// disabled because we no longer show force creations
+// test_check_no_errors('check force create parameter for formula parsable input', async ({ page }) => {
+//   page.setDefaultNavigationTimeout(8000);
+//   page.setDefaultTimeout(1500);
+
+//   await page.goto('/');
+//   await page.locator('canvas').nth(3).click({
+//     position: {
+//       x: 112,
+//       y: 202
+//     }
+//   });
+//   await page.locator('.timeline').press('Control+a');
+
+//   await page.getByText('brushBrush').click();
+//   await page.getByLabel('radius mm').click();
+//   await page.getByLabel('radius mm').fill('badidea-varname');
+//   await expect(page.getByRole('button', { name: '`badidea` - `varname` formula' })).toBeVisible();
+//   await expect(page.getByRole('button', { name: '`badidea` - `varname` formula' })).toHaveClass("df64autocompletion autoaction");
+//   await expect(page.getByRole('button', { name: 'badidea-varname create new parameter' })).toBeVisible();
+//   await page.getByRole('button', { name: 'badidea-varname create new parameter' }).click();
+//   await expect(page.getByLabel('radius mm')).toHaveValue('badidea-varname');
+// });

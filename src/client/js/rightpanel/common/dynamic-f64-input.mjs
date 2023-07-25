@@ -296,30 +296,29 @@ export class DynamicF64Input extends HTMLElement {
 		const user_params = [...this.#_pattern_design.get_user_parameters_to_linked_map().keys()];
 
 		if (df64v) {
-			let autoaction = true;
-			if (df64v.type === "f64") {
-				insert_autocompletion(df64v, { autoaction });
-				autoaction = false;
-			}
+			// to support other actions that force param creation despite parsing as formula/f64, we need to have a a seperate internal df64 state, because the stringified versions can map to multiple df64 values
+			switch (df64v.type) {
+				case "f64":
+					insert_autocompletion(df64v, { autoaction: true });
+					break;
+				case "formula":
+					insert_autocompletion(df64v, { autoaction: true });
+					break;
+				case "param":
+					if (user_params.includes(this.#_val_input.value)) {
+						insert_autocompletion({ type: "param", value: this.#_val_input.value }, { autoaction: true });
+					} else if (!( // dont show parameter creation for
+						this.#_val_input.value === "" || // empty string
+						this.#_val_input.value.includes("`") // param names that include the formula param name delimiter
+						//
+						// Creation of these is technically still allowed (by the json format, and elsewhere in gui), but we will not allow it here to reduce confusion
+						// it is also possible to create params that parse as formulas and f64 by this.#_parse_input_value, but we will not allow that here either
+					)) {
+						insert_autocompletion({ type: "param", value: this.#_val_input.value }, { type: "create new parameter", autoaction: true });
+					}
+					break;
 
-			if (df64v.type === "formula") {
-				insert_autocompletion(df64v, { autoaction });
-				autoaction = false;
-			}
-
-			//todo: show formula creation autocompletion
-			if (user_params.includes(this.#_val_input.value)) {
-				insert_autocompletion({ type: "param", value: this.#_val_input.value }, { autoaction });
-				autoaction = false;
-			} else if (!( // dont show parameter creation for
-				this.#_val_input.value === "" || // empty string
-				df64v.type === "f64" || // param names that can be parsed as f64
-				this.#_val_input.value.includes("`") // param names that include the formula param name delimiter
-				//
-				// Creation of these is technically still allowed (by the json format, and elsewhere in gui, but we will not allow it here to reduce confusion)
-			)) {
-				insert_autocompletion({ type: "param", value: this.#_val_input.value }, { type: "create new parameter", autoaction });
-				autoaction = false;
+				default: assert_unreachable(df64v);
 			}
 		}
 

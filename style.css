@@ -23,10 +23,12 @@
     --text-normal: rgb(250, 250, 255);
     --text-low-priority: rgb(210, 210, 213);
     --text-link: var(--text-normal);
-    --text-dark: hsl(240, 20%, 20%);
+    --text-black: hsl(240, 20%, 20%);
+    --text-dark: var(--text-black);
     --focus-ring: hsl(240, 20%, 50%);
     --text-error: var(--error);
     --text-warn: var(--warn);
+    --text-titlebar: var(--text-normal);
 
     --selected-konva-stage: hsl(204, 40%, 75%);
 
@@ -56,28 +58,77 @@
     /* --pattern-playback-vis-low: #283744; */
 
     --pattern-boundary: var(--background-tertiary);
-    --pattern-axis: hsl(var(--bg-hue), var(--bg-sat), 17%);
     --pattern-axis: var(--pattern-boundary);
     --pattern-background: var(--background-tertiary-alt);
 
 
     --keyframe-flag-fill: var(--control-point-stroke);
     --keyframe-flag-fill-selected: var(--control-point-stroke-selected);
+    --keyframe-flag-text: var(--text-black);
     --keyframe-flag-shadow: rgba(0,0,0,0.5);
 
     --cjump-flag-fill: hsl(261, 35%, 55%);
     --cjump-flag-fill-selected: hsl(204 35% 55% / 1);
+    --cjump-flag-text: hsl(0, 0%, 100%);
     --cjump-arrow-fill: var(--cjump-flag-fill);
 
+    --timeline-background: var(--background-tertiary-alt);
+    --timeline-timestamp-rect-fill: var(--background-tertiary);
     --timeline-select-rect-fill: var(--control-point-select-rect-fill);
     --timeline-major-gridline-stroke: hsl(var(--bg-hue), var(--bg-sat), 12%);
     --timeline-major-gridline-text: hsl(var(--bg-hue), var(--bg-sat), 2%);
     --timeline-minor-gridline-stroke: hsl(var(--bg-hue), var(--bg-sat), 16%);
 
     --timeline-playback-head-color: var(--control-point-stroke);
+    --timeline-playback-head-opacity: 0.5;
 
     --scrollbar-track-color: var(--background-titlebar);
     --scrollbar-thumb-color: var(--background-interactive);
+}
+/* for light mode */
+@media (prefers-color-scheme: light) {
+    :root.enable-light-mode { /* disable light mode by default */
+        --saturation-factor: 1;
+        --bg-hue: 350;
+        --bg-sat: 13%;
+        --background-interactive: hsl(var(--bg-hue), var(--bg-sat), 90%);
+        --background-interactive-hover: hsl(var(--bg-hue), calc(2 * var(--bg-sat)), 90%);
+        --background-interactive-active: hsl(var(--bg-hue), calc(2 * var(--bg-sat)), 80%);
+        --background-interactive-disabled: hsl(var(--bg-hue), var(--bg-sat), 78%);
+        --background-secondary: hsl(var(--bg-hue), var(--bg-sat), 80%);
+        --background-tertiary: hsl(var(--bg-hue), var(--bg-sat), 69%);
+        --background-tertiary-alt: hsl(var(--bg-hue), var(--bg-sat), 68%);
+        --background-titlebar: hsl(var(--bg-hue), var(--bg-sat), 57%);
+        --background-accent: hsl(var(--bg-hue), var(--bg-sat), 100%);
+        --background-gutter: hsl(var(--bg-hue), var(--bg-sat), 90%);
+
+        --text-normal: rgb(10, 10, 10);
+        --text-low-priority: rgb(45, 45, 48);
+        --text-dark: hsl(240, 20%, 80%);
+        --text-titlebar: #000000;
+        --text-link: var(--background-interactive);
+
+        --selected-konva-stage: hsl(204, 40%, 25%);
+
+        --pattern-boundary: hsl(var(--bg-hue), calc(var(--bg-sat) * 0.8), 47%);
+        --pattern-background: hsl(var(--bg-hue), calc(var(--bg-sat) * 0.8), 49%);
+
+        /* --control-point-select-rect-fill: #8cc9f230; unchanged */
+        /* --control-point-stroke: #0a0a0a; */ /* Adjusted for light background */
+
+        --pattern-playback-vis-high: #f4b8d9;
+        --pattern-playback-vis-high: #f3a0ce;
+        --pattern-playback-vis-low: #c4a1ae;
+
+        --timeline-background: hsl(var(--bg-hue), calc(var(--bg-sat) * 0.9), 50%);
+        --timeline-timestamp-rect-fill: hsl(var(--bg-hue), calc(var(--bg-sat) * 0.9), 54%);
+        --timeline-major-gridline-stroke: hsl(var(--bg-hue), calc(var(--bg-sat) * 0.9), 40%);
+        --timeline-major-gridline-text: hsl(var(--bg-hue), calc(var(--bg-sat) * 0.9), 35%);
+        --timeline-minor-gridline-stroke: hsl(var(--bg-hue), calc(var(--bg-sat) * 0.9), 45%);
+
+        --timeline-playback-head-color: #0a0a0a;
+        --timeline-playback-head-opacity: 0.5;
+    }
 }
 
 span.material-symbols-outlined {
@@ -329,6 +380,8 @@ body {
     font-family: Arial, Helvetica, sans-serif;
     color: var(--text-normal);
     margin: 0;
+    /* --bg-hue: 315 !important; */
+    /* --bg-sat: 31% !important; */
 }
 
 div.app {
@@ -340,6 +393,7 @@ div.app {
 
 div.titlebar {
     background-color: var(--background-titlebar);
+    color: var(--text-titlebar);
     padding: 1.2ex;
     display: flex;
     gap: 3ex;
@@ -555,7 +609,7 @@ div.timeline {
 }
 
 div.timelinestage {
-    background-color: var(--background-tertiary-alt);
+    background-color: var(--timeline-background);
 }
 
 div.gutter {
@@ -632,8 +686,6 @@ div.actionbuttons .material-symbols-outlined {
         'opsz' 48;
 }
 div.tabpanelcontainer {
-    display: flex;
-    flex-direction: column;
     overflow: auto;
     background-color: var(--background-tertiary);
 }
@@ -930,11 +982,11 @@ div.parametereditor div.timecontrol button span.material-symbols-outlined {
 
 div.parametereditor div.timecontrol button.play {
     background-color: var(--play-color);
-    color: var(--text-dark);
+    color: var(--text-black);
 }
 div.parametereditor div.timecontrol button.pause {
     background-color: var(--pause-color);
-    color: var(--text-dark);
+    color: var(--text-black);
 }
 
 div.contextmenu {

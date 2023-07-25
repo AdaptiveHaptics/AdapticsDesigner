@@ -214,7 +214,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 
 		this.timestamp_rect = new Konva.Rect({
 			x: 0, y: 0, width: this.fullWidth, height: timestamp_rect_height,
-			fill: getComputedStyle(document.body).getPropertyValue("--background-tertiary")
+			fill: getComputedStyle(document.body).getPropertyValue("--timeline-timestamp-rect-fill")
 		});
 		this.timestamp_rect.on("click", ev => {
 			if (ev.target != this.timestamp_rect) return;
@@ -356,7 +356,7 @@ export class KonvaTimelineStage extends KonvaResizeScrollStage {
 					timestamp_rect_height/3,timestamp_rect_height/2,
 					0,timestamp_rect_height
 				],
-				opacity: 0.5,
+				opacity: parseFloat(getComputedStyle(document.body).getPropertyValue("--timeline-playback-head-opacity")),
 				closed: true,
 				fill: getComputedStyle(document.body).getPropertyValue("--timeline-playback-head-color"),
 				draggable: true,
@@ -757,7 +757,7 @@ export class KonvaCJumpFlag {
 			text: "",
 			fontSize: 12,
 			padding: 5,
-			fill: "white",
+			fill: getComputedStyle(document.body).getPropertyValue("--cjump-flag-text"),
 		}));
 
 		this.flag.on("click", async ev => {

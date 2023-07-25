@@ -44,3 +44,5 @@ git push -f origin gh-pages
 
 cd ..
 git worktree remove dist
+
+echo "Successfully deployed to gh-pages branch."

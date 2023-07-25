@@ -415,7 +415,7 @@
 								"value": [
 									{
 										"type": "constant",
-										"value": 0.5
+										"value": 0.2
 									},
 									{
 										"type": "parameter",
@@ -427,7 +427,7 @@
 					},
 					{
 						"type": "constant",
-						"value": 0.25
+						"value": 0.1
 					}
 				]
 			}

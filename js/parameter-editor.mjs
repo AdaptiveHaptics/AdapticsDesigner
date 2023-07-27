@@ -31,7 +31,7 @@ export class ParameterEditor {
 			this._timecontrol_div = notnull(this._parametereditor_div.querySelector("div.timecontrol"));
 			this._timecontrol_input = notnull(this._timecontrol_div.querySelector("input"));
 			this._timecontrol_input.addEventListener("change", _ => {
-				const v = parseFloat(this._timecontrol_input.value);
+				const v = parseFloat(this._timecontrol_input.value) * 1000;
 				if (Number.isFinite(v)) {
 					this._pattern_design.update_pattern_time(Math.max(v, 0));
 				} else {
@@ -181,7 +181,7 @@ export class ParameterEditor {
 	}
 
 	#_update_playback_controls() {
-		this._timecontrol_input.value = this._pattern_design.last_eval[0].pattern_time.toFixed(0);
+		this._timecontrol_input.value = num_to_rounded_string(this._pattern_design.last_eval[0].pattern_time / 1000);
 		if (this._pattern_design.is_playing()) {
 			this._timecontrol_play.style.display = "none";
 			this._timecontrol_pause.style.display = "";

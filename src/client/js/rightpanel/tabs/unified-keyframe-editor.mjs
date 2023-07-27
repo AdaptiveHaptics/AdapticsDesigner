@@ -5,7 +5,7 @@
 
 import { BoundsCheck } from "../../fe/keyframes/bounds-check.mjs";
 import { supports_coords, supports_brush, supports_intensity, supports_cjump } from "../../fe/keyframes/index.mjs";
-import { deep_equals, notnull } from "../../util.mjs";
+import { deep_equals, notnull, num_to_rounded_string } from "../../util.mjs";
 import Sortable from "../../../thirdparty/sortable.complete.esm.js";
 import { DynamicF64Input } from "../common/dynamic-f64-input.mjs";
 
@@ -267,8 +267,9 @@ export class UnifiedKeyframeEditor {
 				cjump_parameter_df64_input.update_value(this.get_if_field_identical(cjumps_at_index, cjump => { return { type: "param", value: cjump.condition.parameter}; }));
 				cjump_operator_select.value = this.get_if_field_identical(cjumps_at_index, cjump => cjump.condition.operator.name) || "multipletypes";
 				cjump_value_input.value = this.get_if_field_identical(cjumps_at_index, cjump => cjump.condition.value)?.toString() || "";
-				cjump_jump_to_input.value = this.get_if_field_identical(cjumps_at_index, cjump => cjump.jump_to)?.toString() || "";
-
+				const jump_to_input_identical = this.get_if_field_identical(cjumps_at_index, cjump => cjump.jump_to);
+				if (jump_to_input_identical != null) cjump_jump_to_input.value = num_to_rounded_string(jump_to_input_identical / 1000);
+				else cjump_jump_to_input.value = "";
 				this.cjumps_container_div.appendChild(cjump_row);
 			}
 
@@ -492,7 +493,7 @@ export class UnifiedKeyframeEditor {
 					default: throw new Error(`unexpected cjump operator type: ${this.intensity_type_select.value}`);
 				}
 				if (cjump_value_input.value) cjump.condition.value = parseFloat(cjump_value_input.value);
-				if (cjump_jump_to_input.value) cjump.jump_to = parseFloat(cjump_jump_to_input.value);
+				if (cjump_jump_to_input.value) cjump.jump_to = parseFloat(cjump_jump_to_input.value) * 1000;
 			}
 		});
 

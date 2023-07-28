@@ -6,6 +6,7 @@ import { DesignLibrary } from "./leftpanel/design-library.mjs";
 import { ParameterEditor } from "./parameter-editor.mjs";
 import { RightPanel } from "./rightpanel/right-panel.mjs";
 import { notnull } from "./util.mjs";
+import { BaseScene } from "./3d/scenes/base-scene.js";
 
 const ignoreErrorsContaining = [
 ];
@@ -51,6 +52,9 @@ const designlibrary_div = notnull(leftpanel_div.querySelector("div.designlibrary
 
 /** @type {HTMLDivElement} */
 const file_isection_div = notnull(document.querySelector("div.isection.file"));
+
+/** @type {HTMLDivElement} */
+const testing_buttonscene_div = notnull(document.querySelector("div.testing.buttonscene.threejscontainer"));
 
 
 const _mainsplit = SplitGrid({
@@ -428,6 +432,11 @@ darkModePreference.addEventListener("change", _ev => {
 	primary_design.force_rerender();
 });
 
+
+
+const testing_buttonscene = new BaseScene(testing_buttonscene_div);
+
+
 Object.assign(window, {
 	primary_design,
 	konva_pattern_stage,
@@ -438,4 +447,5 @@ Object.assign(window, {
 	design_library,
 	file_titlebar_manager,
 	user_study_mode,
+	testing_buttonscene,
 });

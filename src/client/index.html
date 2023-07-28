@@ -13,12 +13,26 @@
 	<link rel="apple-touch-icon" href="favicon.512.png" sizes="512x512">
 	<link rel="apple-touch-icon" href="favicon.192.png" sizes="192x192">
 	<link rel="apple-touch-icon" href="favicon.48.png" sizes="48x48">
+
+	<script type="importmap">
+		{
+		  "imports": {
+			"three": "./thirdparty/three/build/three.module.js",
+			"three/examples/": "./thirdparty/three/examples/",
+			"three/addons/": "./thirdparty/three/examples/jsm/"
+		  }
+		}
+	</script>
+
+
 	<script src="./thirdparty/konva.min.js" defer></script>
 	<script src="./js/script.mjs" type="module"></script>
+
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 </head>
 
 <body>
+	<div class="testing buttonscene threejscontainer"></div>
 	<div class="app">
 		<div class="titlebar">
 			<div class="isection file">

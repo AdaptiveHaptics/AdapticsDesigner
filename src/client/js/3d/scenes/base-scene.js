@@ -5,20 +5,24 @@ import { HapticDevice } from "../haptic-device.js";
 
 
 export class BaseScene {
+	#_pattern_design;
 
 	/**
 	 *
+	 * @param {import("../../fe/patterndesign.mjs").MAHPatternDesignFE} pattern_design
 	 * @param {HTMLDivElement} container
 	 */
-	constructor(container) {
+	constructor(pattern_design, container) {
+		this.#_pattern_design = pattern_design;
 		this.container = container;
+
 
 		const renderer = this.renderer = new THREE.WebGLRenderer({
 			// antialias: true,
 		});
-		renderer.setSize(window.innerWidth, window.innerHeight);
-		renderer.setClearColor( 0xfff6e6 );
-		renderer.setClearColor( 0x000000 );
+
+		renderer.setClearColor(0xfff6e6);
+		renderer.setClearColor(0x000000);
 		renderer.shadowMap.enabled = true;
 		renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 		container.appendChild(renderer.domElement);
@@ -29,9 +33,14 @@ export class BaseScene {
 		const axesHelper = new THREE.AxesHelper(5);
 		this.scene.add(axesHelper);
 
-		this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+		this.camera = new THREE.PerspectiveCamera(75, 1, 0.01, 1000);
 		this.camera.position.set(-0.21, 0.24, 0.40);
-		this.camera.lookAt(new THREE.Vector3(0,0,0));
+		this.camera.lookAt(new THREE.Vector3(0, 0, 0));
+
+		window.addEventListener("resize", _ev => this.fitStageIntoParentContainer());
+		const resize_observer = new ResizeObserver(_entries => this.fitStageIntoParentContainer());
+		resize_observer.observe(container);
+		this.fitStageIntoParentContainer();
 
 		this.#_setup_lights();
 
@@ -64,6 +73,18 @@ export class BaseScene {
 			const warning = WebGL.getWebGLErrorMessage();
 			container.appendChild(warning);
 		}
+
+		this.#_pattern_design.state_change_events.addEventListener("playback_update", _ev => {
+			this.haptic_device.playback_vis.update_playback_visualization(this.#_pattern_design.last_eval);
+		});
+		this.haptic_device.playback_vis.update_playback_visualization(this.#_pattern_design.last_eval);
+	}
+
+	fitStageIntoParentContainer() {
+		this.renderer.setSize(this.container.clientWidth, this.container.clientHeight, true);
+		this.camera.aspect = this.container.clientWidth / this.container.clientHeight;
+		this.camera.updateProjectionMatrix();
+		console.log(this.camera.aspect);
 	}
 
 	#_setup_lights() {
@@ -77,15 +98,15 @@ export class BaseScene {
 
 		const dist = 0.1;
 
-		const key_light = this.key_light = this.#_create_shadowed_point_light(0xffffff, -1.8*dist, 1.44*dist, 1.2*dist, 7*(dist**2));
+		const key_light = this.key_light = this.#_create_shadowed_point_light(0xffffff, -1.8 * dist, 1.44 * dist, 1.2 * dist, 7 * (dist ** 2));
 		this.scene.add(key_light);
 		// this.scene.add(new THREE.PointLightHelper(key_light, 0.1));
 
-		const fill_light = this.fill_light = this.#_create_shadowed_point_light(0xffffff, 1.8*dist, 1.3*dist, 1.6*dist, 4*(dist**2));
+		const fill_light = this.fill_light = this.#_create_shadowed_point_light(0xffffff, 1.8 * dist, 1.3 * dist, 1.6 * dist, 4 * (dist ** 2));
 		this.scene.add(fill_light);
 		// this.scene.add(new THREE.PointLightHelper(fill_light, 0.1));
 
-		const back_light = this.back_light = this.#_create_shadowed_point_light(0xffffff, 0.8*dist, 2.4*dist, -2.2*dist, 2*(dist**2));
+		const back_light = this.back_light = this.#_create_shadowed_point_light(0xffffff, 0.8 * dist, 2.4 * dist, -2.2 * dist, 2 * (dist ** 2));
 		this.scene.add(back_light);
 		// this.scene.add(new THREE.PointLightHelper(back_light, 0.1));
 	}

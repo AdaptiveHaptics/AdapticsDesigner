@@ -7,6 +7,7 @@ import { ParameterEditor } from "./parameter-editor.mjs";
 import { RightPanel } from "./rightpanel/right-panel.mjs";
 import { notnull } from "./util.mjs";
 import { BaseScene } from "./3d/scenes/base-scene.js";
+import { CenterPanel } from "./center-panel.js";
 
 const ignoreErrorsContaining = [
 ];
@@ -36,7 +37,9 @@ const mainsplitgrid_div = notnull(document.querySelector("div.mainsplitgrid"));
 /** @type {HTMLDivElement} */
 const rightpanel_div = notnull(mainsplitgrid_div.querySelector("div.right"));
 /** @type {HTMLDivElement} */
-const pattern_div = notnull(mainsplitgrid_div.querySelector("div.center"));
+const centerpanel_div = notnull(mainsplitgrid_div.querySelector("div.center"));
+/** @type {HTMLDivElement} */
+const pattern_div = notnull(mainsplitgrid_div.querySelector("div.patternstagecontainer"));
 /** @type {HTMLDivElement} */
 const patternstage_div = notnull(pattern_div.querySelector("div#patternstage"));
 /** @type {HTMLDivElement} */
@@ -54,7 +57,7 @@ const designlibrary_div = notnull(leftpanel_div.querySelector("div.designlibrary
 const file_isection_div = notnull(document.querySelector("div.isection.file"));
 
 /** @type {HTMLDivElement} */
-const testing_buttonscene_div = notnull(document.querySelector("div.testing.buttonscene.threejscontainer"));
+const threejscontainer_div = notnull(document.querySelector("div.threejscontainer"));
 
 
 const _mainsplit = SplitGrid({
@@ -369,14 +372,10 @@ export class FileTitlebarManager {
 const file_titlebar_manager = new FileTitlebarManager(primary_design, file_isection_div);
 
 
-const testing_buttonscene = new BaseScene(testing_buttonscene_div);
-primary_design.state_change_events.addEventListener("playback_update", _ev => {
-	testing_buttonscene.haptic_device.playback_vis.update_playback_visualization(primary_design.last_eval);
-});
-
-
 primary_design.commit_operation({ rerender: true });
+const three_base_scene = new BaseScene(primary_design, threejscontainer_div);
 const konva_pattern_stage = new KonvaPatternStage(primary_design, patternstage_div, pattern_div);
+const center_panel = new CenterPanel(centerpanel_div);
 const konva_timeline_stage = new KonvaTimelineStage(primary_design, timelinestage_div, timeline_div);
 const right_panel = new RightPanel(primary_design, rightpanel_div);
 const unified_keyframe_editor = right_panel.unified_keyframe_editor;
@@ -449,5 +448,5 @@ Object.assign(window, {
 	design_library,
 	file_titlebar_manager,
 	user_study_mode,
-	testing_buttonscene,
+	three_base_scene,
 });

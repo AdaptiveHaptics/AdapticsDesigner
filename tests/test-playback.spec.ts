@@ -1,18 +1,13 @@
 import { expect } from '@playwright/test';
-import { test_check_no_errors, reset_konva_dblclick } from './util';
+import { stage_click_relative, test_check_no_errors } from './util';
 
 test_check_no_errors('test keyframe operations in pattern pane', async ({ page }) => {
 	page.setDefaultNavigationTimeout(8000);
   	page.setDefaultTimeout(1500);
 	await page.goto('/');
 
-	await page.locator('canvas').nth(3).dblclick({
-		position: {
-		x: 449,
-		y: 43
-		}
-	});
-	await reset_konva_dblclick(page);
+
+	await stage_click_relative(page, '#timelinestage', true, 449 / 1088, 43 / 235);
 
 	await page.getByRole('combobox').selectOption('stop');
 	await expect(page.getByLabel('av_timerTime sec')).toHaveValue('0');

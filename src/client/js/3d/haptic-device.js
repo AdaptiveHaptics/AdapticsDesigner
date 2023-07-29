@@ -54,7 +54,7 @@ class PlaybackVis {
 		];
 
 		const curve = new THREE.CatmullRomCurve3(points);
-		this.geometry = new THREE.TubeGeometry(curve, 20, 0.001, 8, false);
+		this.geometry = new THREE.TubeGeometry(curve, 20, 0.01, 8, false);
 		this.material = new THREE.MeshBasicMaterial({ vertexColors: true });
 
 		this.geometry.setAttribute("color", new THREE.Float32BufferAttribute(colors.flatMap(c => c.toArray()), 3));
@@ -69,7 +69,7 @@ class PlaybackVis {
 	update_playback_visualization(last_eval) {
 		const points = last_eval.map(be => HapticDevice.haptic_to_three_coords(be.ul_control_point.coords));
 		const curve = new THREE.CatmullRomCurve3(points);
-		this.geometry = new THREE.TubeGeometry(curve, 20, 0.001, 8, false);
+		this.geometry = new THREE.TubeGeometry(curve, 20, 0.005, 5, false);
 
 		// Create an array of colors for each point
 		const colors = new Float32Array(points.length * 3);

@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import WebGL from "three/examples/jsm/capabilities/WebGL.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { HapticDevice } from "../haptic-device.js";
 
 
 export class BaseScene {
@@ -12,7 +13,9 @@ export class BaseScene {
 	constructor(container) {
 		this.container = container;
 
-		const renderer = this.renderer = new THREE.WebGLRenderer();
+		const renderer = this.renderer = new THREE.WebGLRenderer({
+			// antialias: true,
+		});
 		renderer.setSize(window.innerWidth, window.innerHeight);
 		renderer.setClearColor( 0xfff6e6 );
 		renderer.setClearColor( 0x000000 );
@@ -27,10 +30,14 @@ export class BaseScene {
 		this.scene.add(axesHelper);
 
 		this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-		this.camera.position.set(-2.0, 2.4, 4.0);
+		this.camera.position.set(-0.21, 0.24, 0.40);
 		this.camera.lookAt(new THREE.Vector3(0,0,0));
 
 		this.#_setup_lights();
+
+
+		const haptic_device = this.haptic_device = new HapticDevice();
+		this.scene.add(haptic_device.getObject3D());
 
 		const ground = this.ground = new THREE.Mesh(
 			new THREE.PlaneGeometry(100, 100),
@@ -41,23 +48,9 @@ export class BaseScene {
 			})
 		);
 		ground.rotation.x = -Math.PI / 2;
-		ground.position.y = -0.5;
+		ground.position.y = -0.08;
 		ground.receiveShadow = true;
 		this.scene.add(ground);
-
-		const cube = this.cube = new THREE.Mesh(
-			new THREE.BoxGeometry(2, 0.5, 2),
-			new THREE.MeshStandardMaterial({
-				// color: 0xff0051,
-				color: 0x00FF00,
-				metalness: 0,
-				roughness: 1,
-			})
-		);
-		cube.position.set(0, 0, 0);
-		cube.castShadow = true;
-		cube.receiveShadow = true;
-		this.scene.add(cube);
 
 		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 
@@ -82,35 +75,39 @@ export class BaseScene {
 		this.hemisphere_light = new THREE.HemisphereLight(0xffffff, 0x0e0e0e, 0.8);
 		this.scene.add(this.hemisphere_light);
 
-		const key_light = this.key_light = new THREE.PointLight(0xffffff);
-		key_light.intensity = 7.6;
-		key_light.position.set(-1.8, 1.44, 1.2); //angle to camera is 26deg
-		key_light.castShadow = true;
-		key_light.shadow.mapSize.width = 1024;
-		key_light.shadow.mapSize.height = 1024;
+		const dist = 0.1;
+
+		const key_light = this.key_light = this.#_create_shadowed_point_light(0xffffff, -1.8*dist, 1.44*dist, 1.2*dist, 7*(dist**2));
 		this.scene.add(key_light);
-		// const pointLightHelper = new THREE.PointLightHelper(key_light, 1);
-		// this.scene.add(pointLightHelper);
+		// this.scene.add(new THREE.PointLightHelper(key_light, 0.1));
 
-		const fill_light = this.fill_light = new THREE.PointLight(0xffffff);
-		fill_light.intensity = 4;
-		fill_light.position.set(1.8, 1.3, 1.6);
-		fill_light.castShadow = true;
-		fill_light.shadow.mapSize.width = 1024;
-		fill_light.shadow.mapSize.height = 1024;
+		const fill_light = this.fill_light = this.#_create_shadowed_point_light(0xffffff, 1.8*dist, 1.3*dist, 1.6*dist, 4*(dist**2));
 		this.scene.add(fill_light);
-		// const pointLightHelper2 = new THREE.PointLightHelper(fill_light, 1);
-		// this.scene.add(pointLightHelper2);
+		// this.scene.add(new THREE.PointLightHelper(fill_light, 0.1));
 
-		const back_light = this.back_light = new THREE.PointLight(0xffffff);
-		back_light.intensity = 2;
-		back_light.position.set(0.8, 2.4, -2.2);
-		back_light.castShadow = true;
-		back_light.shadow.mapSize.width = 1024;
-		back_light.shadow.mapSize.height = 1024;
+		const back_light = this.back_light = this.#_create_shadowed_point_light(0xffffff, 0.8*dist, 2.4*dist, -2.2*dist, 2*(dist**2));
 		this.scene.add(back_light);
-		// const pointLightHelper3 = new THREE.PointLightHelper(back_light, 1);
-		// this.scene.add(pointLightHelper3);
+		// this.scene.add(new THREE.PointLightHelper(back_light, 0.1));
+	}
+
+	/**
+	 *
+	 * @param {THREE.ColorRepresentation} color
+	 * @param {number} x
+	 * @param {number} y
+	 * @param {number} z
+	 * @param {number} intensity
+	 * @returns
+	 */
+	#_create_shadowed_point_light(color, x, y, z, intensity) {
+		const light = new THREE.PointLight(color, intensity);
+		light.position.set(x, y, z);
+		light.castShadow = true;
+		light.shadow.camera.near = 0.001;
+		light.shadow.camera.far = 10;
+		light.shadow.mapSize.width = 1024;
+		light.shadow.mapSize.height = 1024;
+		return light;
 	}
 
 	render() {
@@ -120,6 +117,4 @@ export class BaseScene {
 		this.renderer.render(this.scene, this.camera);
 
 	}
-
-
 }

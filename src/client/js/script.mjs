@@ -369,6 +369,12 @@ export class FileTitlebarManager {
 const file_titlebar_manager = new FileTitlebarManager(primary_design, file_isection_div);
 
 
+const testing_buttonscene = new BaseScene(testing_buttonscene_div);
+primary_design.state_change_events.addEventListener("playback_update", _ev => {
+	testing_buttonscene.haptic_device.playback_vis.update_playback_visualization(primary_design.last_eval);
+});
+
+
 primary_design.commit_operation({ rerender: true });
 const konva_pattern_stage = new KonvaPatternStage(primary_design, patternstage_div, pattern_div);
 const konva_timeline_stage = new KonvaTimelineStage(primary_design, timelinestage_div, timeline_div);
@@ -431,10 +437,6 @@ const darkModePreference = window.matchMedia("(prefers-color-scheme: dark)");
 darkModePreference.addEventListener("change", _ev => {
 	primary_design.force_rerender();
 });
-
-
-
-const testing_buttonscene = new BaseScene(testing_buttonscene_div);
 
 
 Object.assign(window, {

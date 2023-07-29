@@ -449,4 +449,5 @@ Object.assign(window, {
 	file_titlebar_manager,
 	user_study_mode,
 	three_base_scene,
+	center_panel,
 });

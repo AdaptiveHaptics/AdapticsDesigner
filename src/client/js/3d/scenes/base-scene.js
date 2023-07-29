@@ -27,23 +27,24 @@ export class BaseScene {
 		renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 		container.appendChild(renderer.domElement);
 
-
-		this.scene = new THREE.Scene();
-
-		const axesHelper = new THREE.AxesHelper(5);
-		this.scene.add(axesHelper);
-
 		this.camera = new THREE.PerspectiveCamera(75, 1, 0.01, 1000);
-		this.camera.position.set(-0.21, 0.24, 0.40);
-		this.camera.lookAt(new THREE.Vector3(0, 0, 0));
+		this.camera.position.set(-0.20, 0.28, 0.31);
+		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
+		this.controls.target.set(0, 0.1, 0);
+		this.controls.update();
+		this.camera.updateProjectionMatrix();
 
 		window.addEventListener("resize", _ev => this.fitStageIntoParentContainer());
 		const resize_observer = new ResizeObserver(_entries => this.fitStageIntoParentContainer());
 		resize_observer.observe(container);
 		this.fitStageIntoParentContainer();
 
-		this.#_setup_lights();
 
+		this.scene = new THREE.Scene();
+
+		this.scene.add(new THREE.AxesHelper(5));
+
+		this.#_setup_lights(false);
 
 		const haptic_device = this.haptic_device = new HapticDevice();
 		this.scene.add(haptic_device.getObject3D());
@@ -60,8 +61,6 @@ export class BaseScene {
 		ground.position.y = -0.08;
 		ground.receiveShadow = true;
 		this.scene.add(ground);
-
-		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 
 		if (WebGL.isWebGLAvailable()) {
 			const animate = () => {
@@ -82,12 +81,15 @@ export class BaseScene {
 
 	fitStageIntoParentContainer() {
 		this.renderer.setSize(this.container.clientWidth, this.container.clientHeight, true);
-		this.camera.aspect = this.container.clientWidth / this.container.clientHeight;
+		this.camera.aspect = this.container.clientHeight == 0 ? 1 : this.container.clientWidth / this.container.clientHeight;
 		this.camera.updateProjectionMatrix();
-		console.log(this.camera.aspect);
 	}
 
-	#_setup_lights() {
+	/**
+	 *
+	 * @param {boolean} show_helpers
+	 */
+	#_setup_lights(show_helpers) {
 		if (this.ambient_light) throw new Error("Lights already setup");
 
 		this.ambient_light = new THREE.AmbientLight(0xffffff, 0.6);
@@ -100,15 +102,15 @@ export class BaseScene {
 
 		const key_light = this.key_light = this.#_create_shadowed_point_light(0xffffff, -1.8 * dist, 1.44 * dist, 1.2 * dist, 7 * (dist ** 2));
 		this.scene.add(key_light);
-		// this.scene.add(new THREE.PointLightHelper(key_light, 0.1));
+		if (show_helpers) this.scene.add(new THREE.PointLightHelper(key_light, 0.1));
 
 		const fill_light = this.fill_light = this.#_create_shadowed_point_light(0xffffff, 1.8 * dist, 1.3 * dist, 1.6 * dist, 4 * (dist ** 2));
 		this.scene.add(fill_light);
-		// this.scene.add(new THREE.PointLightHelper(fill_light, 0.1));
+		if (show_helpers) this.scene.add(new THREE.PointLightHelper(fill_light, 0.1));
 
 		const back_light = this.back_light = this.#_create_shadowed_point_light(0xffffff, 0.8 * dist, 2.4 * dist, -2.2 * dist, 2 * (dist ** 2));
 		this.scene.add(back_light);
-		// this.scene.add(new THREE.PointLightHelper(back_light, 0.1));
+		if (show_helpers) this.scene.add(new THREE.PointLightHelper(back_light, 0.1));
 	}
 
 	/**

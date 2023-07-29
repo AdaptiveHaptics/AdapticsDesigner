@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import WebGL from "three/examples/jsm/capabilities/WebGL.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { Sky } from "three/examples/jsm/objects/Sky.js";
 import { HapticDevice } from "../haptic-device.js";
 
 
@@ -50,7 +51,7 @@ export class BaseScene {
 		this.scene.add(haptic_device.getObject3D());
 
 		const ground = this.ground = new THREE.Mesh(
-			new THREE.PlaneGeometry(100, 100),
+			new THREE.PlaneGeometry(10, 10),
 			new THREE.MeshStandardMaterial({
 				color: 0x808080,
 				metalness: 0,
@@ -61,6 +62,10 @@ export class BaseScene {
 		ground.position.y = -0.08;
 		ground.receiveShadow = true;
 		this.scene.add(ground);
+
+
+		this.#_create_skybox("sky");
+
 
 		if (WebGL.isWebGLAvailable()) {
 			const animate = () => {
@@ -133,9 +138,92 @@ export class BaseScene {
 		return light;
 	}
 
+	/**
+	 *
+	 * @param {string} skybox_type
+	 */
+	#_create_skybox(skybox_type) {
+		if (this.skybox) throw new Error("Skybox already created");
+		if (skybox_type == "sky") {
+			const sky = this.skybox = new Sky();
+			sky.scale.setScalar(1000);
+			this.scene.add(sky);
+			const sun = new THREE.Vector3();
+
+			const effectController = {
+				turbidity: 1,
+				rayleigh: 3,
+
+				mieCoefficient: 0.005,
+				mieDirectionalG: 0.7,
+				// mieCoefficient: 0.0,
+				// mieDirectionalG: 0.0,
+
+				elevation: 2,
+				azimuth: -120,
+				exposure: this.renderer.toneMappingExposure,
+			};
+
+			const uniforms = sky.material.uniforms;
+
+			uniforms["turbidity"].value = effectController.turbidity;
+			uniforms["rayleigh"].value = effectController.rayleigh;
+			uniforms["mieCoefficient"].value = effectController.mieCoefficient;
+			uniforms["mieDirectionalG"].value = effectController.mieDirectionalG;
+
+			const phi = THREE.MathUtils.degToRad(90 - effectController.elevation);
+			const theta = THREE.MathUtils.degToRad(effectController.azimuth);
+
+			sun.setFromSphericalCoords(1, phi, theta);
+
+			uniforms["sunPosition"].value.copy(sun);
+		} else {
+
+			const skyboxGeometry = new THREE.BoxGeometry(500, 500, 500);
+
+			const uniforms = {
+				iTime: { value: 1.0 },
+				iResolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
+				iMouse: { value: new THREE.Vector2(0, 0) }
+			};
+
+			const starVertexShader = `
+				varying vec3 vWorldDirection;
+
+				void main() {
+					vec4 worldPosition = modelMatrix * vec4(position, 1.0);
+					vWorldDirection = normalize(worldPosition.xyz);
+					gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+				}
+			`;
+			const loader = new THREE.FileLoader();
+
+			loader.loadAsync(new URL("./stars-skybox.frag", import.meta.url).toString()).then(starFragmentShader => {
+				// Create a shader material
+				const skyboxMaterial = this.skyboxMaterial = new THREE.ShaderMaterial({
+					side: THREE.BackSide,
+					uniforms: uniforms,
+					vertexShader: starVertexShader,
+					fragmentShader: starFragmentShader.toString()
+				});
+
+				// skyboxGeometry.scale(1, 1, -1);
+
+				// Create a Mesh with the geometry and material
+				const skybox = this.skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
+
+				// Add the skybox to the scene
+				this.scene.add(skybox);
+			});
+
+		}
+	}
+
 	render() {
 		// cube.rotation.x += 0.01;
 		// cube.rotation.y += 0.01;
+		if (this.skyboxMaterial) this.skyboxMaterial.uniforms.iTime.value += 2**-20;
+
 		this.renderer.render(this.scene, this.camera);
 		this.renderer.render(this.scene, this.camera);
 

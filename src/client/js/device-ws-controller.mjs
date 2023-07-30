@@ -125,6 +125,10 @@ export class DeviceWSController {
 				this.state_change_events.dispatchEvent(new WebsocketStateEvent("playback_update", { detail: { evals: m.data.evals } }));
 				return;
 			}
+			case "tracking_data": {
+				this.state_change_events.dispatchEvent(new WebsocketStateEvent("tracking_data", { detail: { tracking_frame: m.data.tracking_frame } }));
+				return;
+			}
 			case "ignoreme": {
 				break;
 			}
@@ -146,11 +150,13 @@ export class DeviceWSController {
 }
 
 
+/** @typedef {{ hand: import("./pattern-evaluator.mjs").MAHCoordsConst | null }} TrackingFrame */
 /**
  * @typedef {Object} WebsocketStateEventMap
  * @property {{ }} connected
  * @property {{ }} disconnected
  * @property {{ evals: import("./pattern-evaluator.mjs").BrushAtAnimLocalTime[] }} playback_update
+ * @property {{ tracking_frame: TrackingFrame }} tracking_data
  */
 
 /**

@@ -2,7 +2,8 @@ import * as THREE from "three";
 import WebGL from "three/examples/jsm/capabilities/WebGL.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { Sky } from "three/examples/jsm/objects/Sky.js";
-import { HapticDevice } from "../haptic-device.js";
+import { HapticDevice } from "../haptic-device.mjs";
+import { Hand3D } from "../hand-3d.mjs";
 
 
 export class BaseScene {
@@ -49,6 +50,9 @@ export class BaseScene {
 
 		const haptic_device = this.haptic_device = new HapticDevice();
 		this.scene.add(haptic_device.getObject3D());
+
+		const hand = this.hand = new Hand3D();
+		this.scene.add(hand.getObject3D());
 
 		const ground = this.ground = new THREE.Mesh(
 			new THREE.PlaneGeometry(10, 10),

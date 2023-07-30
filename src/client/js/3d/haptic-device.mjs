@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { haptic_to_three_coords } from "./util.mjs";
 
 export class HapticDevice {
 	constructor(device_dimensions = new THREE.Vector3(0.22, 0.04, 0.22)) {
@@ -23,15 +24,6 @@ export class HapticDevice {
 	// Method to get the base object for adding to the scene
 	getObject3D() {
 		return this.object3D;
-	}
-
-	/**
-	 *
-	 * @param {import("../pattern-evaluator.mjs").MAHCoordsConst} haptic_coords
-	 * @returns {THREE.Vector3}
-	 */
-	static haptic_to_three_coords(haptic_coords) {
-		return new THREE.Vector3(haptic_coords.x / 1000, haptic_coords.z / 1000, haptic_coords.y / 1000);
 	}
 }
 
@@ -67,7 +59,7 @@ class PlaybackVis {
 	 * @param {import("../pattern-evaluator.mjs").BrushAtAnimLocalTime[]} last_eval
 	 */
 	update_playback_visualization(last_eval) {
-		const points = last_eval.map(be => HapticDevice.haptic_to_three_coords(be.ul_control_point.coords));
+		const points = last_eval.map(be => haptic_to_three_coords(be.ul_control_point.coords));
 		const curve = new THREE.CatmullRomCurve3(points);
 		this.geometry = new THREE.TubeGeometry(curve, 20, 0.005, 5, false);
 

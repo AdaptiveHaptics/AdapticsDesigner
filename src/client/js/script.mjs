@@ -6,8 +6,8 @@ import { DesignLibrary } from "./leftpanel/design-library.mjs";
 import { ParameterEditor } from "./parameter-editor.mjs";
 import { RightPanel } from "./rightpanel/right-panel.mjs";
 import { notnull } from "./util.mjs";
-import { BaseScene } from "./3d/scenes/base-scene.js";
-import { CenterPanel } from "./center-panel.js";
+import { BaseScene } from "./3d/scenes/base-scene.mjs";
+import { CenterPanel } from "./center-panel.mjs";
 
 const ignoreErrorsContaining = [
 ];
@@ -184,6 +184,9 @@ document.addEventListener("paste", ev => {
 		});
 		websocket.state_change_events.addEventListener("disconnected", _ev => {
 			websocket_state_span.textContent =  websocket.destroyed ? "disconnected" : "reconnecting...";
+		});
+		websocket.state_change_events.addEventListener("tracking_data", ev => {
+			three_base_scene.hand.update_tracking_data(ev.detail.tracking_frame);
 		});
 	});
 	websocket_disconnect_button.addEventListener("click", () => {

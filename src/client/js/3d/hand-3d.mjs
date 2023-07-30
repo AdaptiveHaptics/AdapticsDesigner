@@ -3,16 +3,22 @@ import { haptic_to_three_coords } from "./util.mjs";
 
 
 export class Hand3D {
-	constructor() {
+	/**
+	 *
+	 * @param {import("./scenes/base-scene.mjs").BaseScene} base_scene
+	 */
+	constructor(base_scene) {
 		this.object3D = new THREE.Object3D();
 		this.object3D.name = "Hand";
 		const palm = this.palm = new THREE.Mesh(
 			new THREE.BoxGeometry(0.1, 0.025, 0.1),
-			new THREE.MeshStandardMaterial({ color: 0xEEEEEE, metalness: 0, roughness: 1 })
+			new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, color: 0x00ff00 })
 		);
 		palm.castShadow = true;
 		palm.receiveShadow = true;
 		this.object3D.add(palm);
+
+		base_scene.hand_outline_pass.selectedObjects = [this.palm];
 	}
 
 	/**

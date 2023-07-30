@@ -5,6 +5,11 @@ import { Sky } from "three/examples/jsm/objects/Sky.js";
 import { HapticDevice } from "../haptic-device.mjs";
 import { Hand3D } from "../hand-3d.mjs";
 
+import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
+import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass.js";
+import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
+
 
 export class BaseScene {
 	#_pattern_design;
@@ -21,20 +26,41 @@ export class BaseScene {
 
 		const renderer = this.renderer = new THREE.WebGLRenderer({
 			// antialias: true,
+			// alpha: true,
 		});
 
-		renderer.setClearColor(0xfff6e6);
 		renderer.setClearColor(0x000000);
 		renderer.shadowMap.enabled = true;
 		renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 		container.appendChild(renderer.domElement);
 
-		this.camera = new THREE.PerspectiveCamera(75, 1, 0.01, 1000);
+		const camera = this.camera = new THREE.PerspectiveCamera(75, 1, 0.01, 1000);
 		this.camera.position.set(-0.20, 0.28, 0.31);
 		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 		this.controls.target.set(0, 0.1, 0);
 		this.controls.update();
 		this.camera.updateProjectionMatrix();
+
+
+		const scene = this.scene = new THREE.Scene();
+
+		const composer = this.composer =  new EffectComposer(renderer);
+		const render_pass = this.render_pass = new RenderPass(scene, camera);
+		// render_pass.clear = true;
+		composer.addPass(render_pass);
+
+		// for hand outline
+		const hand_outline_pass = this.hand_outline_pass = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), this.scene, this.camera);
+		this.hand_outline_pass.edgeStrength = 3.0;  // The strength of the edges
+		this.hand_outline_pass.edgeGlow = 0.7;      // The glow effect of the edges
+		this.hand_outline_pass.edgeThickness = 2.0; // The thickness of the edges
+		this.hand_outline_pass.visibleEdgeColor.set("#ffffff");  // The color of the visible edges
+		this.hand_outline_pass.hiddenEdgeColor.set("#292929"); // The color of the hidden edges
+		composer.addPass(hand_outline_pass);
+
+		const output_pass = this.output_pass = new OutputPass();
+		composer.addPass(output_pass);
+
 
 		window.addEventListener("resize", _ev => this.fitStageIntoParentContainer());
 		const resize_observer = new ResizeObserver(_entries => this.fitStageIntoParentContainer());
@@ -42,7 +68,6 @@ export class BaseScene {
 		this.fitStageIntoParentContainer();
 
 
-		this.scene = new THREE.Scene();
 
 		this.scene.add(new THREE.AxesHelper(5));
 
@@ -51,7 +76,7 @@ export class BaseScene {
 		const haptic_device = this.haptic_device = new HapticDevice();
 		this.scene.add(haptic_device.getObject3D());
 
-		const hand = this.hand = new Hand3D();
+		const hand = this.hand = new Hand3D(this);
 		this.scene.add(hand.getObject3D());
 
 		const ground = this.ground = new THREE.Mesh(
@@ -89,8 +114,11 @@ export class BaseScene {
 	}
 
 	fitStageIntoParentContainer() {
-		this.renderer.setSize(this.container.clientWidth, this.container.clientHeight, true);
-		this.camera.aspect = this.container.clientHeight == 0 ? 1 : this.container.clientWidth / this.container.clientHeight;
+		const cw = this.container.clientWidth;
+		const ch = this.container.clientHeight;
+		this.renderer.setSize(cw, ch, true);
+		this.composer.setSize(cw, ch);
+		this.camera.aspect = ch == 0 ? 1 : cw / ch;
 		this.camera.updateProjectionMatrix();
 	}
 
@@ -224,12 +252,11 @@ export class BaseScene {
 	}
 
 	render() {
+		if (this.container.clientWidth == 0 || this.container.clientHeight == 0) return;
 		// cube.rotation.x += 0.01;
 		// cube.rotation.y += 0.01;
 		if (this.skyboxMaterial) this.skyboxMaterial.uniforms.iTime.value += 2**-20;
 
-		this.renderer.render(this.scene, this.camera);
-		this.renderer.render(this.scene, this.camera);
-
+		this.composer.render();
 	}
 }

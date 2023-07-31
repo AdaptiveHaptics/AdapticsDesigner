@@ -10,11 +10,11 @@ export function notnull(v) {
 }
 /**
  *
- * @param {never} _x
+ * @param {never} x
  * @returns {never}
  */
-export function assert_unreachable(_x) {
-	throw new Error("Didn't expect to get here");
+export function assert_unreachable(x) {
+	throw new Error("Unexpected variant: " + x);
 }
 
 export function milliseconds_to_hhmmssms_format(t) {

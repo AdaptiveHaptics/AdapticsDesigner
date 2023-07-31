@@ -79,6 +79,7 @@ const _bottomsplit = SplitGrid({
 
 
 const PRIMARY_DESIGN_LOCAL_STORAGE_KEY = "primary_design";
+const WEBSOCKET_CONNECTED_LOCALSTORAGE_KEY = "websocket_connected";
 
 
 /** @type {MAHPatternDesignFE} */
@@ -169,8 +170,13 @@ document.addEventListener("paste", ev => {
 	/** @type {HTMLInputElement} */
 	const tracking_input = notnull(document.querySelector(".isection.websocket input.tracking"));
 
+	if (window.localStorage.getItem(WEBSOCKET_CONNECTED_LOCALSTORAGE_KEY) == "true") {
+		requestAnimationFrame(() => websocket_connect_button.click());
+	}
 	websocket_connect_button.addEventListener("click", () => {
 		primary_design.connect_websocket(websocketurl_input.value);
+
+		window.localStorage.setItem(WEBSOCKET_CONNECTED_LOCALSTORAGE_KEY, "true");
 
 		websocket_connect_button.style.display = "none";
 		websocket_disconnect_button.style.display = "";
@@ -191,6 +197,8 @@ document.addEventListener("paste", ev => {
 	});
 	websocket_disconnect_button.addEventListener("click", () => {
 		primary_design.disconnect_websocket();
+
+		window.localStorage.removeItem(WEBSOCKET_CONNECTED_LOCALSTORAGE_KEY);
 
 		websocket_connect_button.style.display = "";
 		websocket_disconnect_button.style.display = "none";

@@ -252,10 +252,10 @@ export class BaseScene {
 	}
 
 	render() {
-		if (this.container.clientWidth == 0 || this.container.clientHeight == 0) return;
-		// cube.rotation.x += 0.01;
-		// cube.rotation.y += 0.01;
-		if (this.skyboxMaterial) this.skyboxMaterial.uniforms.iTime.value += 2**-20;
+		const rsize = this.renderer.getSize(new THREE.Vector2());
+		if (rsize.x == 0 || rsize.y == 0) return;
+
+		if (this.skyboxMaterial) this.skyboxMaterial.uniforms.iTime.value += 2**-20; // ~0.000001 == 10^-6
 
 		this.composer.render();
 	}

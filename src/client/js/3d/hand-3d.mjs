@@ -13,9 +13,10 @@ export class Hand3D {
 	constructor(base_scene) {
 		this.object3D = new THREE.Object3D();
 		this.object3D.name = "Hand";
-		const palm_geometry = new THREE.BoxGeometry(0.08, 0.012, 0.08);
+		const palm_geometry = new THREE.BoxGeometry(0.08, 0.012, 0.06);
 		palm_geometry.rotateY(0 * Math.PI / 180);
-		palm_geometry.translate(0, 0, -0.035);
+		// palm_geometry.translate(0, 0, -0.035);
+		palm_geometry.translate(0, 0, -0.02);
 		const palm = this.palm = new THREE.Mesh(
 			palm_geometry,
 			new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, color: 0x00ff00 })

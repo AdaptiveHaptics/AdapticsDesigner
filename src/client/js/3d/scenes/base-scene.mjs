@@ -23,7 +23,6 @@ export class BaseScene {
 		this.#_pattern_design = pattern_design;
 		this.container = container;
 
-
 		const renderer = this.renderer = new THREE.WebGLRenderer({
 			// antialias: true,
 			// alpha: true,
@@ -91,7 +90,6 @@ export class BaseScene {
 		ground.position.y = -0.08;
 		ground.receiveShadow = true;
 		this.scene.add(ground);
-
 
 		this.#_create_skybox("sky");
 
@@ -251,12 +249,52 @@ export class BaseScene {
 		}
 	}
 
+
+	#_disabled_due_to_low_performance = false;
+	#_last_performance_check = 0;
+	#_frames_since_last_performance_check = 0;
+	minimum_fps = 24;
+	perf_check_interval_seconds = 2;
+
+	#_no_performance_check = false;
 	render() {
 		const rsize = this.renderer.getSize(new THREE.Vector2());
-		if (rsize.x == 0 || rsize.y == 0) return;
+		if (rsize.x == 0 || rsize.y == 0) {
+			this.#_no_performance_check = false; // reset no performance check if the render tab is hidden
+			return;
+		}
+		if (this.#_disabled_due_to_low_performance) return;
 
 		if (this.skyboxMaterial) this.skyboxMaterial.uniforms.iTime.value += 2**-20; // ~0.000001 == 10^-6
 
 		this.composer.render();
+		if (!this.#_no_performance_check) {
+			this.#_frames_since_last_performance_check++;
+
+			const now = performance.now();
+			if (now - this.#_last_performance_check > 1000 * this.perf_check_interval_seconds) {
+				if (this.#_frames_since_last_performance_check < this.perf_check_interval_seconds*0.90*this.minimum_fps) {
+					this.#_disable_due_to_low_performance();
+				}
+				this.#_frames_since_last_performance_check = 0;
+				this.#_last_performance_check = now;
+			}
+		}
+	}
+
+	#_disable_due_to_low_performance() {
+		console.warn("Disabling THREEJS scene due to low performance!");
+		this.#_disabled_due_to_low_performance = true;
+
+		// show a message to the user and if they click it, re-enable and set _no_performance_check
+		const message = document.createElement("div");
+		message.classList.add("low-performance-message");
+		message.textContent = "Due to low performance, the 3D scene has been disabled. Click to re-enable.";
+		this.container.appendChild(message);
+		message.addEventListener("click", () => {
+			this.#_disabled_due_to_low_performance = false;
+			this.#_no_performance_check = true;
+			this.container.removeChild(message);
+		});
 	}
 }

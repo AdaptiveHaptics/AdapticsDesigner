@@ -588,7 +588,7 @@ export class MAHPatternDesignFE {
 	 * @param {string} param
 	 * @param {number} value
 	 */
-	update_evaluator_user_params(param, value) {
+	update_evaluator_user_param(param, value) {
 		this.evaluator_params.user_parameters.set(param, this.#_clamp_user_param(param, value));
 		const ce = new StateChangeEvent("parameters_update", { detail: { time: false } });
 		this.state_change_events.dispatchEvent(ce);
@@ -920,7 +920,7 @@ export class MAHPatternDesignFE {
 			const param_value = this.evaluator_params.user_parameters.get(param_name);
 			const new_value = this.#_clamp_user_param(param_name, param_value);
 			if (param_value != new_value) {
-				this.update_evaluator_user_params(param_name, new_value);
+				this.update_evaluator_user_param(param_name, new_value);
 			}
 		}
 	}

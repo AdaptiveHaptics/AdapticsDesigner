@@ -5,11 +5,16 @@ async function reset_konva_dblclick(page: Page) {
 	await page.evaluate(() => { window["Konva"]._mouseInDblClickWindow = window["Konva"]._pointerInDblClickWindow = window["Konva"]._touchInDblClickWindow = false; });
 }
 
+const ignore_errors = [
+	"THREE.WebGLRenderer: A WebGL context could not be created.",
+	"THREE.WebGLRenderer: Error creating WebGL context.",
+	"THREE.WebGLRenderer: Error creating WebGL2 context."
+];
 export const test_check_no_errors = test_base.extend({
 	page: async ({ page }, use) => {
 		const error_messages: string[] = [];
 		page.on('console', msg => {
-			if (msg.type() === 'error') error_messages.push(`[${msg.type()}] ${msg.text()}`)
+			if (msg.type() === 'error' && !ignore_errors.find(ie => msg.text().includes(ie))) error_messages.push(`[${msg.type()}] ${msg.text()}`)
 		});
 		await use(page);
 		expect(error_messages).toEqual([]);

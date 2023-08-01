@@ -39,7 +39,10 @@ export default defineConfig({
 
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      use: {
+        ...devices['Desktop Firefox'],
+        // launchOptions: { firefoxUserPrefs: { 'webgl.disabled': true, } } // firefox webgl doesn't work in GH actions environment, disable here to test locally
+      },
     },
 
     // something is broken, page doesnt load, no errors

@@ -6,7 +6,7 @@ import { DesignLibrary } from "./leftpanel/design-library.mjs";
 import { ParameterEditor } from "./parameter-editor.mjs";
 import { RightPanel } from "./rightpanel/right-panel.mjs";
 import { notnull } from "./util.mjs";
-import { BaseScene } from "./3d/scenes/base-scene.mjs";
+import { BaseEnvironment } from "./3d/scenes/base-environment.mjs";
 import { CenterPanel } from "./center-panel.mjs";
 
 const ignoreErrorsContaining = [
@@ -189,7 +189,7 @@ document.addEventListener("paste", ev => {
 			websocket_state_span.textContent =  websocket.destroyed ? "disconnected" : "reconnecting...";
 		});
 		websocket.state_change_events.addEventListener("tracking_data", ev => {
-			three_base_scene?.hand.update_tracking_data(ev.detail.tracking_frame);
+			three_base_environment?.hand.update_tracking_data(ev.detail.tracking_frame);
 		});
 	});
 	websocket_disconnect_button.addEventListener("click", () => {
@@ -382,9 +382,9 @@ const file_titlebar_manager = new FileTitlebarManager(primary_design, file_isect
 
 primary_design.commit_operation({ rerender: true });
 
-/** @type {BaseScene | null} */
-let three_base_scene = null;
-try { three_base_scene = new BaseScene(primary_design, threejscontainer_div); } catch (e) { console.warn(e); }
+/** @type {BaseEnvironment | null} */
+let three_base_environment = null;
+try { three_base_environment = new BaseEnvironment(primary_design, threejscontainer_div); } catch (e) { console.warn(e); }
 const konva_pattern_stage = new KonvaPatternStage(primary_design, patternstage_div, pattern_div);
 const center_panel = new CenterPanel(centerpanel_div);
 const konva_timeline_stage = new KonvaTimelineStage(primary_design, timelinestage_div, timeline_div);
@@ -459,6 +459,6 @@ Object.assign(window, {
 	design_library,
 	file_titlebar_manager,
 	user_study_mode,
-	three_base_scene,
+	three_base_environment,
 	center_panel,
 });

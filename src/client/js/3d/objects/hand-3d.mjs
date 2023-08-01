@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { haptic_to_three_coords } from "../util.mjs";
+import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass.js";
 
 function haptic_to_three_vec(haptic_vec) {
 	return new THREE.Vector3(haptic_vec.x, haptic_vec.z, - haptic_vec.y);
@@ -8,9 +9,9 @@ function haptic_to_three_vec(haptic_vec) {
 export class Hand3D {
 	/**
 	 *
-	 * @param {import("../scenes/base-scene.mjs").BaseScene} base_scene
+	 * @param {import("../scenes/base-environment.mjs").BaseEnvironment} base_environment
 	 */
-	constructor(base_scene) {
+	constructor(base_environment) {
 		this.object3D = new THREE.Object3D();
 		this.object3D.name = "Hand";
 		const palm_geometry = new THREE.BoxGeometry(0.08, 0.012, 0.06);
@@ -35,7 +36,7 @@ export class Hand3D {
 		];
 		this.digits.forEach(d => this.object3D.add(d.getObject3D()));
 
-		base_scene.hand_outline_pass.selectedObjects = [this.palm, ...this.digits.map(d => d.getObject3D())];
+		base_environment.hand_outline_pass.selectedObjects = [this.palm, ...this.digits.map(d => d.getObject3D())];
 
 		this.update_tracking_data({ hand: null });
 	}
@@ -72,6 +73,23 @@ export class Hand3D {
 
 	getObject3D() {
 		return this.object3D;
+	}
+
+	/**
+	 *
+	 * @param {THREE.Vector2} resolution
+	 * @param {THREE.Scene} scene
+	 * @param {THREE.Camera} camera
+	 * @returns
+	 */
+	static create_outline_pass(resolution = new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera) {
+		const hand_outline_pass = new OutlinePass(resolution, scene, camera);
+		hand_outline_pass.edgeStrength = 3.0;  // The strength of the edges
+		hand_outline_pass.edgeGlow = 0.7;      // The glow effect of the edges
+		hand_outline_pass.edgeThickness = 2.0; // The thickness of the edges
+		hand_outline_pass.visibleEdgeColor.set("#ffffff");  // The color of the visible edges
+		hand_outline_pass.hiddenEdgeColor.set("#292929"); // The color of the hidden edges
+		return hand_outline_pass;
 	}
 }
 

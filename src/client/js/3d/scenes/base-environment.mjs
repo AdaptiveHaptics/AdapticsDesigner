@@ -7,12 +7,14 @@ import { Hand3D } from "../objects/hand-3d.mjs";
 
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
-import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass.js";
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 
 
-export class BaseScene {
+export class BaseEnvironment {
 	#_pattern_design;
+
+	/** @type {BaseExperience | null} */
+	#_experience = null;
 
 	/**
 	 *
@@ -39,7 +41,7 @@ export class BaseScene {
 		renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 		container.appendChild(renderer.domElement);
 
-		const camera = this.camera = new THREE.PerspectiveCamera(75, 1, 0.01, 1000);
+		this.camera = new THREE.PerspectiveCamera(75, 1, 0.01, 1000);
 		this.camera.position.set(-0.20, 0.28, 0.31);
 		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 		this.controls.target.set(0, 0.1, 0);
@@ -47,24 +49,19 @@ export class BaseScene {
 		this.camera.updateProjectionMatrix();
 
 
-		const scene = this.scene = new THREE.Scene();
+		this.scene = new THREE.Scene();
 
-		const composer = this.composer =  new EffectComposer(renderer);
-		const render_pass = this.render_pass = new RenderPass(scene, camera);
+		this.composer =  new EffectComposer(renderer);
+		this.render_pass = new RenderPass(this.scene, this.camera);
 		// render_pass.clear = true;
-		composer.addPass(render_pass);
+		this.composer.addPass(this.render_pass);
 
 		// for hand outline
-		const hand_outline_pass = this.hand_outline_pass = new OutlinePass(new THREE.Vector2(window.innerWidth, window.innerHeight), this.scene, this.camera);
-		this.hand_outline_pass.edgeStrength = 3.0;  // The strength of the edges
-		this.hand_outline_pass.edgeGlow = 0.7;      // The glow effect of the edges
-		this.hand_outline_pass.edgeThickness = 2.0; // The thickness of the edges
-		this.hand_outline_pass.visibleEdgeColor.set("#ffffff");  // The color of the visible edges
-		this.hand_outline_pass.hiddenEdgeColor.set("#292929"); // The color of the hidden edges
-		composer.addPass(hand_outline_pass);
+		this.hand_outline_pass = Hand3D.create_outline_pass(new THREE.Vector2(window.innerWidth, window.innerHeight), this.scene, this.camera);
+		this.composer.addPass(this.hand_outline_pass);
 
-		const output_pass = this.output_pass = new OutputPass();
-		composer.addPass(output_pass);
+		this.output_pass = new OutputPass();
+		this.composer.addPass(this.output_pass);
 
 
 		window.addEventListener("resize", _ev => this.fitStageIntoParentContainer());
@@ -78,13 +75,13 @@ export class BaseScene {
 
 		this.#_setup_lights(false);
 
-		const haptic_device = this.haptic_device = new HapticDevice();
-		this.scene.add(haptic_device.getObject3D());
+		this.haptic_device = new HapticDevice();
+		this.scene.add(this.haptic_device.getObject3D());
 
-		const hand = this.hand = new Hand3D(this);
-		this.scene.add(hand.getObject3D());
+		this.hand = new Hand3D(this);
+		this.scene.add(this.hand.getObject3D());
 
-		const ground = this.ground = new THREE.Mesh(
+		this.ground = new THREE.Mesh(
 			new THREE.PlaneGeometry(10, 10),
 			new THREE.MeshStandardMaterial({
 				color: 0x808080,
@@ -92,15 +89,12 @@ export class BaseScene {
 				roughness: 1,
 			})
 		);
-		ground.rotation.x = -Math.PI / 2;
-		ground.position.y = -0.08;
-		ground.receiveShadow = true;
-		this.scene.add(ground);
+		this.ground.rotation.x = -Math.PI / 2;
+		this.ground.position.y = -0.08;
+		this.ground.receiveShadow = true;
+		this.scene.add(this.ground);
 
 		this.#_create_skybox("sky");
-
-
-		this.initalize_scene_objects();
 
 
 		if (WebGL.isWebGLAvailable()) {
@@ -120,11 +114,11 @@ export class BaseScene {
 		this.haptic_device.playback_vis.update_playback_visualization(this.#_pattern_design.last_eval);
 	}
 
-	/**
-	 * @abstract
-	 */
-	initalize_scene_objects() {
-		if (this.constructor !== BaseScene) console.warn("initalize_scene_objects not implemented"); // warn if not implemented in subclass
+	load_experience(experience) {
+		if (this.#_experience) this.scene.remove(this.#_experience.getObject3D());
+
+		this.#_experience = experience;
+		this.scene.add(experience.getObject3D());
 	}
 
 	fitStageIntoParentContainer() {
@@ -323,5 +317,15 @@ export class BaseScene {
 			this.#_no_performance_check = true;
 			this.container.removeChild(message_div);
 		});
+	}
+}
+
+export class BaseExperience {
+	/**
+	 * @abstract
+	 * @returns {THREE.Object3D}
+	 */
+	getObject3D() {
+		throw new Error("Abstract method not implemented");
 	}
 }

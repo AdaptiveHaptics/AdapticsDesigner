@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { haptic_to_three_coords } from "./util.mjs";
+import { haptic_to_three_coords } from "../util.mjs";
 
 function haptic_to_three_vec(haptic_vec) {
 	return new THREE.Vector3(haptic_vec.x, haptic_vec.z, - haptic_vec.y);
@@ -8,7 +8,7 @@ function haptic_to_three_vec(haptic_vec) {
 export class Hand3D {
 	/**
 	 *
-	 * @param {import("./scenes/base-scene.mjs").BaseScene} base_scene
+	 * @param {import("../scenes/base-scene.mjs").BaseScene} base_scene
 	 */
 	constructor(base_scene) {
 		this.object3D = new THREE.Object3D();
@@ -42,7 +42,7 @@ export class Hand3D {
 
 	/**
 	 *
-	 * @param {import("../device-ws-controller.mjs").TrackingFrame} tracking_frame
+	 * @param {import("../../device-ws-controller.mjs").TrackingFrame} tracking_frame
 	 */
 	update_tracking_data(tracking_frame) {
 		if (tracking_frame.hand) {
@@ -97,7 +97,7 @@ export class Digit3D {
 	}
 
 	/**
-	 * @param {import("../../../shared/AdapticsWSServerMessage").TrackingFrameDigit} tracking_frame_digit
+	 * @param {import("../../../../shared/AdapticsWSServerMessage").TrackingFrameDigit} tracking_frame_digit
 	 */
 	update_tracking_data(tracking_frame_digit) {
 		for (let i=0; i<4; i++) {

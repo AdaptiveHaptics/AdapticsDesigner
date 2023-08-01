@@ -2,8 +2,8 @@ import * as THREE from "three";
 import WebGL from "three/examples/jsm/capabilities/WebGL.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { Sky } from "three/examples/jsm/objects/Sky.js";
-import { HapticDevice } from "../haptic-device.mjs";
-import { Hand3D } from "../hand-3d.mjs";
+import { HapticDevice } from "../objects/haptic-device.mjs";
+import { Hand3D } from "../objects/hand-3d.mjs";
 
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";

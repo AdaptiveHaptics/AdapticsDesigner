@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { haptic_to_three_coords } from "./util.mjs";
+import { haptic_to_three_coords } from "../util.mjs";
 
 export class HapticDevice {
 	constructor(device_dimensions = new THREE.Vector3(0.22, 0.04, 0.22)) {
@@ -56,7 +56,7 @@ class PlaybackVis {
 
 	/**
 	 *
-	 * @param {import("../pattern-evaluator.mjs").BrushAtAnimLocalTime[]} last_eval
+	 * @param {import("../../pattern-evaluator.mjs").BrushAtAnimLocalTime[]} last_eval
 	 */
 	update_playback_visualization(last_eval) {
 		const points = last_eval.map(be => haptic_to_three_coords(be.ul_control_point.coords));

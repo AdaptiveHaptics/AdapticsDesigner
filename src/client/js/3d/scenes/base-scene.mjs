@@ -251,7 +251,7 @@ export class BaseScene {
 
 
 	#_disabled_due_to_low_performance = false;
-	#_last_performance_check = 0;
+	#_last_performance_check = performance.now();
 	#_frames_since_last_performance_check = 0;
 	minimum_fps = 24;
 	perf_check_interval_seconds = 2;
@@ -261,6 +261,8 @@ export class BaseScene {
 		const rsize = this.renderer.getSize(new THREE.Vector2());
 		if (rsize.x == 0 || rsize.y == 0) {
 			this.#_no_performance_check = false; // reset no performance check if the render tab is hidden
+			this.#_last_performance_check = performance.now();
+			this.#_frames_since_last_performance_check = 0;
 			return;
 		}
 		if (this.#_disabled_due_to_low_performance) return;

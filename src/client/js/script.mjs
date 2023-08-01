@@ -1,4 +1,4 @@
-import Split from "../thirdparty/split-grid.mjs";
+import Split from "split-grid";
 import { MAHPatternDesignFE } from "./fe/patterndesign.mjs";
 import { KonvaPatternStage } from "./konvapanes/pattern-stage.mjs";
 import { KonvaTimelineStage } from "./konvapanes/timeline-stage.mjs";

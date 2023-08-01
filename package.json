@@ -11,6 +11,7 @@
     "@types/json-schema": "^7.0.12",
     "@types/three": "^0.154.0",
     "@types/wicg-file-system-access": "^2020.9.6",
+    "@types/sortablejs": "^1.15.1",
     "eslint": "^8.30.0",
     "http-server": "^14.1.1",
     "typescript": "^5.1.6"

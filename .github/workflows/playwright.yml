@@ -17,7 +17,7 @@ jobs:
     - name: Install dependencies
       run: npm ci
     - name: Type check
-      run: tsc --project ./jsconfig.json
+      run: npx tsc --project ./jsconfig.json
     # - name: Install Playwright Browsers # not needed with container image above
     #   run: npx playwright install --with-deps
     - name: Run Playwright tests

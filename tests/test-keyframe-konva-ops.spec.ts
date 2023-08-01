@@ -9,9 +9,9 @@ test_check_no_errors('test keyframe operations in pattern pane', async ({ page }
 	{ //test pattern pane creation
 		await stage_click_relative(page, '#patternstage', true, 95 / 396, 285 / 396);
 
-		await stage_click_relative(page, '#patternstage', true, 95 / 396, 70 / 396);
+		await stage_click_relative(page, '#patternstage', true, 95 / 396, 73 / 396);
 
-		await stage_click_relative(page, '#patternstage', true, 310 / 396, 70 / 396);
+		await stage_click_relative(page, '#patternstage', true, 310 / 396, 73 / 396);
 
 		await stage_click_relative(page, '#patternstage', true, 310 / 396, 280 / 396);
 
@@ -24,7 +24,7 @@ test_check_no_errors('test keyframe operations in pattern pane', async ({ page }
 	}
 
 	// delete keyframe
-	await stage_click_relative(page, '#patternstage', false, 310 / 396, 70 / 396, { modifiers: ['Alt'] });
+	await stage_click_relative(page, '#patternstage', false, 310 / 396, 73 / 396, { modifiers: ['Alt'] });
 
 	const assert_s2 = async () => {
 		const keyframes_expected = JSON.parse('[{"time":0,"type":"standard","brush":{"brush":{"name":"circle","params":{"radius":{"type":"f64","value":10},"am_freq":{"type":"f64","value":0}}},"transition":{"name":"linear","params":{}}},"intensity":{"intensity":{"name":"constant","params":{"value":{"type":"f64","value":1}}},"transition":{"name":"linear","params":{}}},"coords":{"coords":{"x":0,"y":0,"z":0},"transition":{"name":"linear","params":{}}},"cjumps":[]},{"time":500,"type":"standard","brush":{"brush":{"name":"circle","params":{"radius":{"type":"f64","value":10},"am_freq":{"type":"f64","value":0}}},"transition":{"name":"linear","params":{}}},"intensity":{"intensity":{"name":"constant","params":{"value":{"type":"f64","value":1}}},"transition":{"name":"linear","params":{}}},"coords":{"coords":{"x":-60,"y":-50,"z":0},"transition":{"name":"linear","params":{}}},"cjumps":[]},{"time":1000,"type":"standard","brush":{"brush":{"name":"circle","params":{"radius":{"type":"f64","value":10},"am_freq":{"type":"f64","value":0}}},"transition":{"name":"linear","params":{}}},"intensity":{"intensity":{"name":"constant","params":{"value":{"type":"f64","value":1}}},"transition":{"name":"linear","params":{}}},"coords":{"coords":{"x":-60,"y":70,"z":0},"transition":{"name":"linear","params":{}}},"cjumps":[]},{"time":2000,"type":"standard","brush":{"brush":{"name":"circle","params":{"radius":{"type":"f64","value":10},"am_freq":{"type":"f64","value":0}}},"transition":{"name":"linear","params":{}}},"intensity":{"intensity":{"name":"constant","params":{"value":{"type":"f64","value":1}}},"transition":{"name":"linear","params":{}}},"coords":{"coords":{"x":65,"y":-45,"z":0},"transition":{"name":"linear","params":{}}},"cjumps":[]}]');

@@ -384,7 +384,7 @@ primary_design.commit_operation({ rerender: true });
 
 /** @type {BaseScene | null} */
 let three_base_scene = null;
-try { three_base_scene = new BaseScene(primary_design, threejscontainer_div); } catch (e) { console.error(e); }
+try { three_base_scene = new BaseScene(primary_design, threejscontainer_div); } catch (e) { console.warn(e); }
 const konva_pattern_stage = new KonvaPatternStage(primary_design, patternstage_div, pattern_div);
 const center_panel = new CenterPanel(centerpanel_div);
 const konva_timeline_stage = new KonvaTimelineStage(primary_design, timelinestage_div, timeline_div);

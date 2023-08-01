@@ -135,9 +135,13 @@ export class DeviceWSController {
 			}
 			//@ts-ignore
 			case "ignoreme": { break; }
-			default: assert_unreachable(m);
+			default:
+				try { assert_unreachable(m); } catch (e) {
+					// @ts-ignore
+					console.warn(`unhandled websocket message: '${m.cmd}'`);
+				}
 		}
-		console.log(m);
+		// console.log(m);
 	}
 
 

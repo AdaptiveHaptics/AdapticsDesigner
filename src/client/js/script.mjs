@@ -397,14 +397,28 @@ const search_up = new URLSearchParams(window.location.search);
 const user_study_mode = ["user_study", "userstudy", "user-study", "pilot_study", "pilotstudy", "pilot-study"].some(s => search_up.has(s));
 console.log("user_study_mode: ", user_study_mode);
 
+/**
+ *
+ * @param {string} url
+ * @returns {Promise<MidAirHapticsAnimationFileFormat>}
+ */
 const load_pattern = async (url) => {
-	const f = await fetch(url);
-	if (f.status == 404) {
-		alert(`Failed to load pattern '${url}': 404`);
-		throw new Error(`Failed to load pattern '${url}': 404`);
+	try {
+		const f = await fetch(url);
+		if (f.status == 404) {
+			alert(`Failed to load pattern '${url}': 404`);
+			throw new Error(`Failed to load pattern '${url}': 404`);
+		}
+		const json = /** @type {MidAirHapticsAnimationFileFormat} */ (await f.json());
+		return json;
+	} catch (e) {
+		if (e.name == "TypeError" && e.message == "Failed to fetch") {
+			console.error(e); // happens when the user refreshes the tab before the fetch completes
+			// @ts-ignore
+			return null;
+		}
+		else throw e;
 	}
-	const json = /** @type {MidAirHapticsAnimationFileFormat} */ (await f.json());
-	return json;
 };
 /** @type {(namepath: string, urlpath: string) => [string, Promise<MidAirHapticsAnimationFileFormat>]} */
 const load_pattern_into_tuple = (namepath, urlpath) => [namepath, load_pattern(urlpath)];

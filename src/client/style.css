@@ -593,7 +593,7 @@ div.threejscontainer {
     position: relative;
     overflow: hidden;
 }
-div.threejscontainer div.low-performance-message {
+div.threejscontainer div.three-modal-message {
     position: absolute;
     left: 0;
     right: 0;

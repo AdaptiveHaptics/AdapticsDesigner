@@ -23,10 +23,16 @@ export class BaseScene {
 		this.#_pattern_design = pattern_design;
 		this.container = container;
 
-		const renderer = this.renderer = new THREE.WebGLRenderer({
-			// antialias: true,
-			// alpha: true,
-		});
+		try {
+			this.renderer = new THREE.WebGLRenderer({
+				// antialias: true,
+				// alpha: true,
+			});
+		} catch (e) {
+			this.#_create_message_div("WebGL is not supported on this device.");
+			throw e;
+		}
+		const renderer = this.renderer;
 
 		renderer.setClearColor(0x000000);
 		renderer.shadowMap.enabled = true;
@@ -94,6 +100,9 @@ export class BaseScene {
 		this.#_create_skybox("sky");
 
 
+		this.initalize_scene_objects();
+
+
 		if (WebGL.isWebGLAvailable()) {
 			const animate = () => {
 				requestAnimationFrame(animate);
@@ -109,6 +118,13 @@ export class BaseScene {
 			this.haptic_device.playback_vis.update_playback_visualization(this.#_pattern_design.last_eval);
 		});
 		this.haptic_device.playback_vis.update_playback_visualization(this.#_pattern_design.last_eval);
+	}
+
+	/**
+	 * @abstract
+	 */
+	initalize_scene_objects() {
+		if (this.constructor !== BaseScene) console.warn("initalize_scene_objects not implemented"); // warn if not implemented in subclass
 	}
 
 	fitStageIntoParentContainer() {
@@ -284,19 +300,28 @@ export class BaseScene {
 		}
 	}
 
+	/**
+	 *
+	 * @param {string} message_text
+	 * @returns
+	 */
+	#_create_message_div(message_text) {
+		const message_div = document.createElement("div");
+		message_div.classList.add("three-modal-message");
+		message_div.textContent = message_text;
+		return message_div;
+	}
 	#_disable_due_to_low_performance() {
 		console.warn("Disabling THREEJS scene due to low performance!");
 		this.#_disabled_due_to_low_performance = true;
 
 		// show a message to the user and if they click it, re-enable and set _no_performance_check
-		const message = document.createElement("div");
-		message.classList.add("low-performance-message");
-		message.textContent = "Due to low performance, the 3D scene has been disabled. Click to re-enable.";
-		this.container.appendChild(message);
-		message.addEventListener("click", () => {
+		const message_div = this.#_create_message_div("Due to low performance, the 3D scene has been disabled. Click to re-enable.");
+		this.container.appendChild(message_div);
+		message_div.addEventListener("click", () => {
 			this.#_disabled_due_to_low_performance = false;
 			this.#_no_performance_check = true;
-			this.container.removeChild(message);
+			this.container.removeChild(message_div);
 		});
 	}
 }

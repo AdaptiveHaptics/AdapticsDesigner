@@ -1,4 +1,4 @@
-import Split from "split-grid";
+import SplitGrid from "split-grid";
 import { MAHPatternDesignFE } from "./fe/patterndesign.mjs";
 import { KonvaPatternStage } from "./konvapanes/pattern-stage.mjs";
 import { KonvaTimelineStage } from "./konvapanes/timeline-stage.mjs";
@@ -24,9 +24,6 @@ window.addEventListener("error", event => {
 	// console.error(estr);
 	if (ignoreErrorsContaining.findIndex(istr => estr.includes(istr)) == -1) alert(estr);
 });
-
-
-const SplitGrid = /** @type {import("split-grid").default} */(/** @type {unknown} */(Split));
 
 /** @typedef {import("../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
@@ -192,7 +189,7 @@ document.addEventListener("paste", ev => {
 			websocket_state_span.textContent =  websocket.destroyed ? "disconnected" : "reconnecting...";
 		});
 		websocket.state_change_events.addEventListener("tracking_data", ev => {
-			three_base_scene.hand.update_tracking_data(ev.detail.tracking_frame);
+			three_base_scene?.hand.update_tracking_data(ev.detail.tracking_frame);
 		});
 	});
 	websocket_disconnect_button.addEventListener("click", () => {
@@ -384,7 +381,10 @@ const file_titlebar_manager = new FileTitlebarManager(primary_design, file_isect
 
 
 primary_design.commit_operation({ rerender: true });
-const three_base_scene = new BaseScene(primary_design, threejscontainer_div);
+
+/** @type {BaseScene | null} */
+let three_base_scene = null;
+try { three_base_scene = new BaseScene(primary_design, threejscontainer_div); } catch (e) { console.error(e); }
 const konva_pattern_stage = new KonvaPatternStage(primary_design, patternstage_div, pattern_div);
 const center_panel = new CenterPanel(centerpanel_div);
 const konva_timeline_stage = new KonvaTimelineStage(primary_design, timelinestage_div, timeline_div);

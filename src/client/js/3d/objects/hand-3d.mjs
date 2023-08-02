@@ -3,6 +3,14 @@ import { haptic_to_three_coords, haptic_to_three_vec } from "../util.mjs";
 import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass.js";
 
 export class Hand3D {
+	static HAND_MATERIAL = new THREE.MeshBasicMaterial({
+		transparent: true,
+		opacity: 0,
+		color: 0x00ff00,
+		depthWrite: false, // prevents causing other things to go invisible when clipping the (invisible) hand
+		depthTest: false, // dont need this anyway ig
+	});
+
 	/**
 	 *
 	 * @param {import("../scenes/base-environment.mjs").BaseEnvironment} base_environment
@@ -16,10 +24,8 @@ export class Hand3D {
 		palm_geometry.translate(0, 0, -0.02);
 		const palm = this.palm = new THREE.Mesh(
 			palm_geometry,
-			new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, color: 0x00ff00 })
+			Hand3D.HAND_MATERIAL
 		);
-		// palm.castShadow = true;
-		// palm.receiveShadow = true;
 		this.object3D.add(palm);
 		this.palm_position_helper = new THREE.Mesh(
 			new THREE.SphereGeometry(0.005),
@@ -109,10 +115,11 @@ export class Digit3D {
 	}
 
 	#_create_bone() {
-		return new THREE.Mesh(
+		const bone_mesh = new THREE.Mesh(
 			new THREE.BoxGeometry(1, 1, 1),
-			new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, color: 0x00ff00 })
+			Hand3D.HAND_MATERIAL
 		);
+		return bone_mesh;
 	}
 
 	/**

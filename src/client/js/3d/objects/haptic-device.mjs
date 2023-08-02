@@ -112,11 +112,11 @@ class PlaybackVis {
 	 */
 	static create_outline_pass(resolution = new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera) {
 		const hand_outline_pass = new OutlinePass(resolution, scene, camera);
-		hand_outline_pass.edgeStrength = 3.0;
+		hand_outline_pass.edgeStrength = 2.6;
 		hand_outline_pass.edgeGlow = 0.7;
-		hand_outline_pass.edgeThickness = 2.0;
+		hand_outline_pass.edgeThickness = 2;
 		hand_outline_pass.visibleEdgeColor.set(PlaybackVis.high_color);
-		hand_outline_pass.hiddenEdgeColor.set(PlaybackVis.high_color);
+		hand_outline_pass.hiddenEdgeColor.set(PlaybackVis.high_color.clone().multiplyScalar(0.2));
 		return hand_outline_pass;
 	}
 }

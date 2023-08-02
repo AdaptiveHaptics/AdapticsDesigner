@@ -1,5 +1,5 @@
 import { haptic_to_three_coords } from "../util.mjs";
-import { BaseExperience } from "./base-environment.mjs";
+import { BaseExperience } from "./base-experience.mjs";
 import * as THREE from "three";
 
 
@@ -14,7 +14,7 @@ export class ButtonExperience extends BaseExperience {
 	 * @param {import("../../fe/patterndesign.mjs").MAHPatternDesignFE} pattern_design
 	 */
 	constructor(pattern_design) {
-		super();
+		super(pattern_design, ["proximity", "activation"]);
 
 		this.#_pattern_design = pattern_design;
 
@@ -61,14 +61,14 @@ export class ButtonExperience extends BaseExperience {
 		this.object3D.add(this.button);
 	}
 
-	set_proximity(proximity) {
+	#_set_proximity(proximity) {
 		this.proximity_meter.scale.setX(proximity);
-		this.#_pattern_design.update_evaluator_user_param("proximity", proximity);
+		super.set_param_or_warn("proximity", proximity);
 	}
-	set_activation(activation) {
+	#_set_activation(activation) {
 		this.activation_meter.scale.setX(activation);
 		this.button.position.setY(activation * -this.button_actuation_dist);
-		this.#_pattern_design.update_evaluator_user_param("activation", activation);
+		super.set_param_or_warn("activation", activation);
 	}
 
 	#_activated = false;
@@ -95,7 +95,7 @@ export class ButtonExperience extends BaseExperience {
 			const dist = Math.hypot(radius_dist, height_dist);
 
 			const proximity = Math.max(0, 1 - dist / 0.10);
-			this.set_proximity(proximity);
+			this.#_set_proximity(proximity);
 
 			// document.querySelector("div.help").innerHTML = `
 			// 	proximity: ${proximity.toFixed(3)} <br>
@@ -110,10 +110,10 @@ export class ButtonExperience extends BaseExperience {
 
 			if (proximity > 0.80) {
 				const activation = 1 - Math.max(Math.min((cylindrical.y - this.button_bottom_out_dist) / this.button_actuation_dist, 1), 0);
-				this.set_activation(activation);
+				this.#_set_activation(activation);
 				if (activation >= 1) this.#_activated = true;
 			} else {
-				this.set_activation(0);
+				this.#_set_activation(0);
 			}
 		}
 	}
@@ -129,8 +129,8 @@ export class ButtonExperience extends BaseExperience {
 		this.#_last_update_hand_in_scene = false;
 		this.#_activated = false;
 		this.#_pattern_design.update_playstart(0);
-		this.set_proximity(0);
-		this.set_activation(0);
+		this.#_set_proximity(0);
+		this.#_set_activation(0);
 	}
 
 	getObject3D() {

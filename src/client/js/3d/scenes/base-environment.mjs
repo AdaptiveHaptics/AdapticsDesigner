@@ -8,13 +8,12 @@ import { Hand3D } from "../objects/hand-3d.mjs";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
-import { abstract_method_unreachable } from "../../util.mjs";
 
 
 export class BaseEnvironment {
 	#_pattern_design;
 
-	/** @type {BaseExperience | null} */
+	/** @type {import("./base-experience.mjs").BaseExperience | null} */
 	#_experience = null;
 	/** @type {import("../../device-ws-controller.mjs").TrackingFrame | null} */
 	#_last_tracking_data = null;
@@ -126,7 +125,7 @@ export class BaseEnvironment {
 
 	/**
 	 *
-	 * @param {BaseExperience | null} experience
+	 * @param {import("./base-experience.mjs").BaseExperience | null} experience
 	 */
 	load_experience(experience) {
 		if (this.#_experience) this.scene.remove(this.#_experience.getObject3D());
@@ -353,24 +352,5 @@ export class BaseEnvironment {
 			this.#_no_performance_check = true;
 			this.container.removeChild(message_div);
 		});
-	}
-}
-
-
-export class BaseExperience {
-	/**
-	 * @abstract
-	 * @returns {THREE.Object3D}
-	 */
-	getObject3D() {
-		abstract_method_unreachable();
-	}
-
-	/**
-	 * @abstract
-	 * @param {import("../../device-ws-controller.mjs").TrackingFrame | null} last_tracking_data
-	 */
-	update(last_tracking_data) {
-		abstract_method_unreachable(last_tracking_data);
 	}
 }

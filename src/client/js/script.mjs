@@ -172,6 +172,12 @@ document.addEventListener("paste", ev => {
 	if (window.localStorage.getItem(WEBSOCKET_CONNECTED_LOCALSTORAGE_KEY) == "true") {
 		requestAnimationFrame(() => websocket_connect_button.click());
 	}
+	if (window.localStorage.getItem(WEBSOCKET_HAND_TRACKING_LOCALSTORAGE_KEY) == "true") {
+		requestAnimationFrame(() => {
+			if (tracking_input.checked) return;
+			tracking_input.click();
+		});
+	}
 	websocket_connect_button.addEventListener("click", () => {
 		primary_design.connect_websocket(websocketurl_input.value);
 

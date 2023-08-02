@@ -76,7 +76,7 @@ export class BaseEnvironment {
 
 
 
-		// this.scene.add(new THREE.AxesHelper(5));
+		this.scene.add(new THREE.AxesHelper(5));
 
 		this.#_setup_lights(false);
 
@@ -156,12 +156,15 @@ export class BaseEnvironment {
 		this.hemisphere_light = new THREE.HemisphereLight(0xffffff, 0x0e0e0e, 0.8);
 		this.scene.add(this.hemisphere_light);
 
-		const dist = 0.1;
+		const dist = 1.25;
 
-		this.key_light         = this.#_create_and_add_shadowed_point_light(0xffffff, -1.8 * dist, 1.44 * dist, 1.2 * dist, 7 * (dist ** 2), show_helpers);
-		this.fill_light        = this.#_create_and_add_shadowed_point_light(0xffffff, 1.8 * dist, 1.3 * dist, 1.6 * dist, 4 * (dist ** 2), show_helpers);
-		this.back_light        = this.#_create_and_add_shadowed_point_light(0xffffff, 0.8 * dist, 2.4 * dist, -2.2 * dist, 2 * (dist ** 2), show_helpers);
-		this.experience_light  = this.#_create_and_add_shadowed_point_light(0xffffff, -1.65 * dist, 2.7 * dist, -0.98 * dist, 7 * (dist ** 2), show_helpers);
+		this.key_light         = this.#_create_and_add_shadowed_point_light(0xffffff, -0.180*dist, 0.244,  0.120*dist, 0.080 * (dist ** 2), show_helpers);
+		this.fill_light        = this.#_create_and_add_shadowed_point_light(0xffffff,  0.180*dist, 0.230,  0.160*dist, 0.045 * (dist ** 2), show_helpers);
+		this.back_light        = this.#_create_and_add_shadowed_point_light(0xffffff,  0.080*dist, 0.340, -0.220*dist, 0.025 * (dist ** 2), show_helpers);
+
+		const sun_light = new THREE.DirectionalLight(0xecbcab, 0.61);
+		this.#_init_light(sun_light, Math.sin(this.skybox_eff.azimuth * Math.PI/180), 0.6, Math.cos(this.skybox_eff.azimuth * Math.PI/180));
+		this.scene.add(sun_light);
 	}
 
 	/**
@@ -175,6 +178,19 @@ export class BaseEnvironment {
 	 */
 	#_create_and_add_shadowed_point_light(color, x, y, z, intensity, show_helpers = false) {
 		const light = new THREE.PointLight(color, intensity);
+		this.#_init_light(light, x, y, z);
+		if (show_helpers) this.scene.add(new THREE.PointLightHelper(light, 0.1));
+		return light;
+	}
+
+	/**
+	 *
+	 * @param {THREE.Light<THREE.LightShadow<THREE.PerspectiveCamera | THREE.OrthographicCamera>>} light
+	 * @param {number} x
+	 * @param {number} y
+	 * @param {number} z
+	 */
+	#_init_light(light, x, y, z) {
 		light.position.set(x, y, z);
 		light.castShadow = true;
 		light.shadow.camera.near = 0.001;
@@ -182,9 +198,21 @@ export class BaseEnvironment {
 		light.shadow.mapSize.width = 1024;
 		light.shadow.mapSize.height = 1024;
 		this.scene.add(light);
-		if (show_helpers) this.scene.add(new THREE.PointLightHelper(light, 0.1));
-		return light;
 	}
+
+
+	skybox_eff = {
+		turbidity: 1,
+		rayleigh: 3,
+
+		mieCoefficient: 0.005,
+		mieDirectionalG: 0.7,
+		// mieCoefficient: 0.0,
+		// mieDirectionalG: 0.0,
+
+		elevation: 2,
+		azimuth: -120
+	};
 
 	/**
 	 *
@@ -198,29 +226,15 @@ export class BaseEnvironment {
 			this.scene.add(sky);
 			const sun = new THREE.Vector3();
 
-			const effectController = {
-				turbidity: 1,
-				rayleigh: 3,
-
-				mieCoefficient: 0.005,
-				mieDirectionalG: 0.7,
-				// mieCoefficient: 0.0,
-				// mieDirectionalG: 0.0,
-
-				elevation: 2,
-				azimuth: -120,
-				exposure: this.renderer.toneMappingExposure,
-			};
-
 			const uniforms = sky.material.uniforms;
 
-			uniforms["turbidity"].value = effectController.turbidity;
-			uniforms["rayleigh"].value = effectController.rayleigh;
-			uniforms["mieCoefficient"].value = effectController.mieCoefficient;
-			uniforms["mieDirectionalG"].value = effectController.mieDirectionalG;
+			uniforms["turbidity"].value = this.skybox_eff.turbidity;
+			uniforms["rayleigh"].value = this.skybox_eff.rayleigh;
+			uniforms["mieCoefficient"].value = this.skybox_eff.mieCoefficient;
+			uniforms["mieDirectionalG"].value = this.skybox_eff.mieDirectionalG;
 
-			const phi = THREE.MathUtils.degToRad(90 - effectController.elevation);
-			const theta = THREE.MathUtils.degToRad(effectController.azimuth);
+			const phi = THREE.MathUtils.degToRad(90 - this.skybox_eff.elevation);
+			const theta = THREE.MathUtils.degToRad(this.skybox_eff.azimuth);
 
 			sun.setFromSphericalCoords(1, phi, theta);
 

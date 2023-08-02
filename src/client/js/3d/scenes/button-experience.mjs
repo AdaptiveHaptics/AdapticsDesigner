@@ -20,7 +20,7 @@ export class ButtonExperience extends BaseExperience {
 
 		this.object3D = new THREE.Object3D();
 		this.object3D.position.set(0, 0.18, 0);
-		this.object3D.add(new THREE.AxesHelper(0.1));
+		// this.object3D.add(new THREE.AxesHelper(0.1));
 
 		this.button_body = new THREE.Mesh(
 			new THREE.BoxGeometry(0.1, this.button_actuation_dist + this.button_bottom_out_dist, 0.1), //actuation dist + a little extra to hide clipping on bottom face (might as well be the same as the bottom_out dist)

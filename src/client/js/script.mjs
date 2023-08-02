@@ -169,15 +169,14 @@ document.addEventListener("paste", ev => {
 	/** @type {HTMLInputElement} */
 	const tracking_input = notnull(document.querySelector(".isection.websocket input.tracking"));
 
-	if (window.localStorage.getItem(WEBSOCKET_CONNECTED_LOCALSTORAGE_KEY) == "true") {
-		requestAnimationFrame(() => websocket_connect_button.click());
-	}
-	if (window.localStorage.getItem(WEBSOCKET_HAND_TRACKING_LOCALSTORAGE_KEY) == "true") {
-		requestAnimationFrame(() => {
+	requestAnimationFrame(() => {
+		if (window.localStorage.getItem(WEBSOCKET_HAND_TRACKING_LOCALSTORAGE_KEY) == "true") {
 			if (tracking_input.checked) return;
 			tracking_input.click();
-		});
-	}
+		}
+		if (window.localStorage.getItem(WEBSOCKET_CONNECTED_LOCALSTORAGE_KEY) == "true") websocket_connect_button.click();
+	});
+
 	websocket_connect_button.addEventListener("click", () => {
 		primary_design.connect_websocket(websocketurl_input.value);
 

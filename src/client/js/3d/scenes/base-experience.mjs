@@ -10,6 +10,10 @@ export class BaseExperience {
 	 * @param {string[]} expected_params
 	 */
 	constructor(pattern_design, expected_params) {
+		if (this.constructor == BaseExperience) throw new Error("BaseExperience is an abstract class and cannot be instantiated");
+		if (this.getObject3D == BaseExperience.prototype.getObject3D) throw new Error("Must override getObject3D() method to extend BaseExperience");
+		if (this.update == BaseExperience.prototype.update) throw new Error("Must override update() method to extend BaseExperience");
+
 		this.#_pattern_design = pattern_design;
 		this.#_expected_params = expected_params;
 	}
@@ -24,8 +28,8 @@ export class BaseExperience {
 	set_param_or_warn(param_name, param_value) {
 		if (this.#_pattern_design.filedata.user_parameter_definitions[param_name] == undefined) {
 			if (!this.#_warned_about_missing_params) alert(
-				`The pattern "${this.#_pattern_design.filedata.name}" does not have a parameter named "${param_name}".\n`+
-				`"${this.constructor.name}" is expecting the following parameters: ${this.#_expected_params.join(", ")}`
+				`The pattern "${this.#_pattern_design.filedata.name}" does not have a parameter named "${param_name}".\n\n`+
+				`The current simulation: "${this.constructor.name}" is expecting the following parameters:\n    ${this.#_expected_params.join(", ")}`
 			);
 			this.#_warned_about_missing_params = true;
 			return;

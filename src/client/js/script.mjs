@@ -9,6 +9,7 @@ import { notnull } from "./util.mjs";
 import { BaseEnvironment } from "./3d/scenes/base-environment.mjs";
 import { CenterPanel } from "./center-panel.mjs";
 import { ButtonExperience } from "./3d/scenes/button-experience.mjs";
+import { AsteroidExperience } from "./3d/scenes/asteroid-experience.mjs";
 
 const ignoreErrorsContaining = [
 ];
@@ -394,7 +395,8 @@ primary_design.commit_operation({ rerender: true });
 let three_base_environment = null;
 try {
 	three_base_environment = new BaseEnvironment(primary_design, threejscontainer_div);
-	three_base_environment.load_experience(new ButtonExperience(primary_design));
+	// three_base_environment.load_experience(new ButtonExperience(primary_design));
+	three_base_environment.load_experience(new AsteroidExperience(primary_design));
 } catch (e) { console.warn(e); }
 const konva_pattern_stage = new KonvaPatternStage(primary_design, patternstage_div, pattern_div);
 const center_panel = new CenterPanel(centerpanel_div);

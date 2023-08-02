@@ -14,7 +14,7 @@ export class ButtonExperience extends BaseExperience {
 	 * @param {import("../../fe/patterndesign.mjs").MAHPatternDesignFE} pattern_design
 	 */
 	constructor(pattern_design) {
-		super(pattern_design, ["proximity", "activation"]);
+		super(pattern_design, ["proximity", "activation"], []);
 
 		this.#_pattern_design = pattern_design;
 

@@ -13,8 +13,24 @@
 	<link rel="apple-touch-icon" href="favicon.512.png" sizes="512x512">
 	<link rel="apple-touch-icon" href="favicon.192.png" sizes="192x192">
 	<link rel="apple-touch-icon" href="favicon.48.png" sizes="48x48">
+
+	<script type="importmap">
+		{
+		  "imports": {
+			"three": "./thirdparty/three/build/three.module.js",
+			"three/examples/": "./thirdparty/three/examples/",
+			"three/addons/": "./thirdparty/three/examples/jsm/",
+
+			"sortablejs": "./thirdparty/sortable.complete.esm.js",
+			"split-grid": "./thirdparty/split-grid.mjs"
+		  }
+		}
+	</script>
+
+
 	<script src="./thirdparty/konva.min.js" defer></script>
 	<script src="./js/script.mjs" type="module"></script>
+
 	<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 </head>
 
@@ -97,33 +113,42 @@
 				</div>
 			</div>
 			<div class="gutter column leftcenter"></div>
-			<div class="center konvastagecontainer" tabindex="0">
-				<div class="contextmenu" style="visibility: hidden;">
-					<div class="menulist">
-						<div class="nested">
-							<span class="nestedtitle"><span class="material-symbols-outlined">add</span>Add Keyframe</span>
+			<div class="center tabpanel">
+				<div class="tabs">
+					<button class="tab active" data-tabpanel="patternstagecontainer"><span class="material-symbols-outlined">rebase_edit</span> Pattern Design</button>
+					<button class="tab" data-tabpanel="threejscontainer"><span class="material-symbols-outlined">sports_esports</span> Simulation</button>
+				</div>
+				<div class="tabpanelscontainer">
+					<div class="patternstagecontainer konvastagecontainer" tabindex="0">
+						<div class="contextmenu" style="visibility: hidden;">
 							<div class="menulist">
-								<button class="addkf noicon" data-type="standard" title="Standard keyframe with coords, brush, intensity, and transitions">Standard</button>
-								<button class="addkf noicon" data-type="pause" title="Holds brush at the previous keyframe's position">Hold Position</button>
-								<button class="addkf noicon" data-type="stop" title="Stops the animation, and pauses playback on the device">Stop</button>
+								<div class="nested">
+									<span class="nestedtitle"><span class="material-symbols-outlined">add</span>Add Keyframe</span>
+									<div class="menulist">
+										<button class="addkf noicon" data-type="standard" title="Standard keyframe with coords, brush, intensity, and transitions">Standard</button>
+										<button class="addkf noicon" data-type="pause" title="Holds brush at the previous keyframe's position">Hold Position</button>
+										<button class="addkf noicon" data-type="stop" title="Stops the animation, and pauses playback on the device">Stop</button>
+									</div>
+								</div>
+								<button title="Delete Selected Keyframes" disabled><span class="material-symbols-outlined">close</span> Delete Selected</button>
+								<button title="Copy Selected Keyframes" disabled><span class="material-symbols-outlined">content_copy</span>Copy</button>
+								<button title="Paste Keyframes From Clipboard" disabled><span class="material-symbols-outlined">content_paste</span>Paste</button>
+
 							</div>
 						</div>
-						<button title="Delete Selected Keyframes" disabled><span class="material-symbols-outlined">close</span> Delete Selected</button>
-						<button title="Copy Selected Keyframes" disabled><span class="material-symbols-outlined">content_copy</span>Copy</button>
-						<button title="Paste Keyframes From Clipboard" disabled><span class="material-symbols-outlined">content_paste</span>Paste</button>
-
+						<div id="patternstage" class="konvastage patternstage"></div>
 					</div>
+					<div class="threejscontainer hidden"></div>
 				</div>
-				<div id="patternstage" class="konvastage patternstage"></div>
 			</div>
 			<div class="gutter column centerright"></div>
-			<div class="right">
+			<div class="right tabpanel">
 				<div class="tabs">
 					<button class="tab active" data-tabpanel="help"><span class="material-symbols-outlined">info</span> Editor Help</button>
 					<button class="tab" data-tabpanel="ukfecontainer"><span class="material-symbols-outlined">auto_awesome_motion</span> Keyframe Editor</button>
-					<button class="tab" data-tabpanel="pattern"><span class="material-symbols-outlined">lens_blur</span> Post Processing</button>
+					<button class="tab" data-tabpanel="postprocessing"><span class="material-symbols-outlined">lens_blur</span> Post Processing</button>
 				</div>
-				<div class="tabpanelcontainer betterscroll">
+				<div class="tabpanelscontainer betterscroll">
 					<div class="help">
 						<h1>Editor Help</h1>
 						<p>
@@ -157,7 +182,7 @@
 							</ul>
 						</p>
 					</div>
-					<form class="pattern">
+					<form class="postprocessing">
 						<div class="header">
 							<h2>
 								Post Processing Transformations

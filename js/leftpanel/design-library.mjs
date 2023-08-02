@@ -5,6 +5,8 @@ import { KonvaPatternStage } from "../konvapanes/pattern-stage.mjs";
 import { KonvaTimelineStage } from "../konvapanes/timeline-stage.mjs";
 import { map_get_or_default, notnull, structured_clone } from "../util.mjs";
 
+/** @typedef {{ design: Promise<MidAirHapticsAnimationFileFormat>, sim_exp: import("../3d/exps/base-experience.mjs").BaseExperience | null }} DesignMapElement */
+/** @typedef {Map<string, DesignMapElement>} DesignsMap */
 export class DesignLibrary {
 	/** @type {HTMLInputElement} */
 	#_search_input;
@@ -14,12 +16,14 @@ export class DesignLibrary {
 	/**
 	 *
 	 * @param {MAHPatternDesignFE} pattern_design
+	 * @param {import("../3d/base-environment.mjs").BaseEnvironment | null} three_base_environment
 	 * @param {import("../script.mjs").FileTitlebarManager} file_titlebar_manager
 	 * @param {HTMLDivElement} designlibrary_div
-	 * @param {Map<string, Promise<MidAirHapticsAnimationFileFormat>>} designs_map
+	 * @param {DesignsMap} designs_map
 	 */
-	constructor(pattern_design, file_titlebar_manager, designlibrary_div, designs_map) {
+	constructor(pattern_design, three_base_environment, file_titlebar_manager, designlibrary_div, designs_map) {
 		this.pattern_design = pattern_design;
+		this.three_base_environment = three_base_environment;
 		this.file_titlebar_manager = file_titlebar_manager;
 		this.designlibrary_div = designlibrary_div;
 		/** @type {HTMLDivElement} */
@@ -82,7 +86,7 @@ export class DesignLibrary {
 
 	/**
 	 *
-	 * @param {Map<string, Promise<MidAirHapticsAnimationFileFormat>>} designs
+	 * @param {DesignsMap} designs
 	 * @param {boolean} open_folders
 	 */
 	render_designs(designs, open_folders = false) {
@@ -119,7 +123,7 @@ export class DesignLibrary {
 			folders_map_curr.children_div.appendChild(file_div);
 			file_div.addEventListener("mouseover", async () => {
 				try {
-					this._preview_pattern_design.import_file_from_filedata(structured_clone(await design), filename_with_ext);
+					this._preview_pattern_design.import_file_from_filedata(structured_clone(await design.design), filename_with_ext);
 					file_div.appendChild(this._preview_div);
 					this._preview_div.style.left = (file_div.offsetLeft + file_div.offsetWidth) + "px";
 
@@ -135,7 +139,8 @@ export class DesignLibrary {
 			});
 			file_button.addEventListener("click", async () => {
 				if (this.file_titlebar_manager.confirm_discard_changes()) {
-					this.pattern_design.import_file_from_filedata(structured_clone(await design), filename_with_ext);
+					this.pattern_design.import_file_from_filedata(structured_clone(await design.design), filename_with_ext);
+					this.three_base_environment?.load_experience(design.sim_exp);
 					this.file_titlebar_manager.set_saved_to_fs(true);
 				}
 			});

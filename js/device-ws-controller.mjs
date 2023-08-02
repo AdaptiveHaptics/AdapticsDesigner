@@ -1,11 +1,15 @@
 /** @typedef {import("./fe/patterndesign.mjs").MAHAnimationFileFormatFE} MAHAnimationFileFormatFE */
 /** @typedef {import("./fe/patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
 /** @typedef {import("./pattern-evaluator.mjs").PatternEvaluatorParameters} PatternEvaluatorParameters */
+/** @typedef {import("../../shared/AdapticsWSServerMessage").AdapticsWSServerMessage} AdapticsWSServerMessage */
+/** @typedef {import("../../shared/AdapticsWSServerMessage").TrackingFrame} TrackingFrame */
 /**
  * @template T
  * @template {keyof T} K
  * @typedef {import("../../shared/util").ReqProp<T, K>} ReqProp
  */
+
+import { assert_unreachable } from "./util.mjs";
 
 export class DeviceWSController {
 	#_destroyed = false;
@@ -117,7 +121,7 @@ export class DeviceWSController {
 
 	/**
 	 *
-	 * @param {{ cmd: string, data: { [x: string]: any } }} m
+	 * @param {AdapticsWSServerMessage} m
 	 */
 	handle_message(m) {
 		switch (m.cmd) {
@@ -125,13 +129,19 @@ export class DeviceWSController {
 				this.state_change_events.dispatchEvent(new WebsocketStateEvent("playback_update", { detail: { evals: m.data.evals } }));
 				return;
 			}
-			case "ignoreme": {
-				break;
+			case "tracking_data": {
+				this.state_change_events.dispatchEvent(new WebsocketStateEvent("tracking_data", { detail: { tracking_frame: m.data.tracking_frame } }));
+				return;
 			}
+			//@ts-ignore
+			case "ignoreme": { break; }
 			default:
-				throw new Error(`Unknown websocket message '${m.cmd}'`);
+				try { assert_unreachable(m); } catch (e) {
+					// @ts-ignore
+					console.warn(`unhandled websocket message: '${m.cmd}'`);
+				}
 		}
-		console.log(m);
+		// console.log(m);
 	}
 
 
@@ -151,6 +161,7 @@ export class DeviceWSController {
  * @property {{ }} connected
  * @property {{ }} disconnected
  * @property {{ evals: import("./pattern-evaluator.mjs").BrushAtAnimLocalTime[] }} playback_update
+ * @property {{ tracking_frame: TrackingFrame }} tracking_data
  */
 
 /**

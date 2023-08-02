@@ -494,6 +494,15 @@ div.bottom {
 }
 
 div.center {
+    display: grid;
+    grid-template-rows: auto 1fr;
+}
+div.center > div.tabpanelscontainer {
+    display: grid;
+    grid-template-rows: auto;
+}
+
+div.patternstagecontainer {
     background-color: var(--background-tertiary);
     display: flex;
     justify-content: center;
@@ -580,6 +589,25 @@ div.designlibrary div.designtree details.folder[open] > summary {
     margin-bottom: 0.5ex;
 }
 
+div.threejscontainer {
+    position: relative;
+    overflow: hidden;
+}
+div.threejscontainer div.three-modal-message {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+
+    background-color: rgba(0,0,0, 0.7);
+    padding: 2em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    font-size: 2em;
+}
 
 div.konvastagecontainer {
     position: relative;
@@ -653,16 +681,16 @@ div.right {
     display: grid;
     grid-template-rows: auto 1fr auto;
 }
-div.right > div.tabs {
+div.tabpanel > div.tabs {
     display: grid;
     gap: 0.2ex;
     grid-auto-flow: column;
     background-color: var(--background-titlebar);
 }
-div.right > div.tabs > button.tab {
+div.tabpanel > div.tabs > button.tab {
     padding: 1ex;
 }
-div.right > div.tabs > button.tab.active {
+div.tabpanel > div.tabs > button.tab.active {
     background-color: var(--background-tertiary-alt);
 }
 div.actionbuttons {
@@ -685,45 +713,45 @@ div.actionbuttons .material-symbols-outlined {
         'GRAD' 200,
         'opsz' 48;
 }
-div.tabpanelcontainer {
+div.tabpanelscontainer {
     overflow: auto;
     background-color: var(--background-tertiary);
 }
-div.tabpanelcontainer > *.hidden {
+div.tabpanelscontainer > *.hidden {
     display: none;
 }
-div.tabpanelcontainer > div.help {
+div.right div.help {
     padding: 1.5ex;
     background-color: var(--background-tertiary-alt);
 }
-div.tabpanelcontainer > form.pattern {
+div.right form.postprocessing {
     padding: 1.5ex;
     background-color: var(--background-tertiary-alt);
     padding-top: 0;
 }
-form.pattern > div.header {
+form.postprocessing > div.header {
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
-form.pattern div.transformcontrol {
+form.postprocessing div.transformcontrol {
     display: grid;
     grid-template-columns: auto 1fr;
     gap: 1ex;
     align-items: center;
 }
-form.pattern div.transformcontrol > h3 {
+form.postprocessing div.transformcontrol > h3 {
     grid-column: 1/-1;
     margin-bottom: 1ex;
 }
-form.pattern div.transformcontrol > h3 > span.material-symbols-outlined {
+form.postprocessing div.transformcontrol > h3 > span.material-symbols-outlined {
     margin-left: 0.5ex;
     font-variation-settings: 'FILL' 0,
         'wght' 300,
         'GRAD' 100,
         'opsz' 24;
 }
-form.pattern button[type="reset"] {
+form.postprocessing button[type="reset"] {
     grid-column: 1/-1;
     justify-self: end;
     padding: 1ex

@@ -6,7 +6,7 @@
 import { BoundsCheck } from "../../fe/keyframes/bounds-check.mjs";
 import { supports_coords, supports_brush, supports_intensity, supports_cjump } from "../../fe/keyframes/index.mjs";
 import { deep_equals, notnull, num_to_rounded_string } from "../../util.mjs";
-import Sortable from "../../../thirdparty/sortable.complete.esm.js";
+import Sortable from "sortablejs";
 import { DynamicF64Input } from "../common/dynamic-f64-input.mjs";
 
 export class UnifiedKeyframeEditor {
@@ -93,7 +93,7 @@ export class UnifiedKeyframeEditor {
 			handle: ".draghandle",
 			animation: 150,
 			onEnd: ev => {
-				this.on_cjump_reorder(ev.oldIndex, ev.newIndex);
+				this.on_cjump_reorder(notnull(ev.oldIndex ?? null), notnull(ev.newIndex ?? null));
 			}
 		});
 

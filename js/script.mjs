@@ -1,4 +1,4 @@
-import Split from "../thirdparty/split-grid.mjs";
+import SplitGrid from "split-grid";
 import { MAHPatternDesignFE } from "./fe/patterndesign.mjs";
 import { KonvaPatternStage } from "./konvapanes/pattern-stage.mjs";
 import { KonvaTimelineStage } from "./konvapanes/timeline-stage.mjs";
@@ -6,6 +6,9 @@ import { DesignLibrary } from "./leftpanel/design-library.mjs";
 import { ParameterEditor } from "./parameter-editor.mjs";
 import { RightPanel } from "./rightpanel/right-panel.mjs";
 import { notnull } from "./util.mjs";
+import { BaseEnvironment } from "./3d/base-environment.mjs";
+import { CenterPanel } from "./center-panel.mjs";
+import * as ExperienceSimulations from "./3d/exps/index.mjs";
 
 const ignoreErrorsContaining = [
 ];
@@ -23,9 +26,6 @@ window.addEventListener("error", event => {
 	if (ignoreErrorsContaining.findIndex(istr => estr.includes(istr)) == -1) alert(estr);
 });
 
-
-const SplitGrid = /** @type {import("split-grid").default} */(/** @type {unknown} */(Split));
-
 /** @typedef {import("../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
 /** @typedef {import("../../shared/types").MidAirHapticsClipboardFormat} MidAirHapticsClipboardFormat */
@@ -35,7 +35,9 @@ const mainsplitgrid_div = notnull(document.querySelector("div.mainsplitgrid"));
 /** @type {HTMLDivElement} */
 const rightpanel_div = notnull(mainsplitgrid_div.querySelector("div.right"));
 /** @type {HTMLDivElement} */
-const pattern_div = notnull(mainsplitgrid_div.querySelector("div.center"));
+const centerpanel_div = notnull(mainsplitgrid_div.querySelector("div.center"));
+/** @type {HTMLDivElement} */
+const pattern_div = notnull(mainsplitgrid_div.querySelector("div.patternstagecontainer"));
 /** @type {HTMLDivElement} */
 const patternstage_div = notnull(pattern_div.querySelector("div#patternstage"));
 /** @type {HTMLDivElement} */
@@ -51,6 +53,9 @@ const designlibrary_div = notnull(leftpanel_div.querySelector("div.designlibrary
 
 /** @type {HTMLDivElement} */
 const file_isection_div = notnull(document.querySelector("div.isection.file"));
+
+/** @type {HTMLDivElement} */
+const threejscontainer_div = notnull(document.querySelector("div.threejscontainer"));
 
 
 const _mainsplit = SplitGrid({
@@ -72,6 +77,8 @@ const _bottomsplit = SplitGrid({
 
 
 const PRIMARY_DESIGN_LOCAL_STORAGE_KEY = "primary_design";
+const WEBSOCKET_CONNECTED_LOCALSTORAGE_KEY = "websocket_connected";
+const WEBSOCKET_HAND_TRACKING_LOCALSTORAGE_KEY = "websocket_handtracking";
 
 
 /** @type {MAHPatternDesignFE} */
@@ -162,8 +169,18 @@ document.addEventListener("paste", ev => {
 	/** @type {HTMLInputElement} */
 	const tracking_input = notnull(document.querySelector(".isection.websocket input.tracking"));
 
+	requestAnimationFrame(() => {
+		if (window.localStorage.getItem(WEBSOCKET_HAND_TRACKING_LOCALSTORAGE_KEY) == "true") {
+			if (tracking_input.checked) return;
+			tracking_input.click();
+		}
+		if (window.localStorage.getItem(WEBSOCKET_CONNECTED_LOCALSTORAGE_KEY) == "true") websocket_connect_button.click();
+	});
+
 	websocket_connect_button.addEventListener("click", () => {
 		primary_design.connect_websocket(websocketurl_input.value);
+
+		window.localStorage.setItem(WEBSOCKET_CONNECTED_LOCALSTORAGE_KEY, "true");
 
 		websocket_connect_button.style.display = "none";
 		websocket_disconnect_button.style.display = "";
@@ -178,9 +195,14 @@ document.addEventListener("paste", ev => {
 		websocket.state_change_events.addEventListener("disconnected", _ev => {
 			websocket_state_span.textContent =  websocket.destroyed ? "disconnected" : "reconnecting...";
 		});
+		websocket.state_change_events.addEventListener("tracking_data", ev => {
+			three_base_environment?.update_tracking_data(ev.detail.tracking_frame);
+		});
 	});
 	websocket_disconnect_button.addEventListener("click", () => {
 		primary_design.disconnect_websocket();
+
+		window.localStorage.removeItem(WEBSOCKET_CONNECTED_LOCALSTORAGE_KEY);
 
 		websocket_connect_button.style.display = "";
 		websocket_disconnect_button.style.display = "none";
@@ -193,6 +215,7 @@ document.addEventListener("paste", ev => {
 		tracking_input.checked = primary_design.tracking;
 	});
 	tracking_input.addEventListener("change", () => {
+		window.localStorage.setItem(WEBSOCKET_HAND_TRACKING_LOCALSTORAGE_KEY, tracking_input.checked ? "true" : "false");
 		primary_design.update_tracking(tracking_input.checked);
 	});
 }
@@ -366,7 +389,16 @@ const file_titlebar_manager = new FileTitlebarManager(primary_design, file_isect
 
 
 primary_design.commit_operation({ rerender: true });
+
+/** @type {BaseEnvironment | null} */
+let three_base_environment = null;
+try {
+	three_base_environment = new BaseEnvironment(primary_design, threejscontainer_div);
+	// three_base_environment.load_experience(new ButtonExperience(primary_design));
+	// three_base_environment.load_experience(new AsteroidExperience(primary_design));
+} catch (e) { console.warn(e); }
 const konva_pattern_stage = new KonvaPatternStage(primary_design, patternstage_div, pattern_div);
+const center_panel = new CenterPanel(centerpanel_div);
 const konva_timeline_stage = new KonvaTimelineStage(primary_design, timelinestage_div, timeline_div);
 const right_panel = new RightPanel(primary_design, rightpanel_div);
 const unified_keyframe_editor = right_panel.unified_keyframe_editor;
@@ -377,56 +409,76 @@ const search_up = new URLSearchParams(window.location.search);
 const user_study_mode = ["user_study", "userstudy", "user-study", "pilot_study", "pilotstudy", "pilot-study"].some(s => search_up.has(s));
 console.log("user_study_mode: ", user_study_mode);
 
-const load_pattern = async (url) => {
-	const f = await fetch(url);
-	if (f.status == 404) {
-		alert(`Failed to load pattern '${url}': 404`);
-		throw new Error(`Failed to load pattern '${url}': 404`);
-	}
-	const json = /** @type {MidAirHapticsAnimationFileFormat} */ (await f.json());
-	return json;
-};
-/** @type {(namepath: string, urlpath: string) => [string, Promise<MidAirHapticsAnimationFileFormat>]} */
-const load_pattern_into_tuple = (namepath, urlpath) => [namepath, load_pattern(urlpath)];
-/** @type {(path: string, forcenamepath?: string) => [string, Promise<MidAirHapticsAnimationFileFormat>]} */
-const example_pattern_from_path = (path, forcenamepath) => load_pattern_into_tuple(forcenamepath ?? `Examples/${path}`, `./example-patterns/${path}.adaptics`);
-const user_study_shown_patterns = [
-	example_pattern_from_path("Adaptive/Simple/Button", "Examples/Adaptive/Button"),
-	example_pattern_from_path("Adaptive/Simple/Wind", "Examples/Adaptive/Wind"),
-	example_pattern_from_path("Adaptive/Simple/StaticShock", "Examples/Adaptive/StaticShock"),
 
-	example_pattern_from_path("Non-Adaptive/Checkmark"),
-	example_pattern_from_path("Non-Adaptive/StaticShock"),
+const design_library = (() => {
+	const { AsteroidExperience, ButtonExperience, RainExperience } = ExperienceSimulations;
+	/**
+	 *
+	 * @param {string} url
+	 * @returns {Promise<MidAirHapticsAnimationFileFormat>}
+	 */
+	const load_pattern = async (url) => {
+		try {
+			const f = await fetch(url);
+			if (f.status == 404) {
+				alert(`Failed to load pattern '${url}': 404`);
+				throw new Error(`Failed to load pattern '${url}': 404`);
+			}
+			const json = /** @type {MidAirHapticsAnimationFileFormat} */ (await f.json());
+			return json;
+		} catch (e) {
+			if (e.name == "TypeError" && e.message == "Failed to fetch") {
+				console.error(e); // happens when the user refreshes the tab before the fetch completes
+				// @ts-ignore
+				return null;
+			}
+			else throw e;
+		}
+	};
+	/** @type {(namepath: string, urlpath: string, sim_exp: import("./3d/exps/base-experience.mjs").BaseExperience | null) => [string, import("./leftpanel/design-library.mjs").DesignMapElement]} */
+	const load_pattern_into_tuple = (namepath, urlpath, sim_exp) => [namepath, { design: load_pattern(urlpath), sim_exp }];
+	/** @type {(path: string, sim_exp?: import("./3d/exps/base-experience.mjs").BaseExperience | null, forcenamepath?: string) => [string, import("./leftpanel/design-library.mjs").DesignMapElement]} */
+	const example_pattern_from_path = (path, sim_exp, forcenamepath) => load_pattern_into_tuple(forcenamepath ?? `Examples/${path}`, `./example-patterns/${path}.adaptics`, sim_exp ?? null);
+	const user_study_shown_patterns = [
+		example_pattern_from_path("Adaptive/Simple/Button", new ButtonExperience(primary_design), "Examples/Adaptive/Button"),
+		example_pattern_from_path("Adaptive/Simple/Wind", null, "Examples/Adaptive/Wind"),
+		example_pattern_from_path("Adaptive/Simple/StaticShock", null, "Examples/Adaptive/StaticShock"),
 
-	example_pattern_from_path("user-study/HeartbeatBase", "Pilot Study/HeartbeatBase"),
-	example_pattern_from_path("user-study/RainBase", "Pilot Study/RainBase"),
-];
-const all_patterns = [
-	example_pattern_from_path("Adaptive/Simple/Button"),
-	example_pattern_from_path("Adaptive/Simple/Wind"),
-	example_pattern_from_path("Adaptive/Simple/Heartbeat"),
-	example_pattern_from_path("Adaptive/Simple/Rain"),
-	example_pattern_from_path("Adaptive/Simple/StaticShock"),
+		example_pattern_from_path("Non-Adaptive/Checkmark"),
+		example_pattern_from_path("Non-Adaptive/StaticShock"),
 
-	example_pattern_from_path("Adaptive/Unity/Button"),
-	example_pattern_from_path("Adaptive/Unity/Rain"),
-	example_pattern_from_path("Adaptive/Unity/SpaceshipHeartbeat"),
+		example_pattern_from_path("user-study/HeartbeatBase", new AsteroidExperience(primary_design), "Pilot Study/HeartbeatBase"),
+		example_pattern_from_path("user-study/RainBase", new RainExperience(primary_design), "Pilot Study/RainBase"),
+	];
+	const all_patterns = [
+		example_pattern_from_path("Adaptive/Simple/Button", new ButtonExperience(primary_design)),
+		example_pattern_from_path("Adaptive/Simple/Wind"),
+		example_pattern_from_path("Adaptive/Simple/Heartbeat", new AsteroidExperience(primary_design)),
+		example_pattern_from_path("Adaptive/Simple/Rain"),
+		example_pattern_from_path("Adaptive/Simple/StaticShock"),
 
-	example_pattern_from_path("Non-Adaptive/Rain"),
-	example_pattern_from_path("Non-Adaptive/Checkmark"),
-	example_pattern_from_path("Non-Adaptive/StaticShock"),
+		example_pattern_from_path("Adaptive/Unity/Button", new ButtonExperience(primary_design)),
+		example_pattern_from_path("Adaptive/Unity/Rain", new RainExperience(primary_design)),
+		example_pattern_from_path("Adaptive/Unity/SpaceshipHeartbeat", new AsteroidExperience(primary_design)),
 
-	example_pattern_from_path("user-study/HeartbeatBase", "Pilot Study/HeartbeatBase"),
-	example_pattern_from_path("user-study/RainBase", "Pilot Study/RainBase"),
-];
-const patterns = user_study_mode ? user_study_shown_patterns : all_patterns;
-const design_library = new DesignLibrary(primary_design, file_titlebar_manager, designlibrary_div, new Map(patterns));
+		example_pattern_from_path("Non-Adaptive/Rain"),
+		example_pattern_from_path("Non-Adaptive/Checkmark"),
+		example_pattern_from_path("Non-Adaptive/StaticShock"),
+
+		example_pattern_from_path("user-study/HeartbeatBase", new AsteroidExperience(primary_design), "Pilot Study/HeartbeatBase"),
+		example_pattern_from_path("user-study/RainBase", new RainExperience(primary_design), "Pilot Study/RainBase"),
+	];
+	const patterns = user_study_mode ? user_study_shown_patterns : all_patterns;
+	const design_library = new DesignLibrary(primary_design, three_base_environment, file_titlebar_manager, designlibrary_div, new Map(patterns));
+	return design_library;
+})();
 
 
 const darkModePreference = window.matchMedia("(prefers-color-scheme: dark)");
 darkModePreference.addEventListener("change", _ev => {
 	primary_design.force_rerender();
 });
+
 
 Object.assign(window, {
 	primary_design,
@@ -438,4 +490,6 @@ Object.assign(window, {
 	design_library,
 	file_titlebar_manager,
 	user_study_mode,
+	three_base_environment,
+	center_panel,
 });

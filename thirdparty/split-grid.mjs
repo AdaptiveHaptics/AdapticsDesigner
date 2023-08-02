@@ -1,4 +1,3 @@
-//@ts-nocheck
 var numeric = function (value, unit) { return Number(value.slice(0, -1 * unit.length)); };
 
 var parseValue = function (value) {

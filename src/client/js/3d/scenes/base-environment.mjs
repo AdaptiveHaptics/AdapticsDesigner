@@ -65,6 +65,10 @@ export class BaseEnvironment {
 		this.hand_outline_pass = Hand3D.create_outline_pass(new THREE.Vector2(window.innerWidth, window.innerHeight), this.scene, this.camera);
 		this.composer.addPass(this.hand_outline_pass);
 
+		// for playback visualization
+		this.playback_vis_outline_pass = HapticDevice.create_outline_pass(new THREE.Vector2(window.innerWidth, window.innerHeight), this.scene, this.camera);
+		this.composer.addPass(this.playback_vis_outline_pass);
+
 		this.output_pass = new OutputPass();
 		this.composer.addPass(this.output_pass);
 
@@ -81,6 +85,7 @@ export class BaseEnvironment {
 		this.#_setup_lights(false);
 
 		this.haptic_device = new HapticDevice();
+		this.playback_vis_outline_pass.selectedObjects = [this.haptic_device.playback_vis.getObject3D()];
 		this.scene.add(this.haptic_device.getObject3D());
 
 		this.#_hand = new Hand3D(this, true);

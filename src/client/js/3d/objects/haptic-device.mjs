@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { haptic_to_three_coords } from "../util.mjs";
+import { OutlinePass } from "three/examples/jsm/postprocessing/OutlinePass.js";
 
 export class HapticDevice {
 	constructor(device_dimensions = new THREE.Vector3(0.22, 0.04, 0.22)) {
@@ -25,24 +26,33 @@ export class HapticDevice {
 	getObject3D() {
 		return this.object3D;
 	}
+
+	/**
+	 *
+	 * @param {THREE.Vector2} resolution
+	 * @param {THREE.Scene} scene
+	 * @param {THREE.Camera} camera
+	 * @returns
+	 */
+	static create_outline_pass(resolution, scene, camera) {
+		return PlaybackVis.create_outline_pass(resolution, scene, camera);
+	}
 }
 
 class PlaybackVis {
+	static low_color = new THREE.Color(window.getComputedStyle(document.body).getPropertyValue("--pattern-playback-vis-low"));
+	static high_color = new THREE.Color(window.getComputedStyle(document.body).getPropertyValue("--pattern-playback-vis-high"));
+
 	constructor() {
-		this.low_color = new THREE.Color(window.getComputedStyle(document.body).getPropertyValue("--pattern-playback-vis-low"));
-		this.high_color = new THREE.Color(window.getComputedStyle(document.body).getPropertyValue("--pattern-playback-vis-high"));
-
-
-
 		const points = [
 			new THREE.Vector3(-0.1, 0.2, -0.1),
 			new THREE.Vector3(-0.1, 0.1, 0.1),
 			new THREE.Vector3(0.1, 0.2, 0.1)
 		];
 		const colors = [
-			this.high_color,
-			this.low_color,
-			this.high_color,
+			PlaybackVis.high_color,
+			PlaybackVis.low_color,
+			PlaybackVis.high_color,
 		];
 
 		const curve = new THREE.CatmullRomCurve3(points);
@@ -76,7 +86,7 @@ class PlaybackVis {
 		const colors = new Float32Array(this.geometry.attributes.position.count * 3);
 		for (let tub_i = 0; tub_i <= this.geometry.parameters.tubularSegments; tub_i++) {
 			const intensity = curve_intensity.getPointAt(tub_i / this.geometry.parameters.tubularSegments).x;
-			const color = this.low_color.clone().lerp(this.high_color, intensity);
+			const color = PlaybackVis.low_color.clone().lerp(PlaybackVis.high_color, intensity);
 			for (let rad_i = 0; rad_i <= this.geometry.parameters.radialSegments; rad_i++) {
 				colors[color_i * 3] = color.r;
 				colors[color_i * 3 + 1] = color.g;
@@ -91,5 +101,22 @@ class PlaybackVis {
 
 	getObject3D() {
 		return this.tube;
+	}
+
+	/**
+	 *
+	 * @param {THREE.Vector2} resolution
+	 * @param {THREE.Scene} scene
+	 * @param {THREE.Camera} camera
+	 * @returns
+	 */
+	static create_outline_pass(resolution = new THREE.Vector2(window.innerWidth, window.innerHeight), scene, camera) {
+		const hand_outline_pass = new OutlinePass(resolution, scene, camera);
+		hand_outline_pass.edgeStrength = 3.0;
+		hand_outline_pass.edgeGlow = 0.7;
+		hand_outline_pass.edgeThickness = 2.0;
+		hand_outline_pass.visibleEdgeColor.set(PlaybackVis.high_color);
+		hand_outline_pass.hiddenEdgeColor.set(PlaybackVis.high_color);
+		return hand_outline_pass;
 	}
 }

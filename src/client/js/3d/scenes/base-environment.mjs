@@ -119,11 +119,15 @@ export class BaseEnvironment {
 		this.haptic_device.playback_vis.update_playback_visualization(this.#_pattern_design.last_eval);
 	}
 
+	/**
+	 *
+	 * @param {BaseExperience | null} experience
+	 */
 	load_experience(experience) {
 		if (this.#_experience) this.scene.remove(this.#_experience.getObject3D());
 
 		this.#_experience = experience;
-		this.scene.add(experience.getObject3D());
+		if (this.#_experience) this.scene.add(this.#_experience.getObject3D());
 	}
 
 	fitStageIntoParentContainer() {

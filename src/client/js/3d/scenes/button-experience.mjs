@@ -37,7 +37,7 @@ export class ButtonExperience extends BaseExperience {
 			new THREE.MeshStandardMaterial({ color: 0x899495, transparent: true, opacity: 1 })
 		);
 		this.proximity_meter.position.set(-this.button_body.geometry.parameters.width/2, 0, this.button_body.geometry.parameters.depth/2 + 0.0001);
-		this.proximity_meter.scale.setX(0.75);
+		this.proximity_meter.scale.setX(0);
 		this.button_body.add(this.proximity_meter);
 
 		this.activation_meter = new THREE.Mesh(
@@ -46,7 +46,7 @@ export class ButtonExperience extends BaseExperience {
 			new THREE.MeshStandardMaterial({ color: 0xE53345, transparent: true, opacity: 1 })
 		);
 		this.activation_meter.position.set(-this.button_body.geometry.parameters.width/2, 0, this.button_body.geometry.parameters.depth/2 + 0.0002);
-		this.activation_meter.scale.setX(0.25);
+		this.activation_meter.scale.setX(0);
 		this.button_body.add(this.activation_meter);
 
 
@@ -72,11 +72,15 @@ export class ButtonExperience extends BaseExperience {
 	}
 
 	#_activated = false;
+	#_last_update_hand_in_scene = false;
 	/**
 	 * @override
 	 * @param {import("../../device-ws-controller.mjs").TrackingFrame | null} last_tracking_data
 	 */
 	update(last_tracking_data) {
+		if (!this.#_last_update_hand_in_scene && last_tracking_data?.hand) this.#_on_hand_enter_scene();
+		else if (this.#_last_update_hand_in_scene && !last_tracking_data?.hand) this.#_on_hand_exit_scene();
+
 		if (last_tracking_data?.hand) {
 			if (this.#_activated) return;
 			const local_hand_position = this.object3D.worldToLocal(haptic_to_three_coords(last_tracking_data.hand.palm.position));
@@ -111,11 +115,22 @@ export class ButtonExperience extends BaseExperience {
 			} else {
 				this.set_activation(0);
 			}
-		} else {
-			this.#_activated = false;
-			this.set_proximity(0);
-			this.set_activation(0);
 		}
+	}
+
+	#_on_hand_enter_scene() {
+		this.#_last_update_hand_in_scene = true;
+		this.#_pattern_design.update_playstart(0);
+		this.#_pattern_design.update_pattern_time(0);
+		this.#_pattern_design.update_playstart(Date.now());
+	}
+
+	#_on_hand_exit_scene() {
+		this.#_last_update_hand_in_scene = false;
+		this.#_activated = false;
+		this.#_pattern_design.update_playstart(0);
+		this.set_proximity(0);
+		this.set_activation(0);
 	}
 
 	getObject3D() {

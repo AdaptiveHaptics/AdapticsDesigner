@@ -83,3 +83,12 @@ export function map_get_or_default(map, key, default_fn) {
 		return v;
 	}
 }
+
+/**
+ *
+ * @param  {...any} _args
+ * @returns {never}
+ */
+export function abstract_method_unreachable(..._args) {
+	throw new Error("Abstract method not implemented");
+}

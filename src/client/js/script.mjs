@@ -8,6 +8,7 @@ import { RightPanel } from "./rightpanel/right-panel.mjs";
 import { notnull } from "./util.mjs";
 import { BaseEnvironment } from "./3d/scenes/base-environment.mjs";
 import { CenterPanel } from "./center-panel.mjs";
+import { ButtonExperience } from "./3d/scenes/button-experience.mjs";
 
 const ignoreErrorsContaining = [
 ];
@@ -77,6 +78,7 @@ const _bottomsplit = SplitGrid({
 
 const PRIMARY_DESIGN_LOCAL_STORAGE_KEY = "primary_design";
 const WEBSOCKET_CONNECTED_LOCALSTORAGE_KEY = "websocket_connected";
+const WEBSOCKET_HAND_TRACKING_LOCALSTORAGE_KEY = "websocket_handtracking";
 
 
 /** @type {MAHPatternDesignFE} */
@@ -189,7 +191,7 @@ document.addEventListener("paste", ev => {
 			websocket_state_span.textContent =  websocket.destroyed ? "disconnected" : "reconnecting...";
 		});
 		websocket.state_change_events.addEventListener("tracking_data", ev => {
-			three_base_environment?.hand.update_tracking_data(ev.detail.tracking_frame);
+			three_base_environment?.update_tracking_data(ev.detail.tracking_frame);
 		});
 	});
 	websocket_disconnect_button.addEventListener("click", () => {
@@ -208,6 +210,7 @@ document.addEventListener("paste", ev => {
 		tracking_input.checked = primary_design.tracking;
 	});
 	tracking_input.addEventListener("change", () => {
+		window.localStorage.setItem(WEBSOCKET_HAND_TRACKING_LOCALSTORAGE_KEY, tracking_input.checked ? "true" : "false");
 		primary_design.update_tracking(tracking_input.checked);
 	});
 }
@@ -384,7 +387,10 @@ primary_design.commit_operation({ rerender: true });
 
 /** @type {BaseEnvironment | null} */
 let three_base_environment = null;
-try { three_base_environment = new BaseEnvironment(primary_design, threejscontainer_div); } catch (e) { console.warn(e); }
+try {
+	three_base_environment = new BaseEnvironment(primary_design, threejscontainer_div);
+	three_base_environment.load_experience(new ButtonExperience(primary_design));
+} catch (e) { console.warn(e); }
 const konva_pattern_stage = new KonvaPatternStage(primary_design, patternstage_div, pattern_div);
 const center_panel = new CenterPanel(centerpanel_div);
 const konva_timeline_stage = new KonvaTimelineStage(primary_design, timelinestage_div, timeline_div);

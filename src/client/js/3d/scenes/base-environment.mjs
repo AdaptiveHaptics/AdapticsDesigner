@@ -8,6 +8,7 @@ import { Hand3D } from "../objects/hand-3d.mjs";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
+import { abstract_method_unreachable } from "../../util.mjs";
 
 
 export class BaseEnvironment {
@@ -15,6 +16,10 @@ export class BaseEnvironment {
 
 	/** @type {BaseExperience | null} */
 	#_experience = null;
+	/** @type {import("../../device-ws-controller.mjs").TrackingFrame | null} */
+	#_last_tracking_data = null;
+
+	#_hand;
 
 	/**
 	 *
@@ -71,15 +76,15 @@ export class BaseEnvironment {
 
 
 
-		this.scene.add(new THREE.AxesHelper(5));
+		// this.scene.add(new THREE.AxesHelper(5));
 
 		this.#_setup_lights(false);
 
 		this.haptic_device = new HapticDevice();
 		this.scene.add(this.haptic_device.getObject3D());
 
-		this.hand = new Hand3D(this);
-		this.scene.add(this.hand.getObject3D());
+		this.#_hand = new Hand3D(this, true);
+		this.scene.add(this.#_hand.getObject3D());
 
 		this.ground = new THREE.Mesh(
 			new THREE.PlaneGeometry(10, 10),
@@ -132,6 +137,14 @@ export class BaseEnvironment {
 
 	/**
 	 *
+	 * @param {import("../../device-ws-controller.mjs").TrackingFrame} tracking_frame
+	 */
+	update_tracking_data(tracking_frame) {
+		this.#_last_tracking_data = tracking_frame;
+	}
+
+	/**
+	 *
 	 * @param {boolean} show_helpers
 	 */
 	#_setup_lights(show_helpers) {
@@ -145,17 +158,10 @@ export class BaseEnvironment {
 
 		const dist = 0.1;
 
-		const key_light = this.key_light = this.#_create_shadowed_point_light(0xffffff, -1.8 * dist, 1.44 * dist, 1.2 * dist, 7 * (dist ** 2));
-		this.scene.add(key_light);
-		if (show_helpers) this.scene.add(new THREE.PointLightHelper(key_light, 0.1));
-
-		const fill_light = this.fill_light = this.#_create_shadowed_point_light(0xffffff, 1.8 * dist, 1.3 * dist, 1.6 * dist, 4 * (dist ** 2));
-		this.scene.add(fill_light);
-		if (show_helpers) this.scene.add(new THREE.PointLightHelper(fill_light, 0.1));
-
-		const back_light = this.back_light = this.#_create_shadowed_point_light(0xffffff, 0.8 * dist, 2.4 * dist, -2.2 * dist, 2 * (dist ** 2));
-		this.scene.add(back_light);
-		if (show_helpers) this.scene.add(new THREE.PointLightHelper(back_light, 0.1));
+		this.key_light         = this.#_create_and_add_shadowed_point_light(0xffffff, -1.8 * dist, 1.44 * dist, 1.2 * dist, 7 * (dist ** 2), show_helpers);
+		this.fill_light        = this.#_create_and_add_shadowed_point_light(0xffffff, 1.8 * dist, 1.3 * dist, 1.6 * dist, 4 * (dist ** 2), show_helpers);
+		this.back_light        = this.#_create_and_add_shadowed_point_light(0xffffff, 0.8 * dist, 2.4 * dist, -2.2 * dist, 2 * (dist ** 2), show_helpers);
+		this.experience_light  = this.#_create_and_add_shadowed_point_light(0xffffff, -1.65 * dist, 2.7 * dist, -0.98 * dist, 7 * (dist ** 2), show_helpers);
 	}
 
 	/**
@@ -167,7 +173,7 @@ export class BaseEnvironment {
 	 * @param {number} intensity
 	 * @returns
 	 */
-	#_create_shadowed_point_light(color, x, y, z, intensity) {
+	#_create_and_add_shadowed_point_light(color, x, y, z, intensity, show_helpers = false) {
 		const light = new THREE.PointLight(color, intensity);
 		light.position.set(x, y, z);
 		light.castShadow = true;
@@ -175,6 +181,8 @@ export class BaseEnvironment {
 		light.shadow.camera.far = 10;
 		light.shadow.mapSize.width = 1024;
 		light.shadow.mapSize.height = 1024;
+		this.scene.add(light);
+		if (show_helpers) this.scene.add(new THREE.PointLightHelper(light, 0.1));
 		return light;
 	}
 
@@ -264,7 +272,7 @@ export class BaseEnvironment {
 	#_last_performance_check = performance.now();
 	#_frames_since_last_performance_check = 0;
 	minimum_fps = 24;
-	perf_check_interval_seconds = 2;
+	perf_check_interval_seconds = 1.5;
 
 	#_no_performance_check = false;
 	render() {
@@ -279,7 +287,12 @@ export class BaseEnvironment {
 
 		if (this.skyboxMaterial) this.skyboxMaterial.uniforms.iTime.value += 2**-20; // ~0.000001 == 10^-6
 
-		this.composer.render();
+		{ // actual render steps
+			this.#_hand.update(this.#_last_tracking_data);
+			this.#_experience?.update(this.#_last_tracking_data);
+			this.composer.render();
+		}
+
 		if (!this.#_no_performance_check) {
 			this.#_frames_since_last_performance_check++;
 
@@ -320,12 +333,21 @@ export class BaseEnvironment {
 	}
 }
 
+
 export class BaseExperience {
 	/**
 	 * @abstract
 	 * @returns {THREE.Object3D}
 	 */
 	getObject3D() {
-		throw new Error("Abstract method not implemented");
+		abstract_method_unreachable();
+	}
+
+	/**
+	 * @abstract
+	 * @param {import("../../device-ws-controller.mjs").TrackingFrame | null} last_tracking_data
+	 */
+	update(last_tracking_data) {
+		abstract_method_unreachable(last_tracking_data);
 	}
 }

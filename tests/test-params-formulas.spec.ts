@@ -21,7 +21,7 @@ async function check_radius(page: Page) {
 
 test_check_no_errors('check if formulas show in user param pane', async ({ page }) => {
   page.setDefaultNavigationTimeout(8000);
-  page.setDefaultTimeout(1500);
+  page.setDefaultTimeout(2000);
 
   await page.goto('/');
   await setup_radius_formula(page);

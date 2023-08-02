@@ -2,8 +2,8 @@ import * as THREE from "three";
 import WebGL from "three/examples/jsm/capabilities/WebGL.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { Sky } from "three/examples/jsm/objects/Sky.js";
-import { HapticDevice } from "../objects/haptic-device.mjs";
-import { Hand3D } from "../objects/hand-3d.mjs";
+import { HapticDevice } from "./objects/haptic-device.mjs";
+import { Hand3D } from "./objects/hand-3d.mjs";
 
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
@@ -13,16 +13,16 @@ import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 export class BaseEnvironment {
 	#_pattern_design;
 
-	/** @type {import("./base-experience.mjs").BaseExperience | null} */
+	/** @type {import("./exps/base-experience.mjs").BaseExperience | null} */
 	#_experience = null;
-	/** @type {import("../../device-ws-controller.mjs").TrackingFrame | null} */
+	/** @type {import("../device-ws-controller.mjs").TrackingFrame | null} */
 	#_last_tracking_data = null;
 
 	#_hand;
 
 	/**
 	 *
-	 * @param {import("../../fe/patterndesign.mjs").MAHPatternDesignFE} pattern_design
+	 * @param {import("../fe/patterndesign.mjs").MAHPatternDesignFE} pattern_design
 	 * @param {HTMLDivElement} container
 	 */
 	constructor(pattern_design, container) {
@@ -125,7 +125,7 @@ export class BaseEnvironment {
 
 	/**
 	 *
-	 * @param {import("./base-experience.mjs").BaseExperience | null} experience
+	 * @param {import("./exps/base-experience.mjs").BaseExperience | null} experience
 	 */
 	load_experience(experience) {
 		if (this.#_experience) this.scene.remove(this.#_experience.getObject3D());
@@ -145,7 +145,7 @@ export class BaseEnvironment {
 
 	/**
 	 *
-	 * @param {import("../../device-ws-controller.mjs").TrackingFrame} tracking_frame
+	 * @param {import("../device-ws-controller.mjs").TrackingFrame} tracking_frame
 	 */
 	update_tracking_data(tracking_frame) {
 		this.#_last_tracking_data = tracking_frame;

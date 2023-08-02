@@ -6,10 +6,9 @@ import { DesignLibrary } from "./leftpanel/design-library.mjs";
 import { ParameterEditor } from "./parameter-editor.mjs";
 import { RightPanel } from "./rightpanel/right-panel.mjs";
 import { notnull } from "./util.mjs";
-import { BaseEnvironment } from "./3d/scenes/base-environment.mjs";
+import { BaseEnvironment } from "./3d/base-environment.mjs";
 import { CenterPanel } from "./center-panel.mjs";
-import { ButtonExperience } from "./3d/scenes/button-experience.mjs";
-import { AsteroidExperience } from "./3d/scenes/asteroid-experience.mjs";
+import * as ExperienceSimulations from "./3d/exps/index.mjs";
 
 const ignoreErrorsContaining = [
 ];
@@ -396,7 +395,7 @@ let three_base_environment = null;
 try {
 	three_base_environment = new BaseEnvironment(primary_design, threejscontainer_div);
 	// three_base_environment.load_experience(new ButtonExperience(primary_design));
-	three_base_environment.load_experience(new AsteroidExperience(primary_design));
+	// three_base_environment.load_experience(new AsteroidExperience(primary_design));
 } catch (e) { console.warn(e); }
 const konva_pattern_stage = new KonvaPatternStage(primary_design, patternstage_div, pattern_div);
 const center_panel = new CenterPanel(centerpanel_div);
@@ -410,64 +409,69 @@ const search_up = new URLSearchParams(window.location.search);
 const user_study_mode = ["user_study", "userstudy", "user-study", "pilot_study", "pilotstudy", "pilot-study"].some(s => search_up.has(s));
 console.log("user_study_mode: ", user_study_mode);
 
-/**
- *
- * @param {string} url
- * @returns {Promise<MidAirHapticsAnimationFileFormat>}
- */
-const load_pattern = async (url) => {
-	try {
-		const f = await fetch(url);
-		if (f.status == 404) {
-			alert(`Failed to load pattern '${url}': 404`);
-			throw new Error(`Failed to load pattern '${url}': 404`);
+
+const design_library = (() => {
+	const { AsteroidExperience, ButtonExperience, RainExperience } = ExperienceSimulations;
+	/**
+	 *
+	 * @param {string} url
+	 * @returns {Promise<MidAirHapticsAnimationFileFormat>}
+	 */
+	const load_pattern = async (url) => {
+		try {
+			const f = await fetch(url);
+			if (f.status == 404) {
+				alert(`Failed to load pattern '${url}': 404`);
+				throw new Error(`Failed to load pattern '${url}': 404`);
+			}
+			const json = /** @type {MidAirHapticsAnimationFileFormat} */ (await f.json());
+			return json;
+		} catch (e) {
+			if (e.name == "TypeError" && e.message == "Failed to fetch") {
+				console.error(e); // happens when the user refreshes the tab before the fetch completes
+				// @ts-ignore
+				return null;
+			}
+			else throw e;
 		}
-		const json = /** @type {MidAirHapticsAnimationFileFormat} */ (await f.json());
-		return json;
-	} catch (e) {
-		if (e.name == "TypeError" && e.message == "Failed to fetch") {
-			console.error(e); // happens when the user refreshes the tab before the fetch completes
-			// @ts-ignore
-			return null;
-		}
-		else throw e;
-	}
-};
-/** @type {(namepath: string, urlpath: string) => [string, Promise<MidAirHapticsAnimationFileFormat>]} */
-const load_pattern_into_tuple = (namepath, urlpath) => [namepath, load_pattern(urlpath)];
-/** @type {(path: string, forcenamepath?: string) => [string, Promise<MidAirHapticsAnimationFileFormat>]} */
-const example_pattern_from_path = (path, forcenamepath) => load_pattern_into_tuple(forcenamepath ?? `Examples/${path}`, `./example-patterns/${path}.adaptics`);
-const user_study_shown_patterns = [
-	example_pattern_from_path("Adaptive/Simple/Button", "Examples/Adaptive/Button"),
-	example_pattern_from_path("Adaptive/Simple/Wind", "Examples/Adaptive/Wind"),
-	example_pattern_from_path("Adaptive/Simple/StaticShock", "Examples/Adaptive/StaticShock"),
+	};
+	/** @type {(namepath: string, urlpath: string, sim_exp: import("./3d/exps/base-experience.mjs").BaseExperience | null) => [string, import("./leftpanel/design-library.mjs").DesignMapElement]} */
+	const load_pattern_into_tuple = (namepath, urlpath, sim_exp) => [namepath, { design: load_pattern(urlpath), sim_exp }];
+	/** @type {(path: string, sim_exp?: import("./3d/exps/base-experience.mjs").BaseExperience | null, forcenamepath?: string) => [string, import("./leftpanel/design-library.mjs").DesignMapElement]} */
+	const example_pattern_from_path = (path, sim_exp, forcenamepath) => load_pattern_into_tuple(forcenamepath ?? `Examples/${path}`, `./example-patterns/${path}.adaptics`, sim_exp ?? null);
+	const user_study_shown_patterns = [
+		example_pattern_from_path("Adaptive/Simple/Button", new ButtonExperience(primary_design), "Examples/Adaptive/Button"),
+		example_pattern_from_path("Adaptive/Simple/Wind", null, "Examples/Adaptive/Wind"),
+		example_pattern_from_path("Adaptive/Simple/StaticShock", null, "Examples/Adaptive/StaticShock"),
 
-	example_pattern_from_path("Non-Adaptive/Checkmark"),
-	example_pattern_from_path("Non-Adaptive/StaticShock"),
+		example_pattern_from_path("Non-Adaptive/Checkmark"),
+		example_pattern_from_path("Non-Adaptive/StaticShock"),
 
-	example_pattern_from_path("user-study/HeartbeatBase", "Pilot Study/HeartbeatBase"),
-	example_pattern_from_path("user-study/RainBase", "Pilot Study/RainBase"),
-];
-const all_patterns = [
-	example_pattern_from_path("Adaptive/Simple/Button"),
-	example_pattern_from_path("Adaptive/Simple/Wind"),
-	example_pattern_from_path("Adaptive/Simple/Heartbeat"),
-	example_pattern_from_path("Adaptive/Simple/Rain"),
-	example_pattern_from_path("Adaptive/Simple/StaticShock"),
+		example_pattern_from_path("user-study/HeartbeatBase", new AsteroidExperience(primary_design), "Pilot Study/HeartbeatBase"),
+		example_pattern_from_path("user-study/RainBase", new RainExperience(primary_design), "Pilot Study/RainBase"),
+	];
+	const all_patterns = [
+		example_pattern_from_path("Adaptive/Simple/Button", new ButtonExperience(primary_design)),
+		example_pattern_from_path("Adaptive/Simple/Wind"),
+		example_pattern_from_path("Adaptive/Simple/Heartbeat", new AsteroidExperience(primary_design)),
+		example_pattern_from_path("Adaptive/Simple/Rain"),
+		example_pattern_from_path("Adaptive/Simple/StaticShock"),
 
-	example_pattern_from_path("Adaptive/Unity/Button"),
-	example_pattern_from_path("Adaptive/Unity/Rain"),
-	example_pattern_from_path("Adaptive/Unity/SpaceshipHeartbeat"),
+		example_pattern_from_path("Adaptive/Unity/Button", new ButtonExperience(primary_design)),
+		example_pattern_from_path("Adaptive/Unity/Rain", new RainExperience(primary_design)),
+		example_pattern_from_path("Adaptive/Unity/SpaceshipHeartbeat", new AsteroidExperience(primary_design)),
 
-	example_pattern_from_path("Non-Adaptive/Rain"),
-	example_pattern_from_path("Non-Adaptive/Checkmark"),
-	example_pattern_from_path("Non-Adaptive/StaticShock"),
+		example_pattern_from_path("Non-Adaptive/Rain"),
+		example_pattern_from_path("Non-Adaptive/Checkmark"),
+		example_pattern_from_path("Non-Adaptive/StaticShock"),
 
-	example_pattern_from_path("user-study/HeartbeatBase", "Pilot Study/HeartbeatBase"),
-	example_pattern_from_path("user-study/RainBase", "Pilot Study/RainBase"),
-];
-const patterns = user_study_mode ? user_study_shown_patterns : all_patterns;
-const design_library = new DesignLibrary(primary_design, file_titlebar_manager, designlibrary_div, new Map(patterns));
+		example_pattern_from_path("user-study/HeartbeatBase", new AsteroidExperience(primary_design), "Pilot Study/HeartbeatBase"),
+		example_pattern_from_path("user-study/RainBase", new RainExperience(primary_design), "Pilot Study/RainBase"),
+	];
+	const patterns = user_study_mode ? user_study_shown_patterns : all_patterns;
+	const design_library = new DesignLibrary(primary_design, three_base_environment, file_titlebar_manager, designlibrary_div, new Map(patterns));
+	return design_library;
+})();
 
 
 const darkModePreference = window.matchMedia("(prefers-color-scheme: dark)");

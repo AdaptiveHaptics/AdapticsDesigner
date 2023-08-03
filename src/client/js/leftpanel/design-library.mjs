@@ -16,15 +16,15 @@ export class DesignLibrary {
 	/**
 	 *
 	 * @param {MAHPatternDesignFE} pattern_design
-	 * @param {import("../3d/base-environment.mjs").BaseEnvironment | null} three_base_environment
+	 * @param {import("../3d/basic-three-mah-dev-environment.mjs").BasicThreeMAHDevEnvironment | null} three_mah_dev_environment
 	 * @param {import("../script.mjs").FileTitlebarManager} file_titlebar_manager
 	 * @param {HTMLDivElement} designlibrary_div
 	 * @param {DesignsMap} designs_map
 	 * @param {string=} search_local_storage_key
 	 */
-	constructor(pattern_design, three_base_environment, file_titlebar_manager, designlibrary_div, designs_map, search_local_storage_key) {
+	constructor(pattern_design, three_mah_dev_environment, file_titlebar_manager, designlibrary_div, designs_map, search_local_storage_key) {
 		this.pattern_design = pattern_design;
-		this.three_base_environment = three_base_environment;
+		this.three_base_environment = three_mah_dev_environment;
 		this.file_titlebar_manager = file_titlebar_manager;
 		this.designlibrary_div = designlibrary_div;
 		this.search_local_storage_key = search_local_storage_key;

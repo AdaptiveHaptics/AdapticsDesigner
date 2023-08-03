@@ -6,7 +6,7 @@ import { DesignLibrary } from "./leftpanel/design-library.mjs";
 import { ParameterEditor } from "./parameter-editor.mjs";
 import { RightPanel } from "./rightpanel/right-panel.mjs";
 import { notnull } from "./util.mjs";
-import { BaseEnvironment } from "./3d/base-environment.mjs";
+import { BasicThreeMAHDevEnvironment } from "./3d/basic-three-mah-dev-environment.mjs";
 import { CenterPanel } from "./center-panel.mjs";
 import * as ExperienceSimulations from "./3d/exps/index.mjs";
 
@@ -197,7 +197,7 @@ document.addEventListener("paste", ev => {
 			websocket_state_span.textContent =  websocket.destroyed ? "disconnected" : "reconnecting...";
 		});
 		websocket.state_change_events.addEventListener("tracking_data", ev => {
-			three_base_environment?.update_tracking_data(ev.detail.tracking_frame);
+			three_mah_dev_environment?.update_tracking_data(ev.detail.tracking_frame);
 		});
 	});
 	websocket_disconnect_button.addEventListener("click", () => {
@@ -391,10 +391,10 @@ const file_titlebar_manager = new FileTitlebarManager(primary_design, file_isect
 
 primary_design.commit_operation({ rerender: true });
 
-/** @type {BaseEnvironment | null} */
-let three_base_environment = null;
+/** @type {BasicThreeMAHDevEnvironment | null} */
+let three_mah_dev_environment = null;
 try {
-	three_base_environment = new BaseEnvironment(primary_design, threejscontainer_div);
+	three_mah_dev_environment = new BasicThreeMAHDevEnvironment(primary_design, threejscontainer_div);
 	// three_base_environment.load_experience(new ButtonExperience(primary_design));
 	// three_base_environment.load_experience(new AsteroidExperience(primary_design));
 } catch (e) { console.warn(e); }
@@ -470,7 +470,7 @@ const design_library = (() => {
 		example_pattern_from_path("user-study/RainBase", new RainExperience(primary_design), "Pilot Study/RainBase"),
 	];
 	const patterns = user_study_mode ? user_study_shown_patterns : all_patterns;
-	const design_library = new DesignLibrary(primary_design, three_base_environment, file_titlebar_manager, designlibrary_div, new Map(patterns), DESIGN_LIBRARY_SEARCH_LOCAL_STORAGE_KEY);
+	const design_library = new DesignLibrary(primary_design, three_mah_dev_environment, file_titlebar_manager, designlibrary_div, new Map(patterns), DESIGN_LIBRARY_SEARCH_LOCAL_STORAGE_KEY);
 	return design_library;
 })();
 
@@ -491,6 +491,6 @@ Object.assign(window, {
 	design_library,
 	file_titlebar_manager,
 	user_study_mode,
-	three_base_environment,
+	three_base_environment: three_mah_dev_environment,
 	center_panel,
 });

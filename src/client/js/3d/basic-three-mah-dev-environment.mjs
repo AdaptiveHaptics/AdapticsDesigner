@@ -10,7 +10,7 @@ import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
 
 
-export class BaseEnvironment {
+export class BasicThreeMAHDevEnvironment {
 	#_pattern_design;
 
 	/** @type {import("./exps/base-experience.mjs").BaseExperience | null} */

@@ -345,7 +345,7 @@ export class BaseEnvironment {
 		this.#_disabled_due_to_low_performance = true;
 
 		// show a message to the user and if they click it, re-enable and set _no_performance_check
-		const message_div = this.#_create_message_div("Due to low performance, the 3D scene has been disabled. Click to re-enable.");
+		const message_div = this.#_create_message_div("Due to low performance, the 3D WebGL scene has been disabled. Click to re-enable."); //maybe tell user: Check if WebGL hardware acceleration is available and enabled in the browser
 		this.container.appendChild(message_div);
 		message_div.addEventListener("click", () => {
 			this.#_disabled_due_to_low_performance = false;

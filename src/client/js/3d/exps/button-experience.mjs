@@ -70,10 +70,10 @@ export class ButtonExperience extends BaseExperience {
 	#_activated = false;
 	/**
 	 * @override
-	 * @param {number} _delta_time
+	 * @param {number} delta_time
 	 * @param {import("../../device-ws-controller.mjs").TrackingFrame | null} last_tracking_data
 	 */
-	update_for_dt(_delta_time, last_tracking_data) {
+	update_for_dt(delta_time, last_tracking_data) {
 		if (last_tracking_data?.hand) {
 			if (this.#_activated) return;
 			const local_hand_position = this.object3D.worldToLocal(haptic_to_three_coords(last_tracking_data.hand.palm.position));

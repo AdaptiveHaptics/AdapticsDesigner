@@ -44,13 +44,24 @@ export class BasicThreeMAHDevEnvironment {
 		renderer.shadowMap.enabled = true;
 		renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 		container.appendChild(renderer.domElement);
+		renderer.domElement.tabIndex = 0;
 
 		this.camera = new THREE.PerspectiveCamera(75, 1, 0.01, 1000);
 		this.camera.position.set(-0.20, 0.28, 0.31);
 		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 		this.controls.target.set(0, 0.1, 0);
+		this.controls.listenToKeyEvents(this.renderer.domElement);
 		this.controls.update();
 		this.camera.updateProjectionMatrix();
+		this.controls.saveState();
+		renderer.domElement.addEventListener("keypress", ev => {
+			if (ev.key === "r") {
+				this.controls.reset();
+				this.camera.updateProjectionMatrix();
+				ev.preventDefault();
+				ev.stopImmediatePropagation();
+			}
+		});
 
 
 		this.scene = new THREE.Scene();

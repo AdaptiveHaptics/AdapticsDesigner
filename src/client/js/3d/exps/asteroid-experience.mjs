@@ -5,8 +5,8 @@ const randFloat = THREE.MathUtils.randFloat;
 const randFloatSpread = THREE.MathUtils.randFloatSpread;
 
 export class AsteroidExperience extends BaseExperience {
-	min_asteroid_spawn_interval = 1;
-	max_asteroid_spawn_interval = 2;
+	min_asteroid_spawn_interval = 0.8;
+	max_asteroid_spawn_interval = 1.5;
 
 
 	/**

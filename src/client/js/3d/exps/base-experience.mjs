@@ -1,5 +1,14 @@
 import { abstract_method_unreachable } from "../../util.mjs";
 
+
+/**
+ *
+ * @returns {number} current time in seconds since epoch
+ */
+export function time_now() {
+	return Date.now() / 1000;
+}
+
 export class BaseExperience {
 	#_pattern_design;
 	#_expected_params;
@@ -14,16 +23,65 @@ export class BaseExperience {
 	constructor(pattern_design, expected_params, optional_params) {
 		if (this.constructor == BaseExperience) throw new Error("BaseExperience is an abstract class and cannot be instantiated");
 		if (this.getObject3D == BaseExperience.prototype.getObject3D) throw new Error("Must override getObject3D() method to extend BaseExperience");
-		if (this.update == BaseExperience.prototype.update) throw new Error("Must override update() method to extend BaseExperience");
+		if (this.update_for_dt == BaseExperience.prototype.update_for_dt) throw new Error("Must override update() method to extend BaseExperience");
+		if (this.on_hand_enter_scene == BaseExperience.prototype.on_hand_enter_scene) throw new Error("Must override on_hand_enter_scene() method to extend BaseExperience");
+		if (this.on_hand_exit_scene == BaseExperience.prototype.on_hand_exit_scene) throw new Error("Must override on_hand_exit_scene() method to extend BaseExperience");
 
 		this.#_pattern_design = pattern_design;
 		this.#_expected_params = expected_params;
 		this.#_optional_params = optional_params;
 	}
 
+
+	#_last_update_time = time_now();
+	#_last_update_hand_in_scene = false;
+	/**
+	 * @public
+	 * @param {import("../../device-ws-controller.mjs").TrackingFrame | null} last_tracking_data
+	 */
+	update(last_tracking_data) {
+		if (!this.#_last_update_hand_in_scene && last_tracking_data?.hand) this.#_on_hand_enter_scene();
+		else if (this.#_last_update_hand_in_scene && !last_tracking_data?.hand) this.#_on_hand_exit_scene();
+
+		const now = time_now();
+		const delta_time = now - this.#_last_update_time;
+		this.#_last_update_time = now;
+
+		this.update_for_dt(delta_time, last_tracking_data);
+	}
+
+	#_on_hand_enter_scene() {
+		this.#_last_update_hand_in_scene = true;
+		this.#_pattern_design.update_playstart(0);
+		this.#_pattern_design.update_pattern_time(0);
+		this.#_pattern_design.update_playstart(Date.now());
+		this.on_hand_enter_scene();
+	}
+	/**
+	 * @protected
+	 * @abstract
+	 */
+	on_hand_enter_scene() {
+		abstract_method_unreachable();
+	}
+
+	#_on_hand_exit_scene() {
+		this.#_last_update_hand_in_scene = false;
+		this.#_pattern_design.update_playstart(0);
+		this.on_hand_exit_scene();
+	}
+	/**
+	 * @protected
+	 * @abstract
+	 */
+	on_hand_exit_scene() {
+		abstract_method_unreachable();
+	}
+
+
 	#_warned_about_missing_params = false;
 	/**
-	 *
+	 * @protected
 	 * @param {string} param_name
 	 * @param {number} param_value
 	 * @returns
@@ -32,7 +90,7 @@ export class BaseExperience {
 		this.#_set_param_internal(param_name, param_value, true);
 	}
 	/**
-	 *
+	 * @protected
 	 * @param {string} param_name
 	 * @param {number} param_value
 	 * @returns
@@ -79,10 +137,12 @@ export class BaseExperience {
 	}
 
 	/**
+	 * @protected
 	 * @abstract
+	 * @param {number} delta_time
 	 * @param {import("../../device-ws-controller.mjs").TrackingFrame | null} last_tracking_data
 	 */
-	update(last_tracking_data) {
-		abstract_method_unreachable(last_tracking_data);
+	update_for_dt(delta_time, last_tracking_data) {
+		abstract_method_unreachable(delta_time, last_tracking_data);
 	}
 }

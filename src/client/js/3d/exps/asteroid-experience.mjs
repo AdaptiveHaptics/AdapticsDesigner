@@ -1,33 +1,19 @@
 import { haptic_to_three_coords } from "../util.mjs";
-import { BaseExperience } from "./base-experience.mjs";
+import { BaseExperience, time_now } from "./base-experience.mjs";
 import * as THREE from "three";
 const randFloat = THREE.MathUtils.randFloat;
 const randFloatSpread = THREE.MathUtils.randFloatSpread;
-
-
-/**
- *
- * @returns {number} current time in seconds since epoch
- */
-function time_now() {
-	return Date.now() / 1000;
-}
 
 export class AsteroidExperience extends BaseExperience {
 	min_asteroid_spawn_interval = 1;
 	max_asteroid_spawn_interval = 2;
 
 
-
-	#_pattern_design;
-
 	/**
 	 * @param {import("../../fe/patterndesign.mjs").MAHPatternDesignFE} pattern_design
 	 */
 	constructor(pattern_design) {
 		super(pattern_design, ["health", "taking_damage"], ["deadpulse"]);
-
-		this.#_pattern_design = pattern_design;
 
 		this.object3D = new THREE.Object3D();
 		this.object3D.position.set(0, 0.18, 0);
@@ -62,22 +48,16 @@ export class AsteroidExperience extends BaseExperience {
 	}
 
 
-	#_last_update_hand_in_scene = false;
-	#_last_update_time = time_now();
 	#_next_asteroid_spawn_time = 0;
 	/**
 	 * @override
+	 * @param {number} delta_time
 	 * @param {import("../../device-ws-controller.mjs").TrackingFrame | null} last_tracking_data
 	 */
-	update(last_tracking_data) {
-		if (!this.#_last_update_hand_in_scene && last_tracking_data?.hand) this.#_on_hand_enter_scene();
-		else if (this.#_last_update_hand_in_scene && !last_tracking_data?.hand) this.#_on_hand_exit_scene();
-
-		const now = time_now();
-		const delta_time = now - this.#_last_update_time;
-		this.#_last_update_time = now;
+	update_for_dt(delta_time, last_tracking_data) {
 		[...this.asteroids].filter(a => a.update(delta_time)).forEach(a => this.#_despawn_asteroid(a));
 
+		const now = time_now();
 
 		if (last_tracking_data?.hand) {
 			if (now > this.#_next_asteroid_spawn_time) {
@@ -106,19 +86,22 @@ export class AsteroidExperience extends BaseExperience {
 		}
 	}
 
-	#_on_hand_enter_scene() {
-		this.#_last_update_hand_in_scene = true;
+	/**
+	 * @override
+	 */
+	on_hand_enter_scene() {
 		this.spaceship.reset();
-		this.#_pattern_design.update_playstart(0);
-		this.#_pattern_design.update_pattern_time(0);
-		this.#_pattern_design.update_playstart(Date.now());
 	}
 
-	#_on_hand_exit_scene() {
-		this.#_last_update_hand_in_scene = false;
-		this.#_pattern_design.update_playstart(0);
+	/**
+	 * @override
+	 */
+	on_hand_exit_scene() {
 	}
 
+	/**
+	 * @override
+	 */
 	getObject3D() {
 		return this.object3D;
 	}

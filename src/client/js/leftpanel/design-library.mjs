@@ -68,7 +68,7 @@ export class DesignLibrary {
 			pattern_context_menu_div.classList.add("contextmenu");
 			pattern_resize_div.appendChild(pattern_context_menu_div);
 			pattern_resize_div.appendChild(pattern_stage_div);
-			const pattern_stage = new KonvaPatternStage(this._preview_pattern_design, pattern_stage_div, pattern_resize_div);
+			const _pattern_stage = new KonvaPatternStage(this._preview_pattern_design, pattern_stage_div, pattern_resize_div);
 
 			const timeline_resize_div = document.createElement("div");
 			timeline_resize_div.style.width = "20ex";

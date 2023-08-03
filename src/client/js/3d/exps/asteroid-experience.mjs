@@ -76,9 +76,9 @@ export class AsteroidExperience extends BaseExperience {
 			// this.movement_arrow.setDirection(this.spaceship.target_position.clone().sub(this.spaceship.object3D.position).normalize());
 			// this.movement_arrow.setLength(this.spaceship.target_position.distanceTo(this.spaceship.object3D.position));
 
-			super.set_param_or_warn("health", this.spaceship.health);
-			super.set_param_or_warn("taking_damage", this.spaceship.is_in_hit_period() ? 1 : 0);
-			super.set_param_or_ignore("deadpulse", this.spaceship.dead_pulse() ? 1 : 0);
+			super.set_expected_param("health", this.spaceship.health);
+			super.set_expected_param("taking_damage", this.spaceship.is_in_hit_period() ? 1 : 0);
+			super.set_optional_param("deadpulse", this.spaceship.dead_pulse() ? 1 : 0);
 		} else {
 			this.tracking_line.geometry.setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
 

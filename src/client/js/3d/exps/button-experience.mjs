@@ -59,12 +59,12 @@ export class ButtonExperience extends BaseExperience {
 
 	#_set_proximity(proximity) {
 		this.proximity_meter.scale.setX(proximity);
-		super.set_param_or_warn("proximity", proximity);
+		super.set_expected_param("proximity", proximity);
 	}
 	#_set_activation(activation) {
 		this.activation_meter.scale.setX(activation);
 		this.button.position.setY(activation * -this.button_actuation_dist);
-		super.set_param_or_warn("activation", activation);
+		super.set_expected_param("activation", activation);
 	}
 
 	#_activated = false;

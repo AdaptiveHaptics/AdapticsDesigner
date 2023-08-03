@@ -86,7 +86,7 @@ export class BaseExperience {
 	 * @param {number} param_value
 	 * @returns
 	 */
-	set_param_or_warn(param_name, param_value) {
+	set_expected_param(param_name, param_value) {
 		this.#_set_param_internal(param_name, param_value, true);
 	}
 	/**
@@ -95,7 +95,7 @@ export class BaseExperience {
 	 * @param {number} param_value
 	 * @returns
 	 */
-	set_param_or_ignore(param_name, param_value) {
+	set_optional_param(param_name, param_value) {
 		this.#_set_param_internal(param_name, param_value, false);
 	}
 
@@ -103,12 +103,12 @@ export class BaseExperience {
 	 *
 	 * @param {string} param_name
 	 * @param {number} param_value
-	 * @param {boolean} warn
+	 * @param {boolean} expected_param
 	 * @returns
 	 */
-	#_set_param_internal(param_name, param_value, warn) {
+	#_set_param_internal(param_name, param_value, expected_param) {
 		if (this.#_pattern_design.filedata.user_parameter_definitions[param_name] == undefined) {
-			if (warn && !this.#_warned_about_missing_params) {
+			if (expected_param && !this.#_warned_about_missing_params) {
 				alert(
 					`The pattern "${this.#_pattern_design.filedata.name}" does not have a parameter named "${param_name}".\n\n`+
 					`The current simulation: "${this.constructor.name}" is expecting the following parameters:\n    ${this.#_expected_params.join(", ")}`
@@ -117,7 +117,8 @@ export class BaseExperience {
 			}
 			return;
 		} else {
-			if (!this.#_expected_params.includes(param_name) && !this.#_optional_params.includes(param_name)) throw new Error(`"${param_name}" not declared in ${this.constructor.name} expected_params or optional_params`);
+			if (expected_param && !this.#_expected_params.includes(param_name)) throw new Error(`"${param_name}" not declared in ${this.constructor.name} expected_params`); // runtime check if param declared correctly
+			if (!expected_param && !this.#_optional_params.includes(param_name)) throw new Error(`"${param_name}" not declared in ${this.constructor.name} optional_params`); // runtime check if param declared correctly
 			try {
 				this.#_pattern_design.update_evaluator_user_param(param_name, param_value);
 			} catch (e) {

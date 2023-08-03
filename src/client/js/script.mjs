@@ -79,6 +79,7 @@ const _bottomsplit = SplitGrid({
 const PRIMARY_DESIGN_LOCAL_STORAGE_KEY = "primary_design";
 const WEBSOCKET_CONNECTED_LOCALSTORAGE_KEY = "websocket_connected";
 const WEBSOCKET_HAND_TRACKING_LOCALSTORAGE_KEY = "websocket_handtracking";
+const DESIGN_LIBRARY_SEARCH_LOCAL_STORAGE_KEY = "design_library_last_search";
 
 
 /** @type {MAHPatternDesignFE} */
@@ -469,7 +470,7 @@ const design_library = (() => {
 		example_pattern_from_path("user-study/RainBase", new RainExperience(primary_design), "Pilot Study/RainBase"),
 	];
 	const patterns = user_study_mode ? user_study_shown_patterns : all_patterns;
-	const design_library = new DesignLibrary(primary_design, three_base_environment, file_titlebar_manager, designlibrary_div, new Map(patterns));
+	const design_library = new DesignLibrary(primary_design, three_base_environment, file_titlebar_manager, designlibrary_div, new Map(patterns), DESIGN_LIBRARY_SEARCH_LOCAL_STORAGE_KEY);
 	return design_library;
 })();
 

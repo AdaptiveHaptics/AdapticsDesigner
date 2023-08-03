@@ -491,6 +491,6 @@ Object.assign(window, {
 	design_library,
 	file_titlebar_manager,
 	user_study_mode,
-	three_base_environment: three_mah_dev_environment,
+	three_mah_dev_environment,
 	center_panel,
 });

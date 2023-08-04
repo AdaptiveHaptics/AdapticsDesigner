@@ -8,15 +8,11 @@ export class ButtonExperience extends BaseExperience {
 	button_bottom_out_dist = 0.005;
 
 
-	#_pattern_design;
-
 	/**
 	 * @param {import("../../fe/patterndesign.mjs").MAHPatternDesignFE} pattern_design
 	 */
 	constructor(pattern_design) {
 		super(pattern_design, ["proximity", "activation"], []);
-
-		this.#_pattern_design = pattern_design;
 
 		this.object3D = new THREE.Object3D();
 		this.object3D.position.set(0, 0.18, 0);
@@ -63,24 +59,21 @@ export class ButtonExperience extends BaseExperience {
 
 	#_set_proximity(proximity) {
 		this.proximity_meter.scale.setX(proximity);
-		super.set_param_or_warn("proximity", proximity);
+		super.set_expected_param("proximity", proximity);
 	}
 	#_set_activation(activation) {
 		this.activation_meter.scale.setX(activation);
 		this.button.position.setY(activation * -this.button_actuation_dist);
-		super.set_param_or_warn("activation", activation);
+		super.set_expected_param("activation", activation);
 	}
 
 	#_activated = false;
-	#_last_update_hand_in_scene = false;
 	/**
 	 * @override
+	 * @param {number} delta_time
 	 * @param {import("../../device-ws-controller.mjs").TrackingFrame | null} last_tracking_data
 	 */
-	update(last_tracking_data) {
-		if (!this.#_last_update_hand_in_scene && last_tracking_data?.hand) this.#_on_hand_enter_scene();
-		else if (this.#_last_update_hand_in_scene && !last_tracking_data?.hand) this.#_on_hand_exit_scene();
-
+	update_for_dt(delta_time, last_tracking_data) {
 		if (last_tracking_data?.hand) {
 			if (this.#_activated) return;
 			const local_hand_position = this.object3D.worldToLocal(haptic_to_three_coords(last_tracking_data.hand.palm.position));
@@ -118,21 +111,28 @@ export class ButtonExperience extends BaseExperience {
 		}
 	}
 
-	#_on_hand_enter_scene() {
-		this.#_last_update_hand_in_scene = true;
-		this.#_pattern_design.update_playstart(0);
-		this.#_pattern_design.update_pattern_time(0);
-		this.#_pattern_design.update_playstart(Date.now());
+	/**
+	 * @override
+	 */
+	on_hand_enter_scene() {
 	}
 
-	#_on_hand_exit_scene() {
-		this.#_last_update_hand_in_scene = false;
+	/**
+	 * @override
+	 */
+	on_hand_exit_scene() {
+		this.#_reset();
+	}
+
+	#_reset() {
 		this.#_activated = false;
-		this.#_pattern_design.update_playstart(0);
 		this.#_set_proximity(0);
 		this.#_set_activation(0);
 	}
 
+	/**
+	 * @override
+	 */
 	getObject3D() {
 		return this.object3D;
 	}

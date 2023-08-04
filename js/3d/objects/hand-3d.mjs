@@ -13,7 +13,7 @@ export class Hand3D {
 
 	/**
 	 *
-	 * @param {import("../base-environment.mjs").BaseEnvironment} base_environment
+	 * @param {import("../basic-three-mah-dev-environment.mjs").BasicThreeMAHDevEnvironment} base_environment
 	 * @param {boolean} show_palm_position_helper
 	 */
 	constructor(base_environment, show_palm_position_helper) {

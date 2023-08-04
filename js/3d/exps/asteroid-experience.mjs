@@ -1,33 +1,19 @@
 import { haptic_to_three_coords } from "../util.mjs";
-import { BaseExperience } from "./base-experience.mjs";
+import { BaseExperience, time_now } from "./base-experience.mjs";
 import * as THREE from "three";
 const randFloat = THREE.MathUtils.randFloat;
 const randFloatSpread = THREE.MathUtils.randFloatSpread;
 
-
-/**
- *
- * @returns {number} current time in seconds since epoch
- */
-function time_now() {
-	return Date.now() / 1000;
-}
-
 export class AsteroidExperience extends BaseExperience {
-	min_asteroid_spawn_interval = 1;
-	max_asteroid_spawn_interval = 2;
+	min_asteroid_spawn_interval = 0.8;
+	max_asteroid_spawn_interval = 1.5;
 
-
-
-	#_pattern_design;
 
 	/**
 	 * @param {import("../../fe/patterndesign.mjs").MAHPatternDesignFE} pattern_design
 	 */
 	constructor(pattern_design) {
-		super(pattern_design, ["health", "taking_damage"], ["dead_pulse"]);
-
-		this.#_pattern_design = pattern_design;
+		super(pattern_design, ["health", "taking_damage"], ["deadpulse"]);
 
 		this.object3D = new THREE.Object3D();
 		this.object3D.position.set(0, 0.18, 0);
@@ -39,6 +25,13 @@ export class AsteroidExperience extends BaseExperience {
 		this.asteroids = new Set();
 
 		this.#_spawn_asteroid();
+
+		this.tracking_line = new THREE.Line(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ color: 0x00ff00 }));
+		this.tracking_line.geometry.setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+		// this.object3D.add(this.tracking_line);
+
+		// this.movement_arrow = new THREE.ArrowHelper(new THREE.Vector3(), new THREE.Vector3(), 0.1, 0x00ff00);
+		// this.object3D.add(this.movement_arrow);
 	}
 
 	#_spawn_asteroid() {
@@ -55,22 +48,16 @@ export class AsteroidExperience extends BaseExperience {
 	}
 
 
-	#_last_update_hand_in_scene = false;
-	#_last_update_time = time_now();
 	#_next_asteroid_spawn_time = 0;
 	/**
 	 * @override
+	 * @param {number} delta_time
 	 * @param {import("../../device-ws-controller.mjs").TrackingFrame | null} last_tracking_data
 	 */
-	update(last_tracking_data) {
-		if (!this.#_last_update_hand_in_scene && last_tracking_data?.hand) this.#_on_hand_enter_scene();
-		else if (this.#_last_update_hand_in_scene && !last_tracking_data?.hand) this.#_on_hand_exit_scene();
-
-		const now = time_now();
-		const delta_time = now - this.#_last_update_time;
-		this.#_last_update_time = now;
+	update_for_dt(delta_time, last_tracking_data) {
 		[...this.asteroids].filter(a => a.update(delta_time)).forEach(a => this.#_despawn_asteroid(a));
 
+		const now = time_now();
 
 		if (last_tracking_data?.hand) {
 			if (now > this.#_next_asteroid_spawn_time) {
@@ -78,30 +65,43 @@ export class AsteroidExperience extends BaseExperience {
 				this.#_spawn_asteroid();
 			}
 
-			const hand_pos = haptic_to_three_coords(last_tracking_data.hand.palm.position);
-			this.spaceship.target_position.x = hand_pos.x;
+			const hand_pos_local = this.object3D.worldToLocal(haptic_to_three_coords(last_tracking_data.hand.palm.position));
+			this.spaceship.target_position.x = hand_pos_local.x;
 			this.spaceship.update(delta_time);
 			this.spaceship.check_collisions(this.asteroids);
+			this.tracking_line.geometry.setFromPoints([hand_pos_local, this.spaceship.target_position]);
+			// this.tracking_line.geometry.setFromPoints([this.spaceship.object3D.position, this.spaceship.target_position]);
 
-			super.set_param_or_warn("health", this.spaceship.health);
-			super.set_param_or_warn("taking_damage", this.spaceship.is_in_hit_period() ? 1 : 0);
-			super.set_param_or_ignore("dead_pulse", this.spaceship.dead_pulse() ? 1 : 0);
+			// this.movement_arrow.position.copy(this.spaceship.object3D.position);
+			// this.movement_arrow.setDirection(this.spaceship.target_position.clone().sub(this.spaceship.object3D.position).normalize());
+			// this.movement_arrow.setLength(this.spaceship.target_position.distanceTo(this.spaceship.object3D.position));
+
+			super.set_expected_param("health", this.spaceship.health);
+			super.set_expected_param("taking_damage", this.spaceship.is_in_hit_period() ? 1 : 0);
+			super.set_optional_param("deadpulse", this.spaceship.dead_pulse() ? 1 : 0);
+		} else {
+			this.tracking_line.geometry.setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+
+			// this.movement_arrow.setLength(0);
 		}
 	}
 
-	#_on_hand_enter_scene() {
-		this.#_last_update_hand_in_scene = true;
+	/**
+	 * @override
+	 */
+	on_hand_enter_scene() {
 		this.spaceship.reset();
-		this.#_pattern_design.update_playstart(0);
-		this.#_pattern_design.update_pattern_time(0);
-		this.#_pattern_design.update_playstart(Date.now());
 	}
 
-	#_on_hand_exit_scene() {
-		this.#_last_update_hand_in_scene = false;
-		this.#_pattern_design.update_playstart(0);
+	/**
+	 * @override
+	 */
+	on_hand_exit_scene() {
 	}
 
+	/**
+	 * @override
+	 */
 	getObject3D() {
 		return this.object3D;
 	}
@@ -165,7 +165,7 @@ class Spaceship {
 
 	// How long the ship will rumble after being hit
 	#_hit_period = 1;
-	#_damage_per_hit = 0.1;
+	#_damage_per_hit = 0.200000001;
 
 	#_health = 1; get health() { return this.#_health; }
 

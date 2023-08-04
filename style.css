@@ -526,6 +526,9 @@ div.designlibrary > div.searchbox {
 div.designlibrary > div.searchbox > label {
     display: contents;
 }
+div.designlibrary > div.searchbox:has(> label > input:hover) {
+    background-color: var(--background-interactive-hover);
+}
 div.designlibrary > div.searchbox > button.close {
     padding: 0.5ex;
 }

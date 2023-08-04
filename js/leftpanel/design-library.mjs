@@ -16,16 +16,19 @@ export class DesignLibrary {
 	/**
 	 *
 	 * @param {MAHPatternDesignFE} pattern_design
-	 * @param {import("../3d/base-environment.mjs").BaseEnvironment | null} three_base_environment
+	 * @param {import("../3d/basic-three-mah-dev-environment.mjs").BasicThreeMAHDevEnvironment | null} three_mah_dev_environment
 	 * @param {import("../script.mjs").FileTitlebarManager} file_titlebar_manager
 	 * @param {HTMLDivElement} designlibrary_div
 	 * @param {DesignsMap} designs_map
+	 * @param {string=} search_local_storage_key
 	 */
-	constructor(pattern_design, three_base_environment, file_titlebar_manager, designlibrary_div, designs_map) {
+	constructor(pattern_design, three_mah_dev_environment, file_titlebar_manager, designlibrary_div, designs_map, search_local_storage_key) {
 		this.pattern_design = pattern_design;
-		this.three_base_environment = three_base_environment;
+		this.three_base_environment = three_mah_dev_environment;
 		this.file_titlebar_manager = file_titlebar_manager;
 		this.designlibrary_div = designlibrary_div;
+		this.search_local_storage_key = search_local_storage_key;
+
 		/** @type {HTMLDivElement} */
 		this.designtree_div = notnull(designlibrary_div.querySelector("div.designtree"));
 
@@ -34,6 +37,15 @@ export class DesignLibrary {
 
 		this.designs_map = designs_map;
 		this.render_designs(this.designs_map);
+
+		if (this.search_local_storage_key) {
+			const last_search_string = window.localStorage.getItem(this.search_local_storage_key);
+			if (last_search_string) {
+				this.#_search_input.value = last_search_string;
+				this.#_on_search_input();
+			}
+		}
+
 		this.#_search_input.addEventListener("input", _ev => {
 			this.#_on_search_input();
 		});
@@ -56,7 +68,7 @@ export class DesignLibrary {
 			pattern_context_menu_div.classList.add("contextmenu");
 			pattern_resize_div.appendChild(pattern_context_menu_div);
 			pattern_resize_div.appendChild(pattern_stage_div);
-			const pattern_stage = new KonvaPatternStage(this._preview_pattern_design, pattern_stage_div, pattern_resize_div);
+			const _pattern_stage = new KonvaPatternStage(this._preview_pattern_design, pattern_stage_div, pattern_resize_div);
 
 			const timeline_resize_div = document.createElement("div");
 			timeline_resize_div.style.width = "20ex";
@@ -79,6 +91,7 @@ export class DesignLibrary {
 	}
 
 	#_on_search_input() {
+		if (this.search_local_storage_key) window.localStorage.setItem(this.search_local_storage_key, this.#_search_input.value);
 		const search_text = this.#_search_input.value;
 		const filtered = new Map([...this.designs_map].filter(([design_path, _design]) => design_path.toLowerCase().includes(search_text.toLowerCase())));
 		this.render_designs(filtered, search_text !== "");

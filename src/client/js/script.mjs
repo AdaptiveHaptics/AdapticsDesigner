@@ -455,7 +455,7 @@ const design_library = (() => {
 		example_pattern_from_path("Adaptive/Simple/Button", new ButtonExperience(primary_design)),
 		example_pattern_from_path("Adaptive/Simple/Wind"),
 		example_pattern_from_path("Adaptive/Simple/Heartbeat", new AsteroidExperience(primary_design)),
-		example_pattern_from_path("Adaptive/Simple/Rain"),
+		example_pattern_from_path("Adaptive/Simple/Rain", new RainExperience(primary_design)),
 		example_pattern_from_path("Adaptive/Simple/StaticShock"),
 
 		example_pattern_from_path("Adaptive/Unity/Button", new ButtonExperience(primary_design)),

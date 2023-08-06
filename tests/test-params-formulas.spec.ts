@@ -156,6 +156,47 @@ test_check_no_errors('check correct autocomplete buttons shown', async ({ page }
   await expect(page.getByRole('button', { name: 'badidea-varname create new parameter' })).toHaveCount(0);
 });
 
+test_check_no_errors('check correct autocomplete buttons shown un userstudy_non_adaptive mode', async ({ page }) => {
+  page.setDefaultNavigationTimeout(8000);
+  page.setDefaultTimeout(2000);
+
+  await page.goto('/?userstudy_na');
+  await page.locator('#timelinestage').click({
+    position: {
+      x: 112,
+      y: 202
+    }
+  });
+  await page.locator('.timeline').press('Control+a');
+
+  await page.getByText('brushBrush').click();
+  await page.getByLabel('radius mm').click();
+  await page.getByLabel('radius mm').fill('turbulence');
+  await page.getByLabel('radius mm').press('Enter');
+  await expect(page.getByLabel('radius mm')).toHaveValue('10');
+
+  await page.getByLabel('am_freq hz').click();
+  await page.getByLabel('radius mm').fill('tu');
+  await expect(page.getByRole('button', { name: 'tu create new parameter' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'turbulence parameter' })).toHaveCount(0);
+  await page.getByLabel('radius mm').press('Enter');
+  await expect(page.getByLabel('radius mm')).toHaveValue('10');
+
+  await page.getByLabel('am_freq hz').click();
+  await page.getByLabel('radius mm').fill('2');
+  await expect(page.getByRole('button', { name: '2 constant' })).toBeVisible();
+  await expect(page.getByRole('button', { name: '2 constant' })).toHaveClass("df64autocompletion autoaction");
+  await page.getByLabel('radius mm').press('Enter');
+  await expect(page.getByLabel('radius mm')).toHaveValue('2');
+
+  await page.getByLabel('am_freq hz').click();
+  await page.getByLabel('radius mm').fill('badidea-varname');
+  await expect(page.getByRole('button', { name: '`badidea` - `varname` formula' })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'badidea-varname create new parameter' })).toHaveCount(0);
+  await page.getByLabel('radius mm').press('Enter');
+  await expect(page.getByLabel('radius mm')).toHaveValue('2');
+});
+
 // disabled because we no longer show force creations
 // test_check_no_errors('check force create parameter for formula parsable input', async ({ page }) => {
 //   page.setDefaultNavigationTimeout(8000);

@@ -23,7 +23,8 @@ export class DynamicF64Input extends HTMLElement {
 	#_last_update_value = null;
 	/** @type {MAHDynamicF64 | null} */
 	#_last_input_change_value = null;
-	#_paramonly;
+	/** @type {Set<MAHDynamicF64["type"]>} */
+	#_allowed_types = new Set(["f64", "formula", "param"]);
 
 	/**
 	 *
@@ -51,7 +52,12 @@ export class DynamicF64Input extends HTMLElement {
 		this.#_set = set;
 		this.#_get = get;
 
-		this.#_paramonly = paramonly;
+		const user_study_non_adaptive_mode = window.user_study_non_adaptive_mode ?? false;
+		if (user_study_non_adaptive_mode) {
+			this.#_allowed_types.delete("param");
+			this.#_allowed_types.delete("formula");
+		}
+		if (paramonly) this.#_allowed_types = new Set(["param"]);
 
 		this.#_labeltext_span.classList.add("labeltext");
 		this.#_name = name;
@@ -93,12 +99,12 @@ export class DynamicF64Input extends HTMLElement {
 
 			if (value && value.type === "f64") {
 				if (ev.key === "ArrowUp") {
-					this.#_val_input.value = num_to_rounded_string(value.value + this.#_step);
+					this.#_val_input.value = num_to_rounded_string(this.#_constrain_f64(value.value + this.#_step));
 					this.#_on_val_input_change(); // constrain, set
 					ev.preventDefault();
 					return;
 				} else if (ev.key === "ArrowDown") {
-					this.#_val_input.value = num_to_rounded_string(value.value - this.#_step);
+					this.#_val_input.value = num_to_rounded_string(this.#_constrain_f64(value.value - this.#_step));
 					this.#_on_val_input_change(); // constrain, set
 					ev.preventDefault();
 					return;
@@ -217,12 +223,20 @@ export class DynamicF64Input extends HTMLElement {
 			// ignore
 		}
 
-		if (Number.isFinite(v_num) && v_num === v_pf && !this.#_paramonly) {
-			return { type: "f64", value: this.#_constrain_f64(v_num) };
+		/** @type {MAHDynamicF64} */
+		let rv;
+		if (Number.isFinite(v_num) && v_num === v_pf) {
+			rv = { type: "f64", value: this.#_constrain_f64(v_num) };
 		} else if (/[+\-*/()]/g.test(this.#_val_input.value) && v_parse_formula != null) {
-			return { type: "formula", value: v_parse_formula };
+			rv = { type: "formula", value: v_parse_formula };
 		} else {
-			return { type: "param", value: this.#_val_input.value };
+			rv = { type: "param", value: this.#_val_input.value };
+		}
+
+		if (this.#_allowed_types.has(rv.type)) {
+			return rv;
+		} else {
+			return null;
 		}
 	}
 
@@ -254,6 +268,8 @@ export class DynamicF64Input extends HTMLElement {
 		 * @param {boolean=} param0.autoaction
 		 */
 		const insert_autocompletion = (df64v, { type, autoaction } = {}) =>  {
+			if (!this.#_allowed_types.has(df64v.type)) return;
+
 			const value = DynamicF64Input.stringify_df64(df64v);
 			if (!type) {
 				switch (df64v.type) {

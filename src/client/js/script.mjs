@@ -26,6 +26,18 @@ window.addEventListener("error", event => {
 	if (ignoreErrorsContaining.findIndex(istr => estr.includes(istr)) == -1) alert(estr);
 });
 
+
+const search_up = new URLSearchParams(window.location.search);
+const user_study_non_adaptive_mode = ["userstudy_na", "user_study_na", "user-study_na", "userstudy-na", "user_study-na", "user-study-na"].some(s => search_up.has(s));
+console.log("user_study_non_adaptive_mode: ", user_study_non_adaptive_mode);
+const user_study_mode = user_study_non_adaptive_mode || ["userstudy", "user_study", "user-study"].some(s => search_up.has(s));
+console.log("user_study_mode: ", user_study_mode);
+Object.assign(window, {
+	user_study_mode,
+	user_study_non_adaptive_mode,
+});
+
+
 /** @typedef {import("../../shared/types").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../shared/types").MAHKeyframe} MAHKeyframe */
 /** @typedef {import("../../shared/types").MidAirHapticsClipboardFormat} MidAirHapticsClipboardFormat */
@@ -406,10 +418,6 @@ const unified_keyframe_editor = right_panel.unified_keyframe_editor;
 const parameter_editor = new ParameterEditor(primary_design, notnull(document.querySelector("div.parametereditor")));
 
 
-const search_up = new URLSearchParams(window.location.search);
-const user_study_mode = ["user_study", "userstudy", "user-study", "pilot_study", "pilotstudy", "pilot-study"].some(s => search_up.has(s));
-console.log("user_study_mode: ", user_study_mode);
-
 
 const design_library = (() => {
 	const { AsteroidExperience, ButtonExperience, RainExperience } = ExperienceSimulations;
@@ -481,6 +489,22 @@ darkModePreference.addEventListener("change", _ev => {
 });
 
 
+if (user_study_non_adaptive_mode) {
+	/** @type {HTMLDivElement} */
+	const userparamscontainer_div = notnull(document.querySelector("div.parametereditor div.userparamscontainer"));
+	userparamscontainer_div.style.display = "none";
+
+	/** @type {HTMLDivElement} */
+	const center_panel_tabs_div = notnull(centerpanel_div.querySelector("div.tabs"));
+	center_panel_tabs_div.style.visibility = "hidden";
+	center_panel_tabs_div.style.height = "0px";
+
+	/** @type {HTMLDetailsElement} */
+	const cjump_details = notnull(rightpanel_div.querySelector("form.ukfe > details.cjump"));
+	cjump_details.style.display = "none";
+	cjump_details.style.visibility = "hidden";
+}
+
 Object.assign(window, {
 	primary_design,
 	konva_pattern_stage,
@@ -490,7 +514,6 @@ Object.assign(window, {
 	parameter_editor,
 	design_library,
 	file_titlebar_manager,
-	user_study_mode,
 	three_mah_dev_environment,
 	center_panel,
 });

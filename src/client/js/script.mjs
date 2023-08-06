@@ -448,6 +448,13 @@ const design_library = (() => {
 	const load_pattern_into_tuple = (namepath, urlpath, sim_exp) => [namepath, { design: load_pattern(urlpath), sim_exp }];
 	/** @type {(path: string, sim_exp?: import("./3d/exps/base-experience.mjs").BaseExperience | null, forcenamepath?: string) => [string, import("./leftpanel/design-library.mjs").DesignMapElement]} */
 	const example_pattern_from_path = (path, sim_exp, forcenamepath) => load_pattern_into_tuple(forcenamepath ?? `Examples/${path}`, `./example-patterns/${path}.adaptics`, sim_exp ?? null);
+	const user_study_non_adaptive_shown_patterns = [
+		example_pattern_from_path("Non-Adaptive/Checkmark"),
+		example_pattern_from_path("Non-Adaptive/StaticShock"),
+
+		example_pattern_from_path("user-study/HeartbeatBase", new AsteroidExperience(primary_design), "Pilot Study/HeartbeatBase"),
+		example_pattern_from_path("user-study/RainBase", new RainExperience(primary_design), "Pilot Study/RainBase"),
+	];
 	const user_study_shown_patterns = [
 		example_pattern_from_path("Adaptive/Simple/Button", new ButtonExperience(primary_design), "Examples/Adaptive/Button"),
 		example_pattern_from_path("Adaptive/Simple/Wind", null, "Examples/Adaptive/Wind"),
@@ -477,7 +484,9 @@ const design_library = (() => {
 		example_pattern_from_path("user-study/HeartbeatBase", new AsteroidExperience(primary_design), "Pilot Study/HeartbeatBase"),
 		example_pattern_from_path("user-study/RainBase", new RainExperience(primary_design), "Pilot Study/RainBase"),
 	];
-	const patterns = user_study_mode ? user_study_shown_patterns : all_patterns;
+	const patterns = user_study_non_adaptive_mode ? user_study_non_adaptive_shown_patterns : (
+		user_study_mode ? user_study_shown_patterns : all_patterns
+	);
 	const design_library = new DesignLibrary(primary_design, three_mah_dev_environment, file_titlebar_manager, designlibrary_div, new Map(patterns), DESIGN_LIBRARY_SEARCH_LOCAL_STORAGE_KEY);
 	return design_library;
 })();

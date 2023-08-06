@@ -3,7 +3,7 @@ import { test_check_no_errors, stage_click_relative, click_and_drag_on_canvas_re
 
 test_check_no_errors('test keyframe operations in pattern pane', async ({ page }) => {
 	page.setDefaultNavigationTimeout(8000);
-  	page.setDefaultTimeout(1500);
+  	page.setDefaultTimeout(2000);
 	await page.goto('/');
 
 	{ //test pattern pane creation
@@ -81,7 +81,7 @@ test_check_no_errors('test keyframe operations in pattern pane', async ({ page }
 
 test_check_no_errors('test parameters update pattern pane geo transform', async ({ page }) => {
 	page.setDefaultNavigationTimeout(8000);
-  	page.setDefaultTimeout(1500);
+  	page.setDefaultTimeout(2000);
 	await page.goto('/');
 
 

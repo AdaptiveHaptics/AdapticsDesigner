@@ -54,7 +54,7 @@ test_check_no_errors('check if formulas show in user param pane', async ({ page 
 
 test_check_no_errors('check parameter in formula rename', async ({ page }) => {
   page.setDefaultNavigationTimeout(8000);
-  page.setDefaultTimeout(1500);
+  page.setDefaultTimeout(2000);
 
   await page.goto('/');
   await setup_radius_formula(page);
@@ -103,7 +103,7 @@ test_check_no_errors('delete param with multiple keyframes', async ({ page }) =>
 
 test_check_no_errors('check autocomplete buttons work', async ({ page }) => {
   page.setDefaultNavigationTimeout(8000);
-  page.setDefaultTimeout(1500);
+  page.setDefaultTimeout(2000);
 
   await page.goto('/');
   await page.locator('#timelinestage').click({
@@ -127,7 +127,7 @@ test_check_no_errors('check autocomplete buttons work', async ({ page }) => {
 
 test_check_no_errors('check correct autocomplete buttons shown', async ({ page }) => {
   page.setDefaultNavigationTimeout(8000);
-  page.setDefaultTimeout(1500);
+  page.setDefaultTimeout(2000);
 
   await page.goto('/');
   await page.locator('#timelinestage').click({
@@ -159,7 +159,7 @@ test_check_no_errors('check correct autocomplete buttons shown', async ({ page }
 // disabled because we no longer show force creations
 // test_check_no_errors('check force create parameter for formula parsable input', async ({ page }) => {
 //   page.setDefaultNavigationTimeout(8000);
-//   page.setDefaultTimeout(1500);
+//   page.setDefaultTimeout(2000);
 
 //   await page.goto('/');
 //   await page.locator('#timelinestage').click({

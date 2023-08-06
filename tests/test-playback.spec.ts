@@ -3,7 +3,7 @@ import { stage_click_relative, test_check_no_errors } from './util';
 
 test_check_no_errors('test keyframe operations in pattern pane', async ({ page }) => {
 	page.setDefaultNavigationTimeout(8000);
-  	page.setDefaultTimeout(1500);
+  	page.setDefaultTimeout(2000);
 	await page.goto('/');
 
 

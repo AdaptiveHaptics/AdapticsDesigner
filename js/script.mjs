@@ -449,8 +449,8 @@ const design_library = (() => {
 	/** @type {(path: string, sim_exp?: import("./3d/exps/base-experience.mjs").BaseExperience | null, forcenamepath?: string) => [string, import("./leftpanel/design-library.mjs").DesignMapElement]} */
 	const example_pattern_from_path = (path, sim_exp, forcenamepath) => load_pattern_into_tuple(forcenamepath ?? `Examples/${path}`, `./example-patterns/${path}.adaptics`, sim_exp ?? null);
 	const user_study_non_adaptive_shown_patterns = [
-		example_pattern_from_path("Non-Adaptive/Checkmark"),
-		example_pattern_from_path("Non-Adaptive/StaticShock"),
+		example_pattern_from_path("Non-Adaptive/Checkmark", null, "Examples/Checkmark"),
+		example_pattern_from_path("Non-Adaptive/StaticShock", null, "Examples/StaticShock"),
 
 		example_pattern_from_path("user-study/HeartbeatBase", new AsteroidExperience(primary_design), "Pilot Study/HeartbeatBase"),
 		example_pattern_from_path("user-study/RainBase", new RainExperience(primary_design), "Pilot Study/RainBase"),

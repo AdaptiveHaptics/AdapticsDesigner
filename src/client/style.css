@@ -504,6 +504,21 @@ div.center > div.tabpanelscontainer {
     display: grid;
     grid-template-rows: auto;
 }
+div.center.tabpanel > div.tabs {
+    padding: 0ex 1ex;
+    gap: 0.5ex;
+    grid-template-columns: auto auto 1fr;
+    background: var(--background-titlebar-alt);
+}
+div.center.tabpanel > div.tabs > button.tab.active {
+    background-color: var(--background-tertiary);
+}
+div.center.tabpanel > div.tabs > button.tab {
+    /* border-radius: 3px 3px 0px 0px; */
+}
+div.right.tabpanel > div.tabs > button.tab {
+    /* border-radius: 3px 3px 0px 0px; */
+}
 
 div.patternstagecontainer {
     background-color: var(--background-tertiary);
@@ -698,6 +713,18 @@ div.tabpanel > div.tabs > button.tab {
 }
 div.tabpanel > div.tabs > button.tab.active {
     background-color: var(--background-tertiary-alt);
+    position: relative;
+}
+div.tabpanel > div.tabs > button.tab.active::after {
+    content: ' ';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 0.3ex;
+    height: 2px;
+    background-color: var(--text-normal);
+    background-color: var(--text-low-priority);
 }
 div.actionbuttons {
     display: flex;

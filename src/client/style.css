@@ -304,7 +304,7 @@ select:disabled, option:disabled, input:disabled, button:disabled {
 input::placeholder {
     color: var(--text-low-priority);
 }
-select:focus, option:focus, input:focus, button:focus {
+:is(select, option, input, button):is(:focus, :focus-visible) {
     outline: none;
     box-shadow: 0 0 0 2px var(--focus-ring);
 }
@@ -326,10 +326,6 @@ button {
     cursor: pointer;
     /* text-transform: uppercase; */
     /* border-radius: 1px; */
-}
-button:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--focus-ring);
 }
 button.textonly {
     background-color: transparent;
@@ -710,6 +706,10 @@ div.tabpanel > div.tabs {
 }
 div.tabpanel > div.tabs > button.tab {
     padding: 1ex;
+}
+div.tabpanel > div.tabs > button.tab.active:focus:not(:focus-visible) {
+    outline: none;
+    box-shadow: none;
 }
 div.tabpanel > div.tabs > button.tab.active {
     background-color: var(--background-tertiary-alt);

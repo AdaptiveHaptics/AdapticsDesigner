@@ -102,7 +102,7 @@ export class BasicThreeMAHDevEnvironment {
 		this.scene.add(this.#_hand.getObject3D());
 
 		this.ground = new THREE.Mesh(
-			new THREE.PlaneGeometry(10, 10),
+			new THREE.PlaneGeometry(3.5, 3.5),
 			new THREE.MeshStandardMaterial({
 				color: 0x808080,
 				metalness: 0,

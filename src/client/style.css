@@ -1014,7 +1014,7 @@ div.parametereditor div.playback.warning span.warning {
 }
 div.parametereditor div.timecontrol {
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto minmax(6ex, 100%);
     grid-template-rows: 1fr 1fr;
     gap: 1ex;
     align-items: center;

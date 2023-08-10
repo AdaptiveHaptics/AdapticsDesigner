@@ -9,6 +9,7 @@
     --background-secondary: hsl(var(--bg-hue), var(--bg-sat), 30%);
     --background-tertiary: hsl(var(--bg-hue), var(--bg-sat), 20%);
     --background-tertiary-alt: hsl(var(--bg-hue), var(--bg-sat), 19%);
+    --background-titlebar-alt: hsl(var(--bg-hue), var(--bg-sat), 16.5%);
     --background-titlebar: hsl(var(--bg-hue), var(--bg-sat), 14%);
     --background-accent: hsl(var(--bg-hue), var(--bg-sat), 50%);
     --background-gutter: hsl(var(--bg-hue), var(--bg-sat), 60%);
@@ -98,6 +99,7 @@
         --background-secondary: hsl(var(--bg-hue), var(--bg-sat), 80%);
         --background-tertiary: hsl(var(--bg-hue), var(--bg-sat), 69%);
         --background-tertiary-alt: hsl(var(--bg-hue), var(--bg-sat), 68%);
+        --background-titlebar-alt: hsl(var(--bg-hue), var(--bg-sat), 60%);
         --background-titlebar: hsl(var(--bg-hue), var(--bg-sat), 57%);
         --background-accent: hsl(var(--bg-hue), var(--bg-sat), 100%);
         --background-gutter: hsl(var(--bg-hue), var(--bg-sat), 90%);
@@ -467,6 +469,7 @@ div.isection.file .filemenu > div.menulist {
     position: absolute;
     z-index: 70;
     border: solid 1ex var(--background-secondary);
+    border-color: var(--background-titlebar-alt);
 }
 div.isection.file .filemenu:focus-within > div.menulist {
     visibility: visible;

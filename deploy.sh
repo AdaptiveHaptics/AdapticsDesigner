@@ -33,6 +33,9 @@ fi
 rm -rf dist
 
 git worktree add dist gh-pages
+cd dist
+git pull
+cd ..
 
 cp -Lr src/client/* dist/
 
@@ -40,7 +43,7 @@ cd dist
 git add --all
 #git commit --amend -m "deploy"
 git commit -m "deploy"
-git push -f origin gh-pages
+git push origin gh-pages
 
 cd ..
 git worktree remove dist

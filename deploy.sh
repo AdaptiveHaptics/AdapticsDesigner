@@ -7,7 +7,7 @@ if [ "$1" != "skiptests" ]; then
   npx playwright test --reporter list # --reporter dot
 fi
 
-license-checker --production --customPath licenseText --json > ./ThirdPartyNotices.json # --excludePackages only works with @version added to name, filter is in JS below
+npx license-checker --production --customPath licenseText --json > ./ThirdPartyNotices.json # --excludePackages only works with @version added to name, filter is in JS below
 node <<EOF
 const fs = require("fs");
 const data = JSON.parse(fs.readFileSync("./ThirdPartyNotices.json", "utf8"));

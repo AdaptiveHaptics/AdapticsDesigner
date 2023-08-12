@@ -28,9 +28,9 @@ window.addEventListener("error", event => {
 
 
 const search_up = new URLSearchParams(window.location.search);
-const user_study_non_adaptive_mode = ["userstudy_na", "user_study_na", "user-study_na", "userstudy-na", "user_study-na", "user-study-na"].some(s => search_up.has(s));
+const user_study_non_adaptive_mode = ["userstudy_B", "userstudy_na"].some(s => search_up.has(s));
 console.log("user_study_non_adaptive_mode: ", user_study_non_adaptive_mode);
-const user_study_mode = user_study_non_adaptive_mode || ["userstudy", "user_study", "user-study"].some(s => search_up.has(s));
+const user_study_mode = user_study_non_adaptive_mode || ["userstudy_A", "userstudy"].some(s => search_up.has(s));
 console.log("user_study_mode: ", user_study_mode);
 Object.assign(window, {
 	user_study_mode,

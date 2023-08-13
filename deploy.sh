@@ -18,7 +18,7 @@ const thirdPartyNotices = Object.entries(data).map(([packageName, packageInfo]) 
 License: \${packageInfo.licenses}
 License Text:
 \${packageInfo.licenseText.trim()}
-\`;}).filter(v => !!v).join("\n\n"+"=".repeat(50)+"\n\n\n");
+\`;}).filter(v => !!v).join("\n\n"+"=".repeat(50)+"\n\n\n").replaceAll("\r\n", "\n");
 
 fs.writeFileSync("./src/client/ThirdPartyNotices.txt", thirdPartyNotices);
 EOF

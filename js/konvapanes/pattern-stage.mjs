@@ -136,15 +136,13 @@ export class KonvaPatternStage extends KonvaResizeStage {
 				// });
 				this.selection_rect.visible(false);
 
-				// const box = this.selection_rect.getSelfRect();
-				const pat_c1 = this.layer_coords_to_pattern_coords({ raw_x: x1, raw_y: y1 });
-				const pat_c2 = this.layer_coords_to_pattern_coords({ raw_x: x2, raw_y: y2 });
-				const low_coords = { x: Math.min(pat_c1.x, pat_c2.x), y: Math.min(pat_c1.y, pat_c2.y) };
-				const high_coords = { x: Math.max(pat_c1.x, pat_c2.x), y: Math.max(pat_c1.y, pat_c2.y) };
+				const low_layer_coords = { x: Math.min(x1, x2), y: Math.min(y1, y2) };
+				const high_layer_coords = { x: Math.max(x1, x2), y: Math.max(y1, y2) };
 				const keyframes_in_box = this.pattern_design.filedata.keyframes.filter(has_coords).filter(kf => {
+					const kf_layer_coords = this.pattern_coords_to_layer_coords({ ...kf.coords.coords, apply_geo_transform: true });
 					return (
-						low_coords.x <= kf.coords.coords.x && kf.coords.coords.x <= high_coords.x &&
-						low_coords.y <= kf.coords.coords.y && kf.coords.coords.y <= high_coords.y
+						low_layer_coords.x <= kf_layer_coords.x && kf_layer_coords.x <= high_layer_coords.x &&
+						low_layer_coords.y <= kf_layer_coords.y && kf_layer_coords.y <= high_layer_coords.y
 					);
 				});
 				const linked_keyframes = [];

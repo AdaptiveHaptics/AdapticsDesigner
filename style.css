@@ -566,7 +566,8 @@ div.designlibrary div.designtree div.file {
 }
 div.designlibrary div.designtree div.file button {
     padding: 0.6ex;
-    margin: 0 0.3ex;
+    /* margin: 0 0.3ex; */
+    margin-right: 0.5ex;
 }
 div.designlibrary div.designtree div.file div.preview {
     background-color: var(--background-titlebar);
@@ -582,8 +583,8 @@ div.designlibrary div.designtree div.file div.preview {
 }
 div.designlibrary div.designtree details.folder {
     background-color: var(--background-tertiary-alt);
-    border: 1px solid var(--background-titlebar);
-    border-radius: 4px;
+    border-left: 2px solid var(--background-titlebar-alt);
+    /* border-radius: 4px; */
 }
 div.designlibrary div.designtree summary {
     background-color: var(--background-secondary);
@@ -1014,7 +1015,7 @@ div.parametereditor div.playback.warning span.warning {
 }
 div.parametereditor div.timecontrol {
     display: grid;
-    grid-template-columns: auto 1fr;
+    grid-template-columns: auto minmax(6ex, 100%);
     grid-template-rows: 1fr 1fr;
     gap: 1ex;
     align-items: center;

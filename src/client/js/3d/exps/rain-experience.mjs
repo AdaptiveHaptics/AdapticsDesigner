@@ -22,6 +22,8 @@ export class RainExperience extends BaseExperience {
 		loader.load(new URL("./rain/Droplet.obj", import.meta.url).toString(), obj => {
 			const mesh = /** @type {THREE.Mesh} */ (obj.getObjectByProperty("type", "Mesh"));
 			mesh.material = new THREE.MeshStandardMaterial({ color: 0x0079FF, metalness: 0, roughness: 1 });
+			obj.castShadow = true;
+			obj.receiveShadow = true;
 
 			const droplet_small = obj.clone();
 			droplet_small.scale.setScalar(0.006);

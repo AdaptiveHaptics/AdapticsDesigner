@@ -139,6 +139,7 @@ export class BasicThreeMAHDevEnvironment {
 		this.ground.receiveShadow = true;
 		this.scene.add(this.ground);
 
+		// this.#_create_skybox("white");
 		this.#_create_skybox("sky");
 
 
@@ -283,6 +284,14 @@ export class BasicThreeMAHDevEnvironment {
 			sun.setFromSphericalCoords(1, phi, theta);
 
 			uniforms["sunPosition"].value.copy(sun);
+		} else if (skybox_type == "white") {
+			const skyboxGeometry = new THREE.BoxGeometry(500, 500, 500);
+			const skyboxMaterial = new THREE.MeshBasicMaterial({
+				color: 0xffffff,
+				side: THREE.BackSide
+			});
+			const skybox = this.skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
+			this.scene.add(skybox);
 		} else {
 
 			const skyboxGeometry = new THREE.BoxGeometry(500, 500, 500);

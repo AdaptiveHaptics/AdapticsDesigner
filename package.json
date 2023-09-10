@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "adaptics-pattern-evaluator": "0.6.0",
+    "adaptics-pattern-evaluator": "0.6.2",
     "konva": "8.3.14",
     "sortablejs": "1.15.0",
     "split-grid": "1.0.11",

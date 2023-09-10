@@ -2,6 +2,8 @@
 /** @typedef {import("../../fe/patterndesign.mjs").MAHPatternDesignFE} MAHPatternDesignFE */
 /** @typedef {import("../../../../shared/types.js").MidAirHapticsAnimationFileFormat} MidAirHapticsAnimationFileFormat */
 /** @typedef {import("../../../../shared/types.js").MAHKeyframe} MAHKeyframe */
+/** @typedef {import("../../../../shared/types.js").MAHBrush} MAHBrush */
+/** @typedef {import("../../../../shared/types.js").MAHIntensity} MAHIntensity */
 
 import { BoundsCheck } from "../../fe/keyframes/bounds-check.mjs";
 import { supports_coords, supports_brush, supports_intensity, supports_cjump } from "../../fe/keyframes/index.mjs";
@@ -51,7 +53,16 @@ export class UnifiedKeyframeEditor {
 			["radius", { unit: "mm", min: 0, max: 100 }],
 			["length", { unit: "mm", min: 0, max: 100 }],
 			// ["thickness", { unit: "mm", min: 0, max: 100 } ],
+
+			["a", { unit: "", step: 0.1 }],
+			["b", { unit: "", step: 0.1 }],
+			["d", { unit: "", step: 0.1 }],
+
+			["x_scale", { unit: "mm" }],
+			["y_scale", { unit: "mm" }],
+
 			["rotation", { unit: "deg" }],
+
 			["am_freq", { unit: "hz", min: 0, max: 500 }],
 			["stm_freq", { unit: "hz", min: 0, max: 500 }],
 		];
@@ -356,26 +367,44 @@ export class UnifiedKeyframeEditor {
 	on_brush_change() {
 		this.pattern_design.save_state();
 		const keyframes = [...this.pattern_design.selected_keyframes];
+		/** @type {(type: MAHBrush["name"]) => MAHBrush} */
+		const create_default_for_type = (type) => {
+			switch (type) {
+				case "circle": return {
+					name: type,
+					params: { radius: { type: "f64", value: 10 }, am_freq: { type: "f64", value: 0 }, stm_freq: { type: "f64", value: 100 }, }
+				};
+				case "line": return {
+					name: type,
+					params: {
+						length: { type: "f64", value: 10 },
+						thickness: { type: "f64", value: 1 },
+						rotation: { type: "f64", value: 0 },
+						am_freq: { type: "f64", value: 0 },
+						stm_freq: { type: "f64", value: 100 },
+					}
+				};
+				case "lissajous": return {
+					name: type,
+					params: {
+						a: { type: "f64", value: 2 },
+						b: { type: "f64", value: 1 },
+						d: { type: "f64", value: 0 },
+
+						rotation: { type: "f64", value: 0 },
+						x_scale: { type: "f64", value: 25 },
+						y_scale: { type: "f64", value: 25 },
+
+						am_freq: { type: "f64", value: 0 },
+						stm_freq: { type: "f64", value: 100 },
+					}
+				};
+				default: throw new Error(`unexpected brush type: ${type}`);
+			}
+		};
 		this.#_update_keyframes_with_flat_inputs(
 			keyframes, this.brush_inputs, this.brush_type_select, this.brush_transition_select, "brush", supports_brush,
-			(type) => {
-				switch (type) {
-					case "circle": return {
-						name: type,
-						params: { radius: { type: "f64", value: 10 }, am_freq: { type: "f64", value: 0 } }
-					};
-					case "line": return {
-						name: type,
-						params: {
-							length: { type: "f64", value: 5 },
-							thickness: { type: "f64", value: 1 },
-							rotation: { type: "f64", value: 0 },
-							am_freq: { type: "f64", value: 0 },
-						}
-					};
-					default: throw new Error(`unexpected brush type: ${type}`);
-				}
-			}
+			create_default_for_type
 		);
 		this.pattern_design.commit_operation({ updated_keyframes: keyframes });
 	}
@@ -383,24 +412,26 @@ export class UnifiedKeyframeEditor {
 	on_intensity_change() {
 		this.pattern_design.save_state();
 		const keyframes = [...this.pattern_design.selected_keyframes];
+		/** @type {(type: MAHIntensity["name"]) => MAHIntensity} */
+		const create_default_for_type = (type) => {
+			switch (type) {
+				case "constant": return {
+					name: type,
+					params: { value: { type: "f64", value: 1 } }
+				};
+				case "random": return {
+					name: type,
+					params: {
+						min: { type: "f64", value: 0 },
+						max: { type: "f64", value: 1 },
+					}
+				};
+				default: throw new Error(`unexpected intensity type: ${type}`);
+			}
+		};
 		this.#_update_keyframes_with_flat_inputs(
 			keyframes, this.intensity_inputs, this.intensity_type_select, this.intensity_transition_select, "intensity", supports_intensity,
-			(type) => {
-				switch (type) {
-					case "constant": return {
-						name: type,
-						params: { value: { type: "f64", value: 1 } }
-					};
-					case "random": return {
-						name: type,
-						params: {
-							min: { type: "f64", value: 0 },
-							max: { type: "f64", value: 1 },
-						}
-					};
-					default: throw new Error(`unexpected intensity type: ${type}`);
-				}
-			}
+			create_default_for_type
 		);
 		this.pattern_design.commit_operation({ updated_keyframes: keyframes });
 	}

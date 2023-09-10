@@ -8,6 +8,8 @@ import { Hand3D } from "./objects/hand-3d.mjs";
 import { EffectComposer } from "three/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/examples/jsm/postprocessing/RenderPass.js";
 import { OutputPass } from "three/examples/jsm/postprocessing/OutputPass.js";
+import { SSAARenderPass } from "three/examples/jsm/postprocessing/SSAARenderPass.js";
+import { notnull } from "../util.mjs";
 
 
 export class BasicThreeMAHDevEnvironment {
@@ -29,10 +31,13 @@ export class BasicThreeMAHDevEnvironment {
 		this.#_pattern_design = pattern_design;
 		this.container = container;
 
+		const enable_screenshot_mode = new URLSearchParams(window.location.hash.slice(1)).get("three_screenshot_mode") != null; //cannot be set with keybind because it changes renderer settings (lowers performance)
+
 		try {
 			this.renderer = new THREE.WebGLRenderer({
 				// antialias: true,
 				// alpha: true,
+				preserveDrawingBuffer: enable_screenshot_mode,
 			});
 		} catch (e) {
 			this.#_create_message_div("WebGL is not supported on this device.");
@@ -51,23 +56,43 @@ export class BasicThreeMAHDevEnvironment {
 		this.controls = new OrbitControls(this.camera, this.renderer.domElement);
 		this.controls.target.set(0, 0.1, 0);
 		this.controls.listenToKeyEvents(this.renderer.domElement);
+		if (enable_screenshot_mode) {
+			this.camera.position.set(-0.11097958017562132, 0.33688488651695025, 0.15221453024854206);
+			//this.camera.rotation.set(-0.8827459503197941, -0.45178311874519134, -0.48819078640996955); // doesnt stay set with orbit controls
+			this.controls.target.set(0.006801113250783539, 0.12961861963084836, -0.022326411453142753);
+		}
 		this.controls.update();
 		this.camera.updateProjectionMatrix();
 		this.controls.saveState();
 		renderer.domElement.addEventListener("keypress", ev => {
+			// console.log(ev);
 			if (ev.key === "r") {
 				this.controls.reset();
 				this.camera.updateProjectionMatrix();
-				ev.preventDefault();
-				ev.stopImmediatePropagation();
+
+			} else if (ev.code === "KeyS" && ev.shiftKey && ev.ctrlKey) {
+				if (!enable_screenshot_mode) throw new Error("Screenshot mode not enabled");
+				console.log("saving 3D sim screenshot");
+				renderer.domElement.toBlob(b => {
+					const a = document.createElement("a");
+					a.href = URL.createObjectURL(notnull(b));
+					a.download = "three_screenshot.png";
+					a.click();
+				}, "image/png", 1);
+
+			} else {
+				return;
 			}
+
+			ev.preventDefault();
+			ev.stopImmediatePropagation();
 		});
 
 
 		this.scene = new THREE.Scene();
 
 		this.composer =  new EffectComposer(renderer);
-		this.render_pass = new RenderPass(this.scene, this.camera);
+		this.render_pass = enable_screenshot_mode ?  new SSAARenderPass(this.scene, this.camera) : new RenderPass(this.scene, this.camera);
 		// render_pass.clear = true;
 		this.composer.addPass(this.render_pass);
 
@@ -114,6 +139,7 @@ export class BasicThreeMAHDevEnvironment {
 		this.ground.receiveShadow = true;
 		this.scene.add(this.ground);
 
+		// this.#_create_skybox("white");
 		this.#_create_skybox("sky");
 
 
@@ -258,6 +284,14 @@ export class BasicThreeMAHDevEnvironment {
 			sun.setFromSphericalCoords(1, phi, theta);
 
 			uniforms["sunPosition"].value.copy(sun);
+		} else if (skybox_type == "white") {
+			const skyboxGeometry = new THREE.BoxGeometry(500, 500, 500);
+			const skyboxMaterial = new THREE.MeshBasicMaterial({
+				color: 0xffffff,
+				side: THREE.BackSide
+			});
+			const skybox = this.skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
+			this.scene.add(skybox);
 		} else {
 
 			const skyboxGeometry = new THREE.BoxGeometry(500, 500, 500);

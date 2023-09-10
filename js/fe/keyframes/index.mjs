@@ -247,7 +247,8 @@ export class NewKeyframeCommon {
 			name: "circle",
 			params: {
 				radius: { type: "f64", value: 10.0 },
-				am_freq: { type: "f64", value: 0 },
+				am_freq: { type: "f64", value: 0.0 },
+				stm_freq: { type: "f64", value: 100.0 },
 			}
 		},
 		transition: {

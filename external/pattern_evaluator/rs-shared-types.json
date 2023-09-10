@@ -359,6 +359,18 @@
                       "$ref": "#/definitions/MAHDynamicF64"
                     }
                   ]
+                },
+                "stm_freq": {
+                  "description": "STM frequency in HZ",
+                  "default": {
+                    "type": "f64",
+                    "value": 100.0
+                  },
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/MAHDynamicF64"
+                    }
+                  ]
                 }
               }
             }
@@ -410,8 +422,102 @@
                     }
                   ]
                 },
+                "stm_freq": {
+                  "description": "STM frequency in HZ",
+                  "default": {
+                    "type": "f64",
+                    "value": 100.0
+                  },
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/MAHDynamicF64"
+                    }
+                  ]
+                },
                 "thickness": {
                   "$ref": "#/definitions/MAHDynamicF64"
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "name",
+            "params"
+          ],
+          "properties": {
+            "name": {
+              "type": "string",
+              "enum": [
+                "lissajous"
+              ]
+            },
+            "params": {
+              "type": "object",
+              "required": [
+                "a",
+                "am_freq",
+                "b",
+                "d",
+                "rotation",
+                "x_scale",
+                "y_scale"
+              ],
+              "properties": {
+                "a": {
+                  "$ref": "#/definitions/MAHDynamicF64"
+                },
+                "am_freq": {
+                  "description": "AM frequency in HZ",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/MAHDynamicF64"
+                    }
+                  ]
+                },
+                "b": {
+                  "$ref": "#/definitions/MAHDynamicF64"
+                },
+                "d": {
+                  "$ref": "#/definitions/MAHDynamicF64"
+                },
+                "rotation": {
+                  "description": "Degrees",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/MAHDynamicF64"
+                    }
+                  ]
+                },
+                "stm_freq": {
+                  "description": "STM frequency in HZ",
+                  "default": {
+                    "type": "f64",
+                    "value": 100.0
+                  },
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/MAHDynamicF64"
+                    }
+                  ]
+                },
+                "x_scale": {
+                  "description": "Millimeters",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/MAHDynamicF64"
+                    }
+                  ]
+                },
+                "y_scale": {
+                  "description": "Millimeters",
+                  "allOf": [
+                    {
+                      "$ref": "#/definitions/MAHDynamicF64"
+                    }
+                  ]
                 }
               }
             }

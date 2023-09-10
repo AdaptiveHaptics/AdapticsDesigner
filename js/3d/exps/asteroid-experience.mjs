@@ -22,6 +22,7 @@ export class AsteroidExperience extends BaseExperience {
 		this.spaceship = new Spaceship();
 		this.object3D.add(this.spaceship.getObject3D());
 
+		/** @type {Set<Asteroid>} */
 		this.asteroids = new Set();
 
 		this.#_spawn_asteroid();
@@ -266,7 +267,7 @@ class Spaceship {
 		return this.#_health <= 0;
 	}
 	dead_pulse() {
-		return time_now() % 2 < 1;
+		return this.is_dead() && time_now() % 2 < 1;
 	}
 
 

@@ -45,6 +45,10 @@ export type MAHBrush =
          * Millimeters
          */
         radius: MAHDynamicF64;
+        /**
+         * STM frequency in HZ
+         */
+        stm_freq?: MAHDynamicF64;
       };
     }
   | {
@@ -62,7 +66,39 @@ export type MAHBrush =
          * Degrees
          */
         rotation: MAHDynamicF64;
+        /**
+         * STM frequency in HZ
+         */
+        stm_freq?: MAHDynamicF64;
         thickness: MAHDynamicF64;
+      };
+    }
+  | {
+      name: "lissajous";
+      params: {
+        a: MAHDynamicF64;
+        /**
+         * AM frequency in HZ
+         */
+        am_freq: MAHDynamicF64;
+        b: MAHDynamicF64;
+        d: MAHDynamicF64;
+        /**
+         * Degrees
+         */
+        rotation: MAHDynamicF64;
+        /**
+         * STM frequency in HZ
+         */
+        stm_freq?: MAHDynamicF64;
+        /**
+         * Millimeters
+         */
+        x_scale: MAHDynamicF64;
+        /**
+         * Millimeters
+         */
+        y_scale: MAHDynamicF64;
       };
     };
 export type MAHDynamicF64 =

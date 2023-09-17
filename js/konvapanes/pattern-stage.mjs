@@ -53,7 +53,9 @@ export class KonvaPatternStage extends KonvaResizeStage {
 
 		this.k_control_points_layer = new Konva.Layer();
 		this.k_stage.add(this.k_control_points_layer);
-		this.k_playback_vis_layer = new Konva.Layer();
+		this.k_playback_vis_layer = new Konva.Layer({
+			listening: false,
+		});
 		this.k_stage.add(this.k_playback_vis_layer);
 
 

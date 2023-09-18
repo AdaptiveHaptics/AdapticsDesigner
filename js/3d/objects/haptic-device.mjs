@@ -72,6 +72,7 @@ class PlaybackVis {
 	 * @param {import("../../pattern-evaluator.mjs").BrushAtAnimLocalTime[]} last_eval
 	 */
 	update_playback_visualization(last_eval) {
+		if (last_eval.length < 2) return; // Need at least 2 points to draw the curve
 		const points3d = last_eval.map(be => haptic_to_three_coords(be.ul_control_point.coords));
 		const curve3d = new THREE.CatmullRomCurve3(points3d);
 		const intensities = last_eval.map(be => new THREE.Vector3(be.ul_control_point.intensity, 0, 0));

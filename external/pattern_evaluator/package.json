@@ -1,7 +1,7 @@
 {
   "name": "adaptics-pattern-evaluator",
   "description": "Low-level evaluation for Adaptics patterns",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "license": "MPL-2.0",
   "repository": {
     "type": "git",

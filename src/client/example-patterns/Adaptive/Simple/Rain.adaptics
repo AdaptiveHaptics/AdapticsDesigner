@@ -66,8 +66,26 @@
 								"type": "multiply",
 								"value": [
 									{
-										"type": "parameter",
-										"value": "droplet_size"
+										"type": "add",
+										"value": [
+											{
+												"type": "constant",
+												"value": 0.5
+											},
+											{
+												"type": "multiply",
+												"value": [
+													{
+														"type": "constant",
+														"value": 2
+													},
+													{
+														"type": "parameter",
+														"value": "droplet_strength"
+													}
+												]
+											}
+										]
 									},
 									{
 										"type": "constant",
@@ -167,8 +185,26 @@
 								"type": "multiply",
 								"value": [
 									{
-										"type": "parameter",
-										"value": "droplet_size"
+										"type": "add",
+										"value": [
+											{
+												"type": "constant",
+												"value": 0.5
+											},
+											{
+												"type": "multiply",
+												"value": [
+													{
+														"type": "constant",
+														"value": 2
+													},
+													{
+														"type": "parameter",
+														"value": "droplet_strength"
+													}
+												]
+											}
+										]
 									},
 									{
 										"type": "constant",
@@ -268,8 +304,26 @@
 								"type": "multiply",
 								"value": [
 									{
-										"type": "parameter",
-										"value": "droplet_size"
+										"type": "add",
+										"value": [
+											{
+												"type": "constant",
+												"value": 0.5
+											},
+											{
+												"type": "multiply",
+												"value": [
+													{
+														"type": "constant",
+														"value": 2
+													},
+													{
+														"type": "parameter",
+														"value": "droplet_strength"
+													}
+												]
+											}
+										]
 									},
 									{
 										"type": "constant",
@@ -369,8 +423,26 @@
 								"type": "multiply",
 								"value": [
 									{
-										"type": "parameter",
-										"value": "droplet_size"
+										"type": "add",
+										"value": [
+											{
+												"type": "constant",
+												"value": 0.5
+											},
+											{
+												"type": "multiply",
+												"value": [
+													{
+														"type": "constant",
+														"value": 2
+													},
+													{
+														"type": "parameter",
+														"value": "droplet_strength"
+													}
+												]
+											}
+										]
 									},
 									{
 										"type": "constant",
@@ -470,8 +542,26 @@
 								"type": "multiply",
 								"value": [
 									{
-										"type": "parameter",
-										"value": "droplet_size"
+										"type": "add",
+										"value": [
+											{
+												"type": "constant",
+												"value": 0.5
+											},
+											{
+												"type": "multiply",
+												"value": [
+													{
+														"type": "constant",
+														"value": 2
+													},
+													{
+														"type": "parameter",
+														"value": "droplet_strength"
+													}
+												]
+											}
+										]
 									},
 									{
 										"type": "constant",
@@ -571,8 +661,26 @@
 								"type": "multiply",
 								"value": [
 									{
-										"type": "parameter",
-										"value": "droplet_size"
+										"type": "add",
+										"value": [
+											{
+												"type": "constant",
+												"value": 0.5
+											},
+											{
+												"type": "multiply",
+												"value": [
+													{
+														"type": "constant",
+														"value": 2
+													},
+													{
+														"type": "parameter",
+														"value": "droplet_strength"
+													}
+												]
+											}
+										]
 									},
 									{
 										"type": "constant",
@@ -672,8 +780,26 @@
 								"type": "multiply",
 								"value": [
 									{
-										"type": "parameter",
-										"value": "droplet_size"
+										"type": "add",
+										"value": [
+											{
+												"type": "constant",
+												"value": 0.5
+											},
+											{
+												"type": "multiply",
+												"value": [
+													{
+														"type": "constant",
+														"value": 2
+													},
+													{
+														"type": "parameter",
+														"value": "droplet_strength"
+													}
+												]
+											}
+										]
 									},
 									{
 										"type": "constant",
@@ -773,8 +899,26 @@
 								"type": "multiply",
 								"value": [
 									{
-										"type": "parameter",
-										"value": "droplet_size"
+										"type": "add",
+										"value": [
+											{
+												"type": "constant",
+												"value": 0.5
+											},
+											{
+												"type": "multiply",
+												"value": [
+													{
+														"type": "constant",
+														"value": 2
+													},
+													{
+														"type": "parameter",
+														"value": "droplet_strength"
+													}
+												]
+											}
+										]
 									},
 									{
 										"type": "constant",
@@ -874,8 +1018,26 @@
 								"type": "multiply",
 								"value": [
 									{
-										"type": "parameter",
-										"value": "droplet_size"
+										"type": "add",
+										"value": [
+											{
+												"type": "constant",
+												"value": 0.5
+											},
+											{
+												"type": "multiply",
+												"value": [
+													{
+														"type": "constant",
+														"value": 2
+													},
+													{
+														"type": "parameter",
+														"value": "droplet_strength"
+													}
+												]
+											}
+										]
 									},
 									{
 										"type": "constant",
@@ -975,8 +1137,26 @@
 								"type": "multiply",
 								"value": [
 									{
-										"type": "parameter",
-										"value": "droplet_size"
+										"type": "add",
+										"value": [
+											{
+												"type": "constant",
+												"value": 0.5
+											},
+											{
+												"type": "multiply",
+												"value": [
+													{
+														"type": "constant",
+														"value": 2
+													},
+													{
+														"type": "parameter",
+														"value": "droplet_strength"
+													}
+												]
+											}
+										]
 									},
 									{
 										"type": "constant",
@@ -1076,8 +1256,26 @@
 								"type": "multiply",
 								"value": [
 									{
-										"type": "parameter",
-										"value": "droplet_size"
+										"type": "add",
+										"value": [
+											{
+												"type": "constant",
+												"value": 0.5
+											},
+											{
+												"type": "multiply",
+												"value": [
+													{
+														"type": "constant",
+														"value": 2
+													},
+													{
+														"type": "parameter",
+														"value": "droplet_strength"
+													}
+												]
+											}
+										]
 									},
 									{
 										"type": "constant",
@@ -1177,8 +1375,26 @@
 								"type": "multiply",
 								"value": [
 									{
-										"type": "parameter",
-										"value": "droplet_size"
+										"type": "add",
+										"value": [
+											{
+												"type": "constant",
+												"value": 0.5
+											},
+											{
+												"type": "multiply",
+												"value": [
+													{
+														"type": "constant",
+														"value": 2
+													},
+													{
+														"type": "parameter",
+														"value": "droplet_strength"
+													}
+												]
+											}
+										]
 									},
 									{
 										"type": "constant",
@@ -1278,8 +1494,26 @@
 								"type": "multiply",
 								"value": [
 									{
-										"type": "parameter",
-										"value": "droplet_size"
+										"type": "add",
+										"value": [
+											{
+												"type": "constant",
+												"value": 0.5
+											},
+											{
+												"type": "multiply",
+												"value": [
+													{
+														"type": "constant",
+														"value": 2
+													},
+													{
+														"type": "parameter",
+														"value": "droplet_strength"
+													}
+												]
+											}
+										]
 									},
 									{
 										"type": "constant",
@@ -1379,8 +1613,26 @@
 								"type": "multiply",
 								"value": [
 									{
-										"type": "parameter",
-										"value": "droplet_size"
+										"type": "add",
+										"value": [
+											{
+												"type": "constant",
+												"value": 0.5
+											},
+											{
+												"type": "multiply",
+												"value": [
+													{
+														"type": "constant",
+														"value": 2
+													},
+													{
+														"type": "parameter",
+														"value": "droplet_strength"
+													}
+												]
+											}
+										]
 									},
 									{
 										"type": "constant",
@@ -1480,8 +1732,26 @@
 								"type": "multiply",
 								"value": [
 									{
-										"type": "parameter",
-										"value": "droplet_size"
+										"type": "add",
+										"value": [
+											{
+												"type": "constant",
+												"value": 0.5
+											},
+											{
+												"type": "multiply",
+												"value": [
+													{
+														"type": "constant",
+														"value": 2
+													},
+													{
+														"type": "parameter",
+														"value": "droplet_strength"
+													}
+												]
+											}
+										]
 									},
 									{
 										"type": "constant",
@@ -1531,8 +1801,26 @@
 								"type": "multiply",
 								"value": [
 									{
-										"type": "parameter",
-										"value": "droplet_size"
+										"type": "add",
+										"value": [
+											{
+												"type": "constant",
+												"value": 0.5
+											},
+											{
+												"type": "multiply",
+												"value": [
+													{
+														"type": "constant",
+														"value": 2
+													},
+													{
+														"type": "parameter",
+														"value": "droplet_strength"
+													}
+												]
+											}
+										]
 									},
 									{
 										"type": "constant",
@@ -1626,28 +1914,49 @@
 			"value": 1
 		},
 		"playback_speed": {
-			"type": "param",
-			"value": "rainfall_speed"
+			"type": "formula",
+			"value": {
+				"type": "add",
+				"value": [
+					{
+						"type": "multiply",
+						"value": [
+							{
+								"type": "parameter",
+								"value": "rainfall_amount"
+							},
+							{
+								"type": "constant",
+								"value": 2
+							}
+						]
+					},
+					{
+						"type": "constant",
+						"value": 0.5
+					}
+				]
+			}
 		}
 	},
 	"user_parameter_definitions": {
-		"rainfall_speed": {
-			"default": 1,
-			"min": 0.5,
-			"max": 2.5,
-			"step": 0.1
-		},
-		"droplet_size": {
-			"default": 1,
-			"min": 0.5,
-			"max": 2.5,
-			"step": 0.05
-		},
 		"stop": {
 			"default": 0,
 			"min": 0,
 			"max": 1,
 			"step": 1
+		},
+		"droplet_strength": {
+			"default": 0.25,
+			"min": 0,
+			"max": 1,
+			"step": 0.05
+		},
+		"rainfall_amount": {
+			"default": 0.25,
+			"min": 0,
+			"max": 1,
+			"step": 0.1
 		}
 	}
 }

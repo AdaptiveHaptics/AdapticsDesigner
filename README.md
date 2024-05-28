@@ -24,3 +24,7 @@ Please refer to the [Adaptics Engine repository](https://github.com/AdaptiveHapt
 
 ## Publication
 Kevin John, Yinan Li, and Hasti Seifi. 2024. AdapTics: A Toolkit for Creative Design and Integration of Real-Time Adaptive Mid-Air Ultrasound Tactons. In Proceedings of the CHI Conference on Human Factors in Computing Systems (CHI ’24), May 11–16, 2024, Honolulu, HI, USA. ACM, New York, NY, USA, 15 pages. https://doi.org/10.1145/3613904.3642090
+
+## Contact
+
+If there are any questions or bugs please feel free to make an issue on the GitHub and/or reach out via email (kevin.john‮&#64;‬asu&#46;edu).

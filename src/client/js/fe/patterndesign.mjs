@@ -333,7 +333,7 @@ export class MAHPatternDesignFE {
 			default: assert_unreachable(set);
 		}
 		this.filedata.keyframes.push(keyframe);
-		this.filedata.keyframes.sort();
+		this.filedata.keyframes.sort((a, b) => a.time - b.time);
 		return keyframe;
 	}
 
@@ -1048,7 +1048,7 @@ export class MAHPatternDesignFE {
 			// and adds them to selected
 			this.save_state();
 			const deleted_keyframes = this.delete_keyframes([...this.selected_keyframes]);
-			clipboard_parsed.keyframes.sort();
+			clipboard_parsed.keyframes.sort((a, b) => a.time - b.time);
 
 			const paste_time_offset = NewKeyframeCommon.next_timestamp(this) - (clipboard_parsed.keyframes[0]?.time || 0);
 			// console.log(paste_time_offset);

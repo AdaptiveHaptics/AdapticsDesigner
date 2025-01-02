@@ -594,7 +594,7 @@ class KonvaPatternControlPoint {
 		pattern_stage.k_control_points_layer.add(this.linked_group);
 
 		this.listener_abort = new AbortController();
-		pattern_stage.pattern_design.state_change_events.addEventListener("rerender", _ev => { this.destroy(); }); // we don't get destroyed in render_design if rerender occurs (kinda hacky, would be better to have seperate tracking for GUI objects probably on pattern stage)
+		pattern_stage.pattern_design.state_change_events.addEventListener("rerender", _ev => { this.destroy(); }, { signal: this.listener_abort.signal }); // we don't get destroyed in render_design if rerender occurs (kinda hacky, would be better to have seperate tracking for GUI objects probably on pattern stage)
 		pattern_stage.pattern_design.state_change_events.addEventListener("kf_delete", ev => {
 			if (ev.detail.keyframe != keyframe) return;
 			const prev_cp = this.lines.in?.curr_cp;

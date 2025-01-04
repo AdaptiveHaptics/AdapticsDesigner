@@ -266,6 +266,57 @@ export class KonvaPatternStage extends KonvaResizeStage {
 			}));
 		}
 
+		{ // render lra points
+			const hash_params = new URLSearchParams(window.location.hash.slice(1));
+			const render_lras = hash_params.has("render_lras");
+
+			const DEFAULT_LRA_LAYOUT = [ //left hand palm down
+				//palm top row
+				{ x: 0.0, y: 0.0, z: 0.0 },
+				{ x: -26.0, y: 0.0, z: 0.0 },
+				{ x: 28.0, y: 0.0, z: 0.0 },
+
+				//palm bottom row
+				{ x: 0.0, y: -39.0, z: 0.0 },
+				{ x: -26.0, y: -38.0, z: 0.0 },
+				{ x: 28.0, y: -37.0, z: 0.0 },
+
+				//wrist
+				{ x: -1.0, y: -74.0, z: 0.0 },
+
+				//thumb
+				{ x: 63.0, y: -7.0, z: 0.0 },
+
+				//index finger
+				{ x: 33.0, y: 36.0, z: 0.0 },
+				{ x: 36.0, y: 76.0, z: 0.0 },
+
+				//middle finger
+				{ x: 9.0, y: 44.0, z: 0.0 },
+				{ x: 11.0, y: 84.0, z: 0.0 },
+
+				//ring finger
+				{ x: -14.0, y: 41.0, z: 0.0 },
+				{ x: -16.0, y: 76.0, z: 0.0 },
+
+				//little finger
+				{ x: -35.0, y: 36.0, z: 0.0 },
+				{ x: -40.0, y: 58.0, z: 0.0 },
+			];
+
+			if (render_lras) {
+				for (const lra of DEFAULT_LRA_LAYOUT) {
+					const coords = this.pattern_coords_to_layer_coords({ x: lra.x, y: lra.y, apply_geo_transform: false });
+					this.k_control_points_layer.add(new Konva.Circle({
+						x: coords.x,
+						y: coords.y,
+						radius: 5,
+						fill: "#101010",
+					}));
+				}
+			}
+		}
+
 		{ //init playback
 			this.playback_vis = new KonvaPlaybackVis(this);
 			this.playback_vis.update();

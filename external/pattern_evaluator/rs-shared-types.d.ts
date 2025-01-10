@@ -238,7 +238,11 @@ export interface CoordsWithTransition {
   transition: MAHTransition;
 }
 /**
- * x and y are used for the xy coordinate system in the 2d designer. z is intended to be orthogonal to the phased array
+ * Coordinates in millimeters.
+ *
+ * x and y are used for the xy coordinate system in the 2d designer.
+ *
+ * z is intended to be orthogonal to the phased array.
  */
 export interface MAHCoordsConst {
   /**
@@ -287,9 +291,21 @@ export interface MAHUserParameterDefinition {
   min?: number | null;
   step: number;
 }
+/**
+ * Defines the current evaluation in combination with [NextEvalParams]
+ */
 export interface PatternEvaluatorParameters {
+  /**
+   * The geometric transform to apply to the pattern
+   */
   geometric_transform: GeometricTransformMatrix;
+  /**
+   * The time at which to evaluate the pattern
+   */
   time: number;
+  /**
+   * The user parameters to use (External Parameters in the Designer)
+   */
   user_parameters: {
     [k: string]: number;
   };

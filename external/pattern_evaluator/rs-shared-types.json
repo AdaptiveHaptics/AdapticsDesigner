@@ -622,7 +622,7 @@
       ]
     },
     "MAHCoordsConst": {
-      "description": "x and y are used for the xy coordinate system in the 2d designer. z is intended to be orthogonal to the phased array",
+      "description": "Coordinates in millimeters.\n\nx and y are used for the xy coordinate system in the 2d designer.\n\nz is intended to be orthogonal to the phased array.",
       "type": "object",
       "required": [
         "x",
@@ -1061,6 +1061,7 @@
       }
     },
     "PatternEvaluatorParameters": {
+      "description": "Defines the current evaluation in combination with [NextEvalParams]",
       "type": "object",
       "required": [
         "geometric_transform",
@@ -1069,13 +1070,20 @@
       ],
       "properties": {
         "geometric_transform": {
-          "$ref": "#/definitions/GeometricTransformMatrix"
+          "description": "The geometric transform to apply to the pattern",
+          "allOf": [
+            {
+              "$ref": "#/definitions/GeometricTransformMatrix"
+            }
+          ]
         },
         "time": {
+          "description": "The time at which to evaluate the pattern",
           "type": "number",
           "format": "double"
         },
         "user_parameters": {
+          "description": "The user parameters to use (External Parameters in the Designer)",
           "type": "object",
           "additionalProperties": {
             "type": "number",

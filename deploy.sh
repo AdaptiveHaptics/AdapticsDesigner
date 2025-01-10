@@ -1,6 +1,6 @@
 set -ex
 
-tsc --project ./jsconfig.json
+npx tsc --project ./jsconfig.json
 
 # if argument "skiptests" is passed, skip tests
 if [ "$1" != "skiptests" ]; then

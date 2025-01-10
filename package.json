@@ -9,14 +9,13 @@
   "devDependencies": {
     "@playwright/test": "v1.41.2",
     "@types/json-schema": "^7.0.12",
-    "@types/node": "^20.11.17",
+    "@types/node": "^22.10.5",
     "@types/sortablejs": "^1.15.1",
     "@types/three": "^0.154.0",
     "@types/wicg-file-system-access": "^2020.9.6",
-    "eslint": "^8.30.0",
     "http-server": "^14.1.1",
     "license-checker": "^25.0.1",
-    "typescript": "^5.1.6"
+    "typescript": "^5.7.3"
   },
   "scripts": {
     "check-types": "tsc --noEmit -p jsconfig.json",

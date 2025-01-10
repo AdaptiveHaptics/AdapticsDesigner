@@ -10,7 +10,7 @@ const ignore_errors = [
 	"THREE.WebGLRenderer: Error creating WebGL context.",
 	"THREE.WebGLRenderer: Error creating WebGL2 context."
 ];
-export const test_check_no_errors = test_base.extend({
+export const test_check_no_errors = test_base.extend<{ page: Page }>({
 	page: async ({ page }, use) => {
 		const error_messages: string[] = [];
 		page.on('console', msg => {
